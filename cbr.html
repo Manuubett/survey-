@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Embu County Political Survey – Researcher GPS Guard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #222; line-height: 1.5; }
+
+/* ── HEADER ── */
+.header-banner {
+  background: linear-gradient(135deg, #1a3c6e 0%, #0b7dda 100%);
+  color: white; text-align: center; padding: 28px 20px 20px;
+  border-bottom: 3px solid rgba(255,255,255,.15);
+}
+.header-banner h1 { font-size: 21px; letter-spacing: 1.2px; font-weight: 700; margin-bottom: 4px; }
+.header-banner p  { font-size: 13px; opacity: .85; font-style: italic; }
+.header-banner .badge {
+  display: inline-block; margin-top: 10px;
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+  padding: 3px 14px; border-radius: 20px; font-size: 11px;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+
+/* ── GPS STATUS BAR ── */
+#gpsStatusBar { display: none; background: #fff; border-bottom: 1px solid #e0e0e0; padding: 8px 20px; }
+.gps-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; }
+.gps-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: #bbb; transition: background .3s; }
+.gps-dot.acquiring { background: #f59e0b; animation: pulse 1.2s infinite; }
+.gps-dot.good      { background: #22c55e; }
+.gps-dot.poor      { background: #ef4444; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.gps-label { font-weight: 600; color: #333; }
+.gps-detail { color: #666; }
+.gps-acc { font-weight: 700; }
+.gps-acc.good  { color: #16a34a; }
+.gps-acc.poor  { color: #dc2626; }
+
+/* ── DRAFT / NETWORK STATUS BAR ── */
+#draftBar {
+  display: none;
+  position: sticky; top: 0; z-index: 200;
+  background: #fff8e1; border-bottom: 2px solid #fcd34d;
+  padding: 7px 16px;
+}
+.draft-inner {
+  max-width: 760px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  font-size: 12.5px;
+}
+.draft-left { display: flex; align-items: center; gap: 8px; }
+.draft-icon { font-size: 16px; }
+.draft-text { color: #78350f; font-weight: 600; }
+.draft-sub  { color: #92400e; font-size: 11.5px; }
+.draft-actions { display: flex; gap: 8px; }
+.draft-btn {
+  font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+  cursor: pointer; border: 1.5px solid; font-family: inherit; transition: all .15s;
+}
+.draft-btn.restore { background: #0b7dda; color: white; border-color: #0b7dda; }
+.draft-btn.restore:hover { background: #0969c3; }
+.draft-btn.discard { background: white; color: #dc2626; border-color: #fca5a5; }
+.draft-btn.discard:hover { background: #fee2e2; }
+
+/* ── OFFLINE BADGE ── */
+#networkBadge {
+  display: none; position: fixed; bottom: 20px; right: 20px; z-index: 999;
+  padding: 10px 16px; border-radius: 30px; font-size: 13px; font-weight: 700;
+  box-shadow: 0 4px 20px rgba(0,0,0,.2); cursor: default; pointer-events: none;
+  transition: all .3s;
+}
+#networkBadge.offline { background: #dc2626; color: white; display: flex; align-items: center; gap: 6px; }
+#networkBadge.online  { background: #16a34a; color: white; display: flex; align-items: center; gap: 6px; }
+
+/* ── PENDING QUEUE BANNER ── */
+#pendingBanner {
+  display: none; background: #fef3c7; border: 1.5px solid #fcd34d;
+  border-left: 5px solid #f59e0b; border-radius: 7px;
+  padding: 10px 16px; margin-bottom: 14px;
+  font-size: 13px; color: #78350f;
+}
+#pendingBanner strong { font-size: 14px; }
+.pending-sync-btn {
+  display: inline-block; margin-top: 6px;
+  background: #f59e0b; color: white; border: none; border-radius: 20px;
+  padding: 4px 16px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.pending-sync-btn:hover { background: #d97706; }
+
+/* ── CONTAINER ── */
+#surveyWrapper { display: none; }
+.container { max-width: 760px; margin: 0 auto; padding: 20px 16px 48px; }
+
+/* ── RESEARCHER BANNER ── */
+#researcherBanner {
+  background: #e8f5e9; border: 1px solid #a5d6a7; border-left: 5px solid #388e3c;
+  border-radius: 7px; padding: 10px 16px; margin-bottom: 18px;
+  font-size: 13px; color: #2e7d32; display: none;
+  align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+}
+#researcherBanner strong { font-size: 14px; }
+.res-change-btn {
+  font-size: 11px; padding: 4px 12px; border: 1px solid #388e3c;
+  background: white; color: #388e3c; border-radius: 20px; cursor: pointer; font-weight: 700;
+  transition: all .15s;
+}
+.res-change-btn:hover { background: #388e3c; color: white; }
+
+/* ── CARDS ── */
+.card { background: white; border-radius: 10px; box-shadow: 0 1px 5px rgba(0,0,0,.07); margin-bottom: 20px; overflow: hidden; }
+.card-header { background: #1a3c6e; color: white; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
+.card-header .section-letter {
+  background: rgba(255,255,255,.2); border-radius: 50%;
+  width: 28px; height: 28px; display: flex; align-items: center;
+  justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0;
+}
+.card-header h3 { font-size: 13px; letter-spacing: .5px; text-transform: uppercase; font-weight: 600; }
+.card-body { padding: 18px 20px; }
+
+/* ── FORM ELEMENTS ── */
+.field { margin-bottom: 16px; }
+label.field-label { display: block; font-weight: 600; font-size: 13px; color: #333; margin-bottom: 6px; }
+label.field-label span.qnum { color: #0b7dda; margin-right: 4px; }
+select, input[type="text"], textarea {
+  width: 100%; padding: 9px 11px; border: 1px solid #ccc;
+  border-radius: 6px; font-size: 14px; background: #fafafa;
+  transition: border-color .2s, box-shadow .2s; font-family: inherit;
+}
+select:focus, input[type="text"]:focus, textarea:focus {
+  outline: none; border-color: #0b7dda; background: white; box-shadow: 0 0 0 3px rgba(11,125,218,.1);
+}
+textarea { min-height: 72px; resize: vertical; }
+
+/* ── PILL TOGGLES ── */
+.options-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.opt-btn { position: relative; }
+.opt-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
+.opt-btn label {
+  display: inline-block; padding: 7px 14px; border: 1px solid #d0d0d0;
+  border-radius: 20px; font-size: 13px; cursor: pointer; color: #444;
+  background: #f7f7f7; transition: all .15s; font-weight: 400; user-select: none;
+}
+.opt-btn input:checked + label { background: #0b7dda; color: white; border-color: #0b7dda; font-weight: 600; }
+
+/* ── SERVICE TABLE ── */
+.rating-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rating-table th, .rating-table td { padding: 9px 8px; border: 1px solid #e8e8e8; text-align: center; }
+.rating-table th { background: #e8f0fc; color: #1a3c6e; font-size: 12px; font-weight: 600; }
+.rating-table td:first-child { text-align: left; font-weight: 600; color: #333; }
+.rating-table tr:nth-child(even) td { background: #fafafa; }
+.rating-table input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: #0b7dda; }
+
+/* ── GOVERNOR CARDS ── */
+.governor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media(max-width:480px) { .governor-grid { grid-template-columns: 1fr; } }
+.governor-card { border: 2px solid #e0e0e0; border-radius: 8px; padding: 14px; cursor: pointer; transition: all .15s; text-align: center; }
+.governor-card:hover   { border-color: #90caf9; background: #f0f8ff; }
+.governor-card.selected{ border-color: #0b7dda; background: #e3f2fd; }
+.governor-card input   { display: none; }
+.governor-card .name   { font-weight: 700; font-size: 14px; color: #1a3c6e; }
+.governor-card .tag    { font-size: 11px; color: #888; margin-top: 2px; }
+
+/* ── MISC ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:500px) { .two-col { grid-template-columns: 1fr; } }
+.section-note { font-size: 12px; color: #888; font-style: italic; margin-bottom: 12px; margin-top: -2px; }
+
+/* ── SUBMIT ── */
+.submit-wrap { margin-top: 10px; }
+button#submitBtn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #0b7dda, #1a3c6e);
+  color: white; border: none; border-radius: 8px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  letter-spacing: .5px; transition: opacity .2s; font-family: inherit;
+}
+button#submitBtn:disabled { opacity: .45; cursor: not-allowed; }
+button#submitBtn:not(:disabled):hover { opacity: .9; }
+.status-msg { text-align: center; margin-top: 14px; font-size: 14px; font-weight: 600; padding: 10px 14px; border-radius: 7px; }
+.status-msg.success { color: #166534; background: #dcfce7; border: 1px solid #86efac; }
+.status-msg.error   { color: #991b1b; background: #fee2e2; border: 1px solid #fca5a5; }
+.status-msg.warning { color: #92400e; background: #fef3c7; border: 1px solid #fcd34d; }
+.status-msg.offline { color: #1e40af; background: #dbeafe; border: 1px solid #93c5fd; }
+.optional-badge {
+  display: inline-block; background: #e8f5e9; color: #388e3c;
+  font-size: 11px; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; margin-left: 8px; vertical-align: middle;
+}
+
+/* ── AUTOSAVE INDICATOR ── */
+#autosaveIndicator {
+  position: fixed; bottom: 70px; right: 20px; z-index: 998;
+  font-size: 11.5px; color: #555; background: white;
+  border: 1px solid #ddd; border-radius: 20px; padding: 4px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.1); display: none;
+  transition: opacity .4s;
+}
+
+/* ══════════════════════════════════════
+   MODAL BASE
+══════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: white; border-radius: 14px; width: 100%; max-width: 640px;
+  max-height: 92vh; overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0,0,0,.3); animation: mIn .22s ease;
+}
+@keyframes mIn { from{transform:scale(.94);opacity:0} to{transform:scale(1);opacity:1} }
+.modal-head { background: linear-gradient(135deg, #1a3c6e, #0b7dda); color: white; padding: 20px 24px; flex-shrink: 0; }
+.modal-head h2 { font-size: 18px; margin-bottom: 3px; }
+.modal-head p  { font-size: 12px; opacity: .85; font-style: italic; margin: 0; }
+.modal-scroll { overflow-y: auto; padding: 20px 24px; flex: 1; }
+.modal-foot { padding: 16px 24px; border-top: 2px solid #f0f0f0; background: #fafafa; flex-shrink: 0; }
+
+/* ── CONSENT ── */
+.consent-section h4 { color: #1a3c6e; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; margin: 18px 0 6px; }
+.consent-section h4:first-child { margin-top: 0; }
+.consent-section p, .consent-section li { font-size: 13px; color: #444; line-height: 1.7; margin: 3px 0; }
+.consent-section ul { padding-left: 20px; margin: 5px 0; }
+.consent-check-wrap {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px;
+  background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 12px 14px;
+}
+.consent-check-wrap input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: #0b7dda; }
+.consent-check-wrap label { font-size: 13px; color: #333; font-weight: 600; cursor: pointer; line-height: 1.5; }
+.btn-row { display: flex; gap: 10px; justify-content: flex-end; }
+.btn-decline { padding: 10px 22px; border: 1.5px solid #ccc; border-radius: 6px; background: white; color: #666; font-size: 14px; cursor: pointer; font-weight: 700; transition: all .15s; font-family: inherit; }
+.btn-decline:hover { background: #f5f5f5; border-color: #aaa; }
+.btn-proceed { padding: 10px 28px; border: none; border-radius: 6px; background: linear-gradient(135deg, #0b7dda, #1a3c6e); color: white; font-size: 14px; cursor: pointer; font-weight: 700; transition: opacity .15s; font-family: inherit; }
+.btn-proceed:disabled { opacity: .35; cursor: not-allowed; }
+.btn-proceed:not(:disabled):hover { opacity: .88; }
+
+/* ── RESEARCHER MODAL ── */
+.res-field { margin-bottom: 14px; }
+.res-field label { display: block; font-weight: 600; font-size: 13px; color: #333; margin-bottom: 5px; }
+.res-field input { width: 100%; padding: 10px 12px; border: 1.5px solid #ccc; border-radius: 6px; font-size: 14px; background: #fafafa; transition: border-color .15s; font-family: inherit; }
+.res-field input:focus { outline: none; border-color: #0b7dda; background: white; }
+.res-err { color: #c62828; font-size: 12px; margin-top: 4px; display: none; }
+.res-note { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 20px; }
+
+/* ── GPS GUARD MODAL ── */
+#gpsGuardModal .modal-box { max-width: 480px; }
+.gps-steps { list-style: none; margin: 16px 0; }
+.gps-steps li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-radius: 7px; margin-bottom: 8px; background: #f8faff; border: 1px solid #e0eaff; font-size: 13px; color: #333; }
+.gps-steps li.done   { background: #f0fdf4; border-color: #bbf7d0; }
+.gps-steps li.active { background: #fffbeb; border-color: #fde68a; }
+.gps-steps li.fail   { background: #fff1f2; border-color: #fecdd3; }
+.step-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.step-text strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.step-text span   { font-size: 12px; color: #666; }
+.gps-progress { height: 4px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin: 16px 0 0; }
+.gps-progress-bar { height: 100%; background: linear-gradient(90deg,#0b7dda,#22c55e); border-radius: 4px; transition: width .4s; width: 0; }
+
+/* ── OFFLINE QUEUE MODAL ── */
+#offlineModal .modal-box { max-width: 480px; }
+.queue-list { max-height: 240px; overflow-y: auto; margin: 12px 0; }
+.queue-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: 7px; margin-bottom: 8px;
+  background: #fef3c7; border: 1px solid #fde68a; font-size: 13px;
+}
+.queue-item .qi-info { color: #78350f; }
+.queue-item .qi-time { font-size: 11px; color: #92400e; margin-top: 2px; }
+.queue-item .qi-del  { font-size: 18px; cursor: pointer; color: #dc2626; padding: 0 4px; border: none; background: none; }
+.queue-item .qi-del:hover { color: #b91c1c; }
+.sync-progress-wrap { margin: 12px 0; display: none; }
+.sync-progress-bar-outer { height: 6px; background: #e5e7eb; border-radius: 6px; overflow: hidden; }
+.sync-progress-bar-inner { height: 100%; background: linear-gradient(90deg,#0b7dda,#22c55e); border-radius: 6px; transition: width .4s; width: 0; }
+.sync-status-text { font-size: 12px; color: #555; margin-top: 6px; text-align: center; }
+
+/* DECLINED */
+#declinedMsg { display: none; text-align: center; padding: 60px 20px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     CONSENT MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="consentModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>📋 Informed Consent Agreement</h2>
+      <p>Embu County Political &amp; Service Delivery Survey · ECS-2025 · Please read carefully before proceeding</p>
+    </div>
+    <div class="modal-scroll">
+      <div class="consent-section">
+        <h4>1. Purpose of This Research</h4>
+        <p>You are being invited to participate in a research study examining political participation, governance, service delivery, and development priorities in Embu County. The findings will be used to inform policy discussions and community development planning.</p>
+        <h4>2. What Participation Involves</h4>
+        <p>Your participation involves completing a questionnaire covering:</p>
+        <ul>
+          <li>Your demographic background (age, gender, location, education, employment)</li>
+          <li>Political participation and civic engagement</li>
+          <li>Opinions on local government transparency and accountability</li>
+          <li>Assessment of public service delivery (health, education, agriculture, infrastructure)</li>
+          <li>Economic challenges and development priorities in your ward</li>
+          <li>Sentiment and preferences regarding county leadership</li>
+        </ul>
+        <h4>3. Duration</h4>
+        <p>Completing this questionnaire is expected to take approximately <strong>20–35 minutes</strong>.</p>
+        <h4>4. Voluntary Participation</h4>
+        <p>Your participation is entirely voluntary. You may decline to answer any question and may withdraw from the study at any time without any negative consequences.</p>
+        <h4>5. Confidentiality &amp; Data Protection</h4>
+        <ul>
+          <li>All information you provide will be kept strictly confidential.</li>
+          <li>Your responses will be anonymised and cannot be traced back to you as an individual.</li>
+          <li>Data will be stored securely and accessible only to authorised research personnel.</li>
+          <li>Aggregated findings may be published in reports, but no individual's data will be disclosed.</li>
+          <li>Contact information provided at the end (if any) will be stored separately from survey responses.</li>
+          <li>Your personal data will be handled in accordance with applicable data protection laws.</li>
+          <li><strong>Location data</strong> (GPS coordinates) is collected solely to verify geographic coverage and prevent duplicate submissions. It is not used to identify individuals.</li>
+        </ul>
+        <h4>6. Risks &amp; Benefits</h4>
+        <p>There are no known risks associated with participating in this study. Your contribution will help ensure community voices are represented in governance and policy-making in Embu County.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="consent-check-wrap">
+        <input type="checkbox" id="consentCheck" onchange="toggleProceed()">
+        <label for="consentCheck">I have read and understood the above information. I voluntarily agree to participate in this research and consent to the collection and processing of my data as described, including GPS location for quality assurance.</label>
+      </div>
+      <div class="btn-row">
+        <button class="btn-decline" onclick="declineConsent()">Decline</button>
+        <button class="btn-proceed" id="proceedBtn" disabled onclick="proceedAfterConsent()">I Agree &amp; Continue →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     RESEARCHER MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="researcherModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-head">
+      <h2>👤 Researcher Registration</h2>
+      <p>First-time setup — your details will be saved on this device</p>
+    </div>
+    <div class="modal-scroll">
+      <p class="res-note">It looks like this is your first time using this system on this device. Please enter your name and researcher ID. This information will be saved locally so you don't need to enter it again, and will be attached to each submission you record for quality assurance purposes.</p>
+      <div class="res-field">
+        <label for="resName">Full Name *</label>
+        <input type="text" id="resName" placeholder="e.g. Jane Muthoni Kariuki" autocomplete="off">
+        <div class="res-err" id="resNameErr">Please enter your full name.</div>
+      </div>
+      <div class="res-field">
+        <label for="resId">Researcher / Enumerator ID *</label>
+        <input type="text" id="resId" placeholder="e.g. ECS-R-001" autocomplete="off">
+        <div class="res-err" id="resIdErr">Please enter your researcher ID.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="btn-row">
+        <button class="btn-proceed" onclick="saveResearcher()">Save &amp; Start Survey →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     GPS GUARD MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="gpsGuardModal">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-head">
+      <h2>📍 Location Verification</h2>
+      <p>Checking GPS before submitting — please wait</p>
+    </div>
+    <div class="modal-scroll">
+      <ul class="gps-steps">
+        <li id="step-acquire" class="active">
+          <span class="step-icon">🛰️</span>
+          <div class="step-text"><strong>Acquiring GPS Signal</strong><span id="step-acquire-detail">Waiting for location…</span></div>
+        </li>
+        <li id="step-accuracy">
+          <span class="step-icon">🎯</span>
+          <div class="step-text"><strong>Checking Accuracy</strong><span id="step-accuracy-detail">Requires ≤ 50 m accuracy</span></div>
+        </li>
+        <li id="step-distance">
+          <span class="step-icon">📏</span>
+          <div class="step-text"><strong>Location Check</strong><span id="step-distance-detail">Verifying you are at a new location</span></div>
+        </li>
+        <li id="step-time">
+          <span class="step-icon">⏱️</span>
+          <div class="step-text"><strong>Time Gap Check</strong><span id="step-time-detail">Checking time since last survey</span></div>
+        </li>
+      </ul>
+      <div class="gps-progress"><div class="gps-progress-bar" id="gpsProgressBar"></div></div>
+    </div>
+    <div class="modal-foot">
+      <div class="btn-row">
+        <button class="btn-decline" id="gpsCancelBtn" onclick="cancelGpsCheck()">Cancel</button>
+        <button class="btn-proceed" id="gpsRetryBtn" style="display:none;" onclick="retryGpsCheck()">Retry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     OFFLINE QUEUE MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="offlineModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-head">
+      <h2>📤 Pending Offline Submissions</h2>
+      <p>Surveys saved locally while offline — sync when connected</p>
+    </div>
+    <div class="modal-scroll">
+      <p style="font-size:13px;color:#555;margin-bottom:10px;">These surveys were completed while offline and are queued for upload. Connect to the internet and tap <strong>Sync Now</strong> to submit them.</p>
+      <div class="queue-list" id="queueList"></div>
+      <div class="sync-progress-wrap" id="syncProgressWrap">
+        <div class="sync-progress-bar-outer"><div class="sync-progress-bar-inner" id="syncProgressBar"></div></div>
+        <div class="sync-status-text" id="syncStatusText">Syncing…</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="btn-row">
+        <button class="btn-decline" onclick="closeOfflineModal()">Close</button>
+        <button class="btn-proceed" id="syncNowBtn" onclick="syncPendingNow()">📡 Sync Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DECLINED -->
+<div id="declinedMsg">
+  <div style="font-size:48px;margin-bottom:16px;">🙏</div>
+  <h2 style="color:#1a3c6e;">Thank you for your time</h2>
+  <p style="color:#666;font-size:14px;margin-top:8px;">You have chosen not to participate in this survey.<br>If you change your mind, please refresh this page.</p>
+</div>
+
+<!-- ══════════════════════════════════════
+     HEADER
+══════════════════════════════════════ -->
+<div class="header-banner">
+  <h1>EMBU COUNTY POLITICAL SURVEY</h1>
+  <p>Research Questionnaire &amp; Informed Consent Agreement</p>
+  <span class="badge">Confidential · For Research Purposes Only</span>
+</div>
+
+<!-- GPS STATUS BAR -->
+<div id="gpsStatusBar">
+  <div class="gps-inner">
+    <div class="gps-dot" id="gpsDot"></div>
+    <span class="gps-label">GPS:</span>
+    <span class="gps-detail" id="gpsStatusText">Inactive</span>
+    <span id="gpsDistanceChip" style="display:none; margin-left:auto; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:12px;"></span>
+  </div>
+</div>
+
+<!-- PROXIMITY LOCK BANNER — shown when researcher hasn't moved far enough today -->
+<div id="proximityLockBanner" style="display:none; background:#fff1f2; border-bottom:2px solid #fecdd3; padding:8px 20px; position:sticky; top:0; z-index:199;">
+  <div style="max-width:760px; margin:0 auto; display:flex; align-items:center; gap:10px; font-size:13px; color:#991b1b; font-weight:600;">
+    <span style="font-size:18px;">🔒</span>
+    <span id="proximityLockMsg">Please move to a different location before interviewing your next respondent.</span>
+  </div>
+</div>
+
+<!-- DRAFT BAR -->
+<div id="draftBar">
+  <div class="draft-inner">
+    <div class="draft-left">
+      <span class="draft-icon">📝</span>
+      <div>
+        <div class="draft-text">Unsaved draft found</div>
+        <div class="draft-sub" id="draftSubText">Saved on …</div>
+      </div>
+    </div>
+    <div class="draft-actions">
+      <button class="draft-btn restore" onclick="restoreDraft()">↩ Restore</button>
+      <button class="draft-btn discard" onclick="discardDraft()">✕ Discard</button>
+    </div>
+  </div>
+</div>
+
+<!-- NETWORK BADGE -->
+<div id="networkBadge"></div>
+<!-- AUTOSAVE INDICATOR -->
+<div id="autosaveIndicator">💾 Draft saved</div>
+
+<!-- ══════════════════════════════════════
+     SURVEY WRAPPER
+══════════════════════════════════════ -->
+<div id="surveyWrapper">
+<div class="container">
+
+  <!-- Researcher banner -->
+  <div id="researcherBanner">
+    <div>
+      <strong>🔬 Researcher: <span id="bannerName"></span></strong>
+      &nbsp;·&nbsp; ID: <span id="bannerId"></span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <button class="res-change-btn" id="pendingQueueBtn" onclick="openOfflineModal()" style="display:none;background:#f59e0b;color:white;border-color:#f59e0b;">📤 Pending <span id="pendingCountBadge">0</span></button>
+      <button class="res-change-btn" onclick="changeResearcher()">Change Researcher</button>
+    </div>
+  </div>
+
+  <!-- Pending banner -->
+  <div id="pendingBanner">
+    <strong>📤 You have <span id="pendingCountText">0</span> survey(s) queued for upload.</strong>
+    <div style="font-size:12px;margin-top:3px;">These were saved while offline. Connect to the internet to sync them.</div>
+    <button class="pending-sync-btn" onclick="openOfflineModal()">View &amp; Sync →</button>
+  </div>
+
+  <form id="surveyForm" autocomplete="off">
+
+  <!-- ── SECTION A ── -->
+  <div class="card">
+    <div class="card-header"><div class="section-letter">A</div><h3>Section A — Respondent Demographics</h3></div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">A1.</span> Gender</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="gender" id="gm" value="Male" required><label for="gm">Male</label></div>
+          <div class="opt-btn"><input type="radio" name="gender" id="gf" value="Female"><label for="gf">Female</label></div>
+          <div class="opt-btn"><input type="radio" name="gender" id="gp" value="Prefer not to say"><label for="gp">Prefer not to say</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A2.</span> Constituency</label>
+        <select id="constituency" required onchange="updateWards()">
+          <option value="">Select constituency</option>
+          <option>Manyatta</option><option>Runyenjes</option><option>Mbeere North</option><option>Mbeere South</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A3.</span> Ward</label>
+        <select id="ward" required><option value="">— Select constituency first —</option></select>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A4.</span> Age Category</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="age" id="a1" value="18-27" required><label for="a1">18–27</label></div>
+          <div class="opt-btn"><input type="radio" name="age" id="a2" value="28-37"><label for="a2">28–37</label></div>
+          <div class="opt-btn"><input type="radio" name="age" id="a3" value="38-47"><label for="a3">38–47</label></div>
+          <div class="opt-btn"><input type="radio" name="age" id="a4" value="48-57"><label for="a4">48–57</label></div>
+          <div class="opt-btn"><input type="radio" name="age" id="a5" value="58+"><label for="a5">58+</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A5.</span> Highest Education Level</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="education" id="epri" value="Primary" required><label for="epri">Primary</label></div>
+          <div class="opt-btn"><input type="radio" name="education" id="esec" value="Secondary"><label for="esec">Secondary</label></div>
+          <div class="opt-btn"><input type="radio" name="education" id="ecol" value="College"><label for="ecol">College</label></div>
+          <div class="opt-btn"><input type="radio" name="education" id="euni" value="University"><label for="euni">University</label></div>
+          <div class="opt-btn"><input type="radio" name="education" id="enon" value="None"><label for="enon">None</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A6.</span> Employment Status</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="employment" id="ee" value="Employed" required><label for="ee">Employed</label></div>
+          <div class="opt-btn"><input type="radio" name="employment" id="ese" value="Self-Employed"><label for="ese">Self-Employed</label></div>
+          <div class="opt-btn"><input type="radio" name="employment" id="eu" value="Unemployed"><label for="eu">Unemployed</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION B ── -->
+  <div class="card">
+    <div class="card-header"><div class="section-letter">B</div><h3>Section B — Political Participation &amp; Governance</h3></div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">B1.</span> Are you registered to vote in your area?</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="voter" id="vy" value="Yes" required><label for="vy">Yes</label></div>
+          <div class="opt-btn"><input type="radio" name="voter" id="vn" value="No"><label for="vn">No</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B2.</span> How often do you engage with local political leaders?</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="engage" id="ef" value="Frequently" required><label for="ef">Frequently</label></div>
+          <div class="opt-btn"><input type="radio" name="engage" id="eo2" value="Occasionally"><label for="eo2">Occasionally</label></div>
+          <div class="opt-btn"><input type="radio" name="engage" id="er" value="Rarely"><label for="er">Rarely</label></div>
+          <div class="opt-btn"><input type="radio" name="engage" id="en" value="Never"><label for="en">Never</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B3.</span> What most motivates your political participation? <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="b3a" value="Community development"><label for="b3a">Community development</label></div>
+          <div class="opt-btn"><input type="checkbox" id="b3b" value="Personal interests"><label for="b3b">Personal interests</label></div>
+          <div class="opt-btn"><input type="checkbox" id="b3c" value="Civic duty"><label for="b3c">Civic duty</label></div>
+          <div class="opt-btn"><input type="checkbox" id="b3d" value="Other"><label for="b3d">Other</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B4.</span> Do you feel your opinions are considered in local decision-making?</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="opinion" id="opy" value="Yes" required><label for="opy">Yes</label></div>
+          <div class="opt-btn"><input type="radio" name="opinion" id="opn" value="No"><label for="opn">No</label></div>
+          <div class="opt-btn"><input type="radio" name="opinion" id="opns" value="Not sure"><label for="opns">Not sure</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B5.</span> What are the most pressing political issues in the county?</label>
+        <textarea id="issues" placeholder="Describe the key political issues..."></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B6.</span> Areas where the county government has NOT delivered: <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="b6a" value="Agriculture"><label for="b6a">Agriculture</label></div>
+          <div class="opt-btn"><input type="checkbox" id="b6b" value="Infrastructure"><label for="b6b">Infrastructure</label></div>
+          <div class="opt-btn"><input type="checkbox" id="b6c" value="Investments"><label for="b6c">Investments</label></div>
+          <div class="opt-btn"><input type="checkbox" id="b6d" value="SMEs"><label for="b6d">SMEs</label></div>
+          <div class="opt-btn"><input type="checkbox" id="b6e" value="Health"><label for="b6e">Health</label></div>
+          <div class="opt-btn"><input type="checkbox" id="b6f" value="Education"><label for="b6f">Education</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B7.</span> Are you aware of public policies developed in the past year?</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="policyAware" id="pay" value="Yes" required><label for="pay">Yes</label></div>
+          <div class="opt-btn"><input type="radio" name="policyAware" id="pan" value="No"><label for="pan">No</label></div>
+          <div class="opt-btn"><input type="radio" name="policyAware" id="pans" value="Not sure"><label for="pans">Not sure</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B8.</span> Name one public policy you can recall:</label>
+        <input type="text" id="policyName" placeholder="e.g. Universal Health Coverage...">
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B9.</span> How beneficial have these policies been to you?</label>
+        <textarea id="policyBenefit" placeholder="Describe how they have or have not benefited you..."></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B10.</span> If not beneficial, please provide a reason:</label>
+        <textarea id="policyNotBeneficial" placeholder="Explain why the policies were not beneficial..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION C ── -->
+  <div class="card">
+    <div class="card-header"><div class="section-letter">C</div><h3>Section C — Political Information &amp; Transparency</h3></div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">C1.</span> How do you usually get political information? <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="c1a" value="Radio"><label for="c1a">Radio</label></div>
+          <div class="opt-btn"><input type="checkbox" id="c1b" value="TV"><label for="c1b">TV</label></div>
+          <div class="opt-btn"><input type="checkbox" id="c1c" value="Newspapers"><label for="c1c">Newspapers</label></div>
+          <div class="opt-btn"><input type="checkbox" id="c1d" value="Social Media"><label for="c1d">Social Media</label></div>
+          <div class="opt-btn"><input type="checkbox" id="c1e" value="Word of Mouth"><label for="c1e">Word of Mouth</label></div>
+          <div class="opt-btn"><input type="checkbox" id="c1f" value="Barazas"><label for="c1f">Barazas</label></div>
+          <div class="opt-btn"><input type="checkbox" id="c1g" value="Other"><label for="c1g">Other</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">C2.</span> Rate the transparency of the local government:</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="transparency" id="tex" value="Excellent" required><label for="tex">Excellent</label></div>
+          <div class="opt-btn"><input type="radio" name="transparency" id="tgd" value="Good"><label for="tgd">Good</label></div>
+          <div class="opt-btn"><input type="radio" name="transparency" id="tfa" value="Fair"><label for="tfa">Fair</label></div>
+          <div class="opt-btn"><input type="radio" name="transparency" id="tpo" value="Poor"><label for="tpo">Poor</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">C3.</span> Is there political favoritism in leadership?</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="bias" id="biy" value="Yes" required><label for="biy">Yes</label></div>
+          <div class="opt-btn"><input type="radio" name="bias" id="bin" value="No"><label for="bin">No</label></div>
+          <div class="opt-btn"><input type="radio" name="bias" id="bins" value="Not sure"><label for="bins">Not sure</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">C4.</span> If YES — Please explain:</label>
+        <textarea id="biasExplain" placeholder="Explain the nature of political favoritism observed..."></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">C5.</span> Changes you would like to see in leadership:</label>
+        <textarea id="leadershipChanges" placeholder="Describe the changes you would like to see..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION D ── -->
+  <div class="card">
+    <div class="card-header"><div class="section-letter">D</div><h3>Section D — Project Delivery Assessment</h3></div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">D1.</span> Rate the performance of the current county government:</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="performance" id="pex" value="Excellent" required><label for="pex">Excellent</label></div>
+          <div class="opt-btn"><input type="radio" name="performance" id="pgd" value="Good"><label for="pgd">Good</label></div>
+          <div class="opt-btn"><input type="radio" name="performance" id="pfa" value="Fair"><label for="pfa">Fair</label></div>
+          <div class="opt-btn"><input type="radio" name="performance" id="ppo" value="Poor"><label for="ppo">Poor</label></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label"><span class="qnum">D2.</span> List projects delivered in your area:</label><textarea id="projectsDelivered" placeholder="Name any projects completed in your ward..."></textarea></div>
+      <div class="field"><label class="field-label"><span class="qnum">D3.</span> Which projects were done according to expectation?</label><textarea id="projectsMet" placeholder="Projects that met expectations..."></textarea></div>
+      <div class="field"><label class="field-label"><span class="qnum">D4.</span> Which projects were NOT done according to expectation and why?</label><textarea id="projectsNotMet" placeholder="Projects that did not meet expectations and the reasons..."></textarea></div>
+      <div class="field"><label class="field-label"><span class="qnum">D5.</span> Promised projects NOT yet delivered:</label><textarea id="projectsMissing" placeholder="Projects promised but not yet done..."></textarea></div>
+      <div class="field"><label class="field-label"><span class="qnum">D6.</span> Top five (5) urgent needs in your ward (in order of priority):</label><textarea id="needs" placeholder="1. &#10;2. &#10;3. &#10;4. &#10;5. " style="min-height:110px;"></textarea></div>
+    </div>
+  </div>
+
+  <!-- ── SECTION E ── -->
+  <div class="card">
+    <div class="card-header"><div class="section-letter">E</div><h3>Section E — Service Delivery Rating</h3></div>
+    <div class="card-body">
+      <p class="section-note">Rate each service area: Not Sure / Poor / Fair / Good / Excellent</p>
+      <div style="overflow-x:auto;">
+        <table class="rating-table">
+          <thead><tr><th style="text-align:left;min-width:160px;">Service Area</th><th>Not Sure</th><th>Poor</th><th>Fair</th><th>Good</th><th>Excellent</th></tr></thead>
+          <tbody>
+            <tr><td>Agriculture Services</td><td><input type="radio" name="svc_agri" value="Not Sure"></td><td><input type="radio" name="svc_agri" value="Poor"></td><td><input type="radio" name="svc_agri" value="Fair"></td><td><input type="radio" name="svc_agri" value="Good"></td><td><input type="radio" name="svc_agri" value="Excellent"></td></tr>
+            <tr><td>Infrastructure</td><td><input type="radio" name="svc_infra" value="Not Sure"></td><td><input type="radio" name="svc_infra" value="Poor"></td><td><input type="radio" name="svc_infra" value="Fair"></td><td><input type="radio" name="svc_infra" value="Good"></td><td><input type="radio" name="svc_infra" value="Excellent"></td></tr>
+            <tr><td>Education Services</td><td><input type="radio" name="svc_edu" value="Not Sure"></td><td><input type="radio" name="svc_edu" value="Poor"></td><td><input type="radio" name="svc_edu" value="Fair"></td><td><input type="radio" name="svc_edu" value="Good"></td><td><input type="radio" name="svc_edu" value="Excellent"></td></tr>
+            <tr><td>Health Services</td><td><input type="radio" name="svc_health" value="Not Sure"></td><td><input type="radio" name="svc_health" value="Poor"></td><td><input type="radio" name="svc_health" value="Fair"></td><td><input type="radio" name="svc_health" value="Good"></td><td><input type="radio" name="svc_health" value="Excellent"></td></tr>
+            <tr><td>Youth Empowerment</td><td><input type="radio" name="svc_youth" value="Not Sure"></td><td><input type="radio" name="svc_youth" value="Poor"></td><td><input type="radio" name="svc_youth" value="Fair"></td><td><input type="radio" name="svc_youth" value="Good"></td><td><input type="radio" name="svc_youth" value="Excellent"></td></tr>
+            <tr><td>Women Empowerment</td><td><input type="radio" name="svc_women" value="Not Sure"></td><td><input type="radio" name="svc_women" value="Poor"></td><td><input type="radio" name="svc_women" value="Fair"></td><td><input type="radio" name="svc_women" value="Good"></td><td><input type="radio" name="svc_women" value="Excellent"></td></tr>
+            <tr><td>Access to Gov't Services</td><td><input type="radio" name="svc_govtaccess" value="Not Sure"></td><td><input type="radio" name="svc_govtaccess" value="Poor"></td><td><input type="radio" name="svc_govtaccess" value="Fair"></td><td><input type="radio" name="svc_govtaccess" value="Good"></td><td><input type="radio" name="svc_govtaccess" value="Excellent"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION F ── -->
+  <div class="card">
+    <div class="card-header"><div class="section-letter">F</div><h3>Section F — Economic &amp; Sectoral Issues</h3></div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">F1.</span> Main challenges farmers face: <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="f1a" value="Markets"><label for="f1a">Markets</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f1b" value="High Input Costs"><label for="f1b">High Input Costs</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f1c" value="Irrigation"><label for="f1c">Irrigation</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f1d" value="Extension Services"><label for="f1d">Extension Services</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f1e" value="Climate Change"><label for="f1e">Climate Change</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f1f" value="Credit Access"><label for="f1f">Credit Access</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f1g" value="Other"><label for="f1g">Other</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">F2.</span> Infrastructure rating:</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="infraRating" id="ir1" value="Very Poor" required><label for="ir1">Very Poor</label></div>
+          <div class="opt-btn"><input type="radio" name="infraRating" id="ir2" value="Poor"><label for="ir2">Poor</label></div>
+          <div class="opt-btn"><input type="radio" name="infraRating" id="ir3" value="Average"><label for="ir3">Average</label></div>
+          <div class="opt-btn"><input type="radio" name="infraRating" id="ir4" value="Good"><label for="ir4">Good</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">F3.</span> Critical infrastructure projects needed: <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="f3a" value="Roads"><label for="f3a">Roads</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f3b" value="Water"><label for="f3b">Water</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f3c" value="Electricity"><label for="f3c">Electricity</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f3d" value="Public Transport"><label for="f3d">Public Transport</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f3e" value="Internet/Connectivity"><label for="f3e">Internet / Connectivity</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f3f" value="Other"><label for="f3f">Other</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">F4.</span> Obstacles for SMEs in the county: <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="f4a" value="Finance"><label for="f4a">Finance</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f4b" value="High Taxes"><label for="f4b">High Taxes</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f4c" value="Limited Market"><label for="f4c">Limited Market</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f4d" value="Lack of Support"><label for="f4d">Lack of Support</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f4e" value="Competition"><label for="f4e">Competition</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f4f" value="Poor Infrastructure"><label for="f4f">Poor Infrastructure</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f4g" value="Other"><label for="f4g">Other</label></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label"><span class="qnum">F5.</span> How can the county attract more investment?</label><textarea id="investment" placeholder="Your suggestions for attracting investment..."></textarea></div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">F6.</span> Healthcare challenges: <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="f6a" value="Staff Shortage"><label for="f6a">Staff Shortage</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f6b" value="Lack of Medicines"><label for="f6b">Lack of Medicines</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f6c" value="Waiting Time"><label for="f6c">Waiting Time</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f6d" value="High Cost"><label for="f6d">High Cost</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f6e" value="Few Facilities"><label for="f6e">Few Facilities</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f6f" value="No Specialists"><label for="f6f">No Specialists</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f6g" value="Other"><label for="f6g">Other</label></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label"><span class="qnum">F7.</span> Suggestions for improving healthcare:</label><textarea id="healthSuggestions" placeholder="Your suggestions for improving healthcare services..."></textarea></div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">F8.</span> Quality of education rating:</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="eduRating" id="er1" value="Very Poor" required><label for="er1">Very Poor</label></div>
+          <div class="opt-btn"><input type="radio" name="eduRating" id="er2" value="Poor"><label for="er2">Poor</label></div>
+          <div class="opt-btn"><input type="radio" name="eduRating" id="er3" value="Average"><label for="er3">Average</label></div>
+          <div class="opt-btn"><input type="radio" name="eduRating" id="er4" value="Good"><label for="er4">Good</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">F9.</span> Education concerns: <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="f9a" value="Teacher Quality/Numbers"><label for="f9a">Teacher Quality / Numbers</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f9b" value="Infrastructure"><label for="f9b">Infrastructure</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f9c" value="Learning Materials"><label for="f9c">Learning Materials</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f9d" value="Dropouts"><label for="f9d">Dropouts</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f9e" value="Higher Education Access"><label for="f9e">Higher Education Access</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f9f" value="Vocational Training"><label for="f9f">Vocational Training</label></div>
+          <div class="opt-btn"><input type="checkbox" id="f9g" value="Other"><label for="f9g">Other</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION G ── -->
+  <div class="card">
+    <div class="card-header"><div class="section-letter">G</div><h3>Section G — Political Sentiment</h3></div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">G1.</span> If an election were held today, who would you vote for as Governor?</label>
+        <div class="governor-grid" id="governorGrid">
+          <div class="governor-card" onclick="selectGovernor(this, 'cecily')"><input type="radio" name="governor" value="Cecily Mbarire" onchange="updateNegativeQuestions()"><div class="name">Cecily Mbarire</div><div class="tag">Incumbent Governor</div></div>
+          <div class="governor-card" onclick="selectGovernor(this, 'lenny')"><input type="radio" name="governor" value="Lenny Kivuti" onchange="updateNegativeQuestions()"><div class="name">Lenny Kivuti</div><div class="tag">Challenger</div></div>
+          <div class="governor-card" onclick="selectGovernor(this, 'new')"><input type="radio" name="governor" value="A new face" onchange="updateNegativeQuestions()"><div class="name">A New Face</div><div class="tag">New candidate</div></div>
+          <div class="governor-card" onclick="selectGovernor(this, 'undecided')"><input type="radio" name="governor" value="Not yet decided" onchange="updateNegativeQuestions()"><div class="name">Not Yet Decided</div><div class="tag">Undecided</div></div>
+        </div>
+      </div>
+      <div class="field" id="voteReasonsField">
+        <label class="field-label"><span class="qnum">G2.</span> Why would you vote for that person? <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="checkbox" id="g2a" value="Track record"><label for="g2a">Track record</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2b" value="Development agenda"><label for="g2b">Development agenda</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2c" value="Trustworthy"><label for="g2c">Trustworthy</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2d" value="Leadership qualities"><label for="g2d">Leadership qualities</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2e" value="Community connection"><label for="g2e">Community connection</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2f" value="Communication"><label for="g2f">Communication</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2g" value="Proven delivery"><label for="g2g">Proven delivery</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2h" value="Party affiliation"><label for="g2h">Party affiliation</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2i" value="New ideas"><label for="g2i">New ideas</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2j" value="Personal help"><label for="g2j">Personal help</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g2k" value="Other"><label for="g2k">Other</label></div>
+        </div>
+      </div>
+      <div class="field" id="notMbarireField">
+        <label class="field-label"><span class="qnum">G3.</span> Reasons for NOT voting for Cecily Mbarire: <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row" id="notMbarireOptions">
+          <div class="opt-btn"><input type="checkbox" id="g3a" value="Poor performance"><label for="g3a">Poor performance</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g3b" value="Corruption"><label for="g3b">Corruption</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g3c" value="Untrustworthy"><label for="g3c">Untrustworthy</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g3d" value="Tribal favoritism"><label for="g3d">Tribal favoritism</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g3e" value="Party affiliation"><label for="g3e">Party affiliation</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g3f" value="Weak leadership"><label for="g3f">Weak leadership</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g3g" value="No vision"><label for="g3g">No vision</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g3h" value="Land issues"><label for="g3h">Land issues</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g3i" value="Other"><label for="g3i">Other</label></div>
+        </div>
+        <div id="notMbarireDisabledMsg" style="display:none; background:#f5f5f5; padding:12px; border-radius:6px; color:#666; font-size:13px; margin-top:8px;">⚠️ This question is disabled because you selected Cecily Mbarire as your preferred candidate.</div>
+      </div>
+      <div class="field"><label class="field-label"><span class="qnum">G4.</span> Advice to Cecily Mbarire:</label><textarea id="adviceMbarire" placeholder="Your advice or message to Cecily Mbarire..."></textarea></div>
+      <div class="field" id="notKivutiField">
+        <label class="field-label"><span class="qnum">G5.</span> Reasons for NOT voting for Lenny Kivuti: <em style="font-weight:normal;color:#888;">(tick all that apply)</em></label>
+        <div class="options-row" id="notKivutiOptions">
+          <div class="opt-btn"><input type="checkbox" id="g5a" value="Poor performance"><label for="g5a">Poor performance</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g5b" value="Corruption"><label for="g5b">Corruption</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g5c" value="Untrustworthy"><label for="g5c">Untrustworthy</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g5d" value="Tribal favoritism"><label for="g5d">Tribal favoritism</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g5e" value="Party affiliation"><label for="g5e">Party affiliation</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g5f" value="Weak leadership"><label for="g5f">Weak leadership</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g5g" value="No vision"><label for="g5g">No vision</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g5h" value="Land issues"><label for="g5h">Land issues</label></div>
+          <div class="opt-btn"><input type="checkbox" id="g5i" value="Other"><label for="g5i">Other</label></div>
+        </div>
+        <div id="notKivutiDisabledMsg" style="display:none; background:#f5f5f5; padding:12px; border-radius:6px; color:#666; font-size:13px; margin-top:8px;">⚠️ This question is disabled because you selected Lenny Kivuti as your preferred candidate.</div>
+      </div>
+      <div class="field"><label class="field-label"><span class="qnum">G6.</span> Advice to Lenny Kivuti:</label><textarea id="adviceKivuti" placeholder="Your advice or message to Lenny Kivuti..."></textarea></div>
+      <div class="field"><label class="field-label"><span class="qnum">G7.</span> Any additional comments about the political state of Embu County:</label><textarea id="comments" placeholder="Share any final thoughts on the political situation in Embu County..."></textarea></div>
+    </div>
+  </div>
+
+  <!-- ── SECTION H ── -->
+  <div class="card">
+    <div class="card-header" style="background:#388e3c;"><div class="section-letter">H</div><h3>Section H — Optional Contact Details <span class="optional-badge" style="background:rgba(255,255,255,.25);color:white;">Optional</span></h3></div>
+    <div class="card-body">
+      <p class="section-note">This section is strictly optional. Contact details are stored separately from your survey responses and will only be used for research follow-up — never shared with any third party.</p>
+      <div class="two-col">
+        <div class="field"><label class="field-label">Full Name (optional)</label><input type="text" id="contactName" placeholder="Your full name"></div>
+        <div class="field"><label class="field-label">Phone Number (optional)</label><input type="text" id="contactPhone" placeholder="e.g. 07XX XXX XXX"></div>
+      </div>
+      <div class="field">
+        <label class="field-label">Do you consent to being contacted for follow-up?</label>
+        <div class="options-row">
+          <div class="opt-btn"><input type="radio" name="followUp" id="fuy" value="Yes"><label for="fuy">Yes</label></div>
+          <div class="opt-btn"><input type="radio" name="followUp" id="fun" value="No"><label for="fun">No</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-wrap">
+    <button type="submit" id="submitBtn">📍 Submit Survey</button>
+    <div id="status" class="status-msg" style="display:none;"></div>
+  </div>
+
+  </form>
+</div><!-- /container -->
+</div><!-- /surveyWrapper -->
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+/* ── FIREBASE ── */
+const firebaseConfig = {
+  apiKey: "AIzaSyDyEkWZ5aoOKe84YvDKsngw38WbLj7KLkM",
+  authDomain: "survey-21a05.firebaseapp.com",
+  projectId: "survey-21a05",
+  storageBucket: "survey-21a05.firebasestorage.app",
+  messagingSenderId: "118264203441",
+  appId: "1:118264203441:web:80d591def71856f1013a90"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ══════════════════════════════════════
+   GPS ANTI-FRAUD CONFIG
+══════════════════════════════════════ */
+const GPS_CONFIG = {
+  MAX_ACCURACY_METERS : 50,
+  MIN_DISTANCE_METERS : 500,   // Forces coverage across the ward — same-day only
+  MIN_TIME_GAP_MS     : 120000, // 2 minutes between surveys
+  GEO_OPTIONS         : { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+};
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+function getResearcherRecord() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('ecs_gps_last') || 'null');
+    if (!stored) return null;
+    // Distance & time checks only apply within the SAME calendar day.
+    // A new day = fresh start, so returning to the same location is allowed.
+    if (stored.day !== getTodayKey()) return null;
+    return stored;
+  } catch(e) { return null; }
+}
+
+function saveResearcherRecord(lat, lng, ts) {
+  localStorage.setItem('ecs_gps_last', JSON.stringify({ lat, lng, ts, day: getTodayKey() }));
+}
+
+function haversineM(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/* ══════════════════════════════════════
+   DRAFT / AUTOSAVE SYSTEM
+══════════════════════════════════════ */
+const DRAFT_KEY   = 'ecs_form_draft';
+const QUEUE_KEY   = 'ecs_offline_queue';
+let autosaveTimer = null;
+let isDraftDirty  = false;
+
+/* Collect all form field values into a plain object */
+function collectFormSnapshot() {
+  const snap = {};
+  // Radios
+  document.querySelectorAll('input[type="radio"]').forEach(r => {
+    if (r.checked) snap[r.name] = r.value;
+  });
+  // Checkboxes
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    if (!snap[cb.id + '_checked']) snap[cb.id + '_checked'] = {};
+    snap['cb_' + cb.id] = cb.checked;
+  });
+  // Texts, textareas, selects
+  document.querySelectorAll('input[type="text"], textarea, select').forEach(el => {
+    snap[el.id] = el.value;
+  });
+  snap._savedAt = new Date().toISOString();
+  return snap;
+}
+
+/* Restore form from a saved snapshot */
+function applyFormSnapshot(snap) {
+  if (!snap) return;
+  // Radios
+  document.querySelectorAll('input[type="radio"]').forEach(r => {
+    if (snap[r.name] !== undefined) r.checked = (r.value === snap[r.name]);
+  });
+  // Checkboxes
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    if (snap['cb_' + cb.id] !== undefined) cb.checked = snap['cb_' + cb.id];
+  });
+  // Texts, textareas, selects
+  document.querySelectorAll('input[type="text"], textarea, select').forEach(el => {
+    if (snap[el.id] !== undefined) el.value = snap[el.id];
+  });
+  // Re-run ward update and governor selection UI
+  updateWards(true);
+  const govVal = snap['governor'];
+  if (govVal) {
+    document.querySelectorAll('.governor-card').forEach(card => {
+      const radio = card.querySelector('input[type="radio"]');
+      if (radio && radio.value === govVal) card.classList.add('selected');
+    });
+  }
+  updateNegativeQuestions();
+}
+
+function saveDraft() {
+  const snap = collectFormSnapshot();
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(snap));
+  showAutosaveIndicator();
+  isDraftDirty = false;
+}
+
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+}
+
+function loadDraft() {
+  try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch(e) { return null; }
+}
+
+function showAutosaveIndicator() {
+  const el = document.getElementById('autosaveIndicator');
+  el.style.display = 'block'; el.style.opacity = '1';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.style.opacity = '0'; setTimeout(() => { el.style.display = 'none'; }, 400); }, 2200);
+}
+
+/* Check for draft on survey open */
+function checkForDraft() {
+  const draft = loadDraft();
+  if (!draft) return;
+  const bar  = document.getElementById('draftBar');
+  const sub  = document.getElementById('draftSubText');
+  const d    = new Date(draft._savedAt);
+  const fmt  = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  sub.textContent = 'Last saved: ' + fmt;
+  bar.style.display = 'block';
+}
+
+function restoreDraft() {
+  const draft = loadDraft();
+  if (!draft) return;
+  applyFormSnapshot(draft);
+  document.getElementById('draftBar').style.display = 'none';
+  showAutosaveIndicator();
+}
+
+function discardDraft() {
+  if (!confirm('Discard the saved draft and start fresh?')) return;
+  clearDraft();
+  document.getElementById('draftBar').style.display = 'none';
+}
+
+/* Watch all inputs for changes and schedule autosave */
+function attachAutosave() {
+  const form = document.getElementById('surveyForm');
+  form.addEventListener('input', scheduleAutosave);
+  form.addEventListener('change', scheduleAutosave);
+}
+
+function scheduleAutosave() {
+  isDraftDirty = true;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(saveDraft, 1500); // save 1.5s after last keystroke
+}
+
+/* ══════════════════════════════════════
+   OFFLINE QUEUE
+══════════════════════════════════════ */
+function getQueue() {
+  try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+
+function enqueue(data) {
+  const q = getQueue();
+  data._queuedAt = new Date().toISOString();
+  data._queueId  = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  q.push(data);
+  saveQueue(q);
+  refreshPendingUI();
+}
+
+function dequeue(queueId) {
+  const q = getQueue().filter(d => d._queueId !== queueId);
+  saveQueue(q);
+  refreshPendingUI();
+}
+
+function refreshPendingUI() {
+  const q     = getQueue();
+  const count = q.length;
+  const btn   = document.getElementById('pendingQueueBtn');
+  const banner= document.getElementById('pendingBanner');
+  const cntTxt= document.getElementById('pendingCountText');
+  const cntBdg= document.getElementById('pendingCountBadge');
+  if (count > 0) {
+    btn.style.display   = 'inline-block';
+    banner.style.display = 'block';
+    if (cntTxt) cntTxt.textContent = count;
+    if (cntBdg) cntBdg.textContent = count;
+  } else {
+    btn.style.display    = 'none';
+    banner.style.display = 'none';
+  }
+}
+
+function openOfflineModal() {
+  renderQueueList();
+  document.getElementById('offlineModal').classList.remove('hidden');
+}
+function closeOfflineModal() {
+  document.getElementById('offlineModal').classList.add('hidden');
+}
+
+function renderQueueList() {
+  const q   = getQueue();
+  const el  = document.getElementById('queueList');
+  if (q.length === 0) {
+    el.innerHTML = '<p style="color:#555;font-size:13px;text-align:center;padding:12px;">No pending submissions.</p>';
+    return;
+  }
+  el.innerHTML = q.map((item, idx) => {
+    const t = new Date(item._queuedAt);
+    const fmt = t.toLocaleDateString() + ' ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `<div class="queue-item">
+      <div class="qi-info">
+        <div>Survey #${idx + 1} — ${item.constituency || '?'}, ${item.ward || '?'}</div>
+        <div class="qi-time">⏱ Queued: ${fmt}</div>
+      </div>
+      <button class="qi-del" title="Remove from queue" onclick="removeQueueItem('${item._queueId}')">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function removeQueueItem(queueId) {
+  if (!confirm('Remove this queued survey? It will be permanently deleted.')) return;
+  dequeue(queueId);
+  renderQueueList();
+}
+
+async function syncPendingNow() {
+  if (!navigator.onLine) {
+    alert('Still offline. Please connect to the internet first.');
+    return;
+  }
+  const q = getQueue();
+  if (q.length === 0) { closeOfflineModal(); return; }
+
+  const btn  = document.getElementById('syncNowBtn');
+  const wrap = document.getElementById('syncProgressWrap');
+  const bar  = document.getElementById('syncProgressBar');
+  const txt  = document.getElementById('syncStatusText');
+  btn.disabled = true;
+  wrap.style.display = 'block';
+
+  let done = 0;
+  const errors = [];
+
+  for (const item of q) {
+    try {
+      txt.textContent = `Uploading ${done + 1} of ${q.length}…`;
+      bar.style.width = Math.round(((done) / q.length) * 100) + '%';
+      // Remove queue-specific keys before sending to Firestore
+      const { _queuedAt, _queueId, ...firestoreData } = item;
+      firestoreData.offlineQueuedAt = _queuedAt;
+      await db.collection('responses').add(firestoreData);
+      dequeue(item._queueId);
+      done++;
+      bar.style.width = Math.round((done / q.length) * 100) + '%';
+    } catch (err) {
+      errors.push(item._queueId);
+    }
+  }
+
+  btn.disabled = false;
+  wrap.style.display = 'none';
+  renderQueueList();
+  refreshPendingUI();
+
+  if (errors.length === 0) {
+    txt.textContent = '';
+    alert(`✅ All ${done} survey(s) uploaded successfully!`);
+    closeOfflineModal();
+  } else {
+    alert(`⚠️ ${done} uploaded, ${errors.length} failed. Please retry.`);
+  }
+}
+
+/* ══════════════════════════════════════
+   NETWORK STATUS
+══════════════════════════════════════ */
+function updateNetworkBadge() {
+  const badge = document.getElementById('networkBadge');
+  if (!navigator.onLine) {
+    badge.className = 'offline';
+    badge.innerHTML = '📵 Offline — drafts saved locally';
+    badge.style.display = 'flex';
+  } else {
+    badge.className = 'online';
+    badge.innerHTML = '✅ Back online';
+    badge.style.display = 'flex';
+    setTimeout(() => { badge.style.display = 'none'; }, 3000);
+    // Auto-sync if there are pending items
+    const q = getQueue();
+    if (q.length > 0) {
+      setTimeout(() => syncPendingNow(), 1500);
+    }
+  }
+}
+
+window.addEventListener('online',  updateNetworkBadge);
+window.addEventListener('offline', updateNetworkBadge);
+
+/* ══════════════════════════════════════
+   LIVE GPS STATUS BAR
+══════════════════════════════════════ */
+let watchId = null;
+let livePos = null;
+
+function startGpsWatch() {
+  if (!navigator.geolocation) return;
+  document.getElementById('gpsStatusBar').style.display = 'block';
+  setGpsStatus('acquiring', 'Acquiring signal…', null);
+  watchId = navigator.geolocation.watchPosition(
+    pos => {
+      livePos = pos;
+      const acc = Math.round(pos.coords.accuracy);
+      const good = acc <= GPS_CONFIG.MAX_ACCURACY_METERS;
+      setGpsStatus(good ? 'good' : 'poor', `Lat ${pos.coords.latitude.toFixed(5)}, Lng ${pos.coords.longitude.toFixed(5)}`, acc);
+      updateLiveDistanceChip(pos.coords.latitude, pos.coords.longitude);
+    },
+    () => setGpsStatus('poor', 'GPS unavailable', null),
+    { enableHighAccuracy: true, maximumAge: 5000 }
+  );
+}
+
+/* Live proximity chip + submit lock — no distances shown to researcher */
+function updateLiveDistanceChip(lat, lng) {
+  const chip    = document.getElementById('gpsDistanceChip');
+  const banner  = document.getElementById('proximityLockBanner');
+  const lockMsg = document.getElementById('proximityLockMsg');
+  const btn     = document.getElementById('submitBtn');
+  const last    = getResearcherRecord();
+
+  // No same-day record: first survey of the day or a new day — always allowed
+  if (!last) {
+    chip.style.display   = 'none';
+    banner.style.display = 'none';
+    return;
+  }
+
+  const dist    = Math.round(haversineM(last.lat, last.lng, lat, lng));
+  const distOk  = dist >= GPS_CONFIG.MIN_DISTANCE_METERS;
+  const elapsed = Date.now() - last.ts;
+  const timeOk  = elapsed >= GPS_CONFIG.MIN_TIME_GAP_MS;
+
+  // Location chip — OK vs needs to move (no numbers)
+  chip.style.display  = 'inline-block';
+  chip.style.background = distOk ? '#dcfce7' : '#fee2e2';
+  chip.style.color      = distOk ? '#166534' : '#991b1b';
+  chip.style.border     = distOk ? '1px solid #86efac' : '1px solid #fca5a5';
+  chip.textContent      = distOk ? '📍 Location OK' : '📍 Move to a new location';
+
+  // Lock banner + disable submit if not cleared
+  if (!distOk || !timeOk) {
+    const timeWait = Math.ceil((GPS_CONFIG.MIN_TIME_GAP_MS - elapsed) / 1000);
+    lockMsg.textContent  = !distOk
+      ? 'Please move to a different location before interviewing your next respondent.'
+      : `Please wait ${timeWait} more second(s) before submitting the next survey.`;
+    banner.style.display = 'block';
+    if (btn) btn.disabled = true;
+  } else {
+    banner.style.display = 'none';
+    if (btn) { btn.disabled = false; }
+  }
+}
+
+function setGpsStatus(state, text, accuracy) {
+  const dot = document.getElementById('gpsDot');
+  const msg = document.getElementById('gpsStatusText');
+  dot.className = 'gps-dot ' + state;
+  let html = text;
+  if (accuracy !== null) {
+    const cls = accuracy <= GPS_CONFIG.MAX_ACCURACY_METERS ? 'good' : 'poor';
+    html += ` &nbsp;·&nbsp; Accuracy: <span class="gps-acc ${cls}">±${accuracy} m</span>`;
+  }
+  msg.innerHTML = html;
+}
+
+/* ══════════════════════════════════════
+   GPS GUARD MODAL
+══════════════════════════════════════ */
+let pendingSubmitData = null;
+
+function setStep(id, state, detail) {
+  const li   = document.getElementById(id);
+  const span = document.getElementById(id + '-detail');
+  li.className = state;
+  if (detail && span) span.textContent = detail;
+}
+function setProgress(pct) { document.getElementById('gpsProgressBar').style.width = pct + '%'; }
+
+function openGpsGuard(dataPayload) {
+  pendingSubmitData = dataPayload;
+  ['step-acquire','step-accuracy','step-distance','step-time'].forEach(id => {
+    document.getElementById(id).className = '';
+    document.getElementById(id + '-detail').textContent = '';
+  });
+  document.getElementById('step-accuracy-detail').textContent = `Requires ≤ ${GPS_CONFIG.MAX_ACCURACY_METERS} m accuracy`;
+  document.getElementById('step-distance-detail').textContent = `Verifying you are at a new location`;
+  document.getElementById('step-time-detail').textContent    = `Checking time since last survey`;
+  setProgress(0);
+  document.getElementById('gpsRetryBtn').style.display = 'none';
+  document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
+  document.getElementById('gpsGuardModal').classList.remove('hidden');
+  runGpsChecks();
+}
+
+function cancelGpsCheck() {
+  document.getElementById('gpsGuardModal').classList.add('hidden');
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false; btn.textContent = '📍 Submit Survey';
+  pendingSubmitData = null;
+}
+
+function retryGpsCheck() {
+  document.getElementById('gpsRetryBtn').style.display = 'none';
+  runGpsChecks();
+}
+
+function failGpsGuard(stepId, msg) {
+  setStep(stepId, 'fail', msg);
+  document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+  document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false; btn.textContent = '📍 Submit Survey';
+}
+
+function runGpsChecks() {
+  if (!navigator.geolocation) { failGpsGuard('step-acquire', 'GPS not supported on this device.'); return; }
+  setStep('step-acquire', 'active', 'Getting precise location…');
+  setProgress(10);
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      const acc = Math.round(pos.coords.accuracy), now = Date.now();
+      setStep('step-acquire', 'done', `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      setProgress(30);
+      setStep('step-accuracy', 'active', `Measured: ±${acc} m`);
+      setProgress(50);
+      if (acc > GPS_CONFIG.MAX_ACCURACY_METERS) { failGpsGuard('step-accuracy', `Accuracy too low (±${acc} m). Move to open area and retry.`); return; }
+      setStep('step-accuracy', 'done', `±${acc} m — OK`);
+      setProgress(65);
+      setStep('step-distance', 'active', 'Checking previous location…');
+      const last = getResearcherRecord();
+      if (last) {
+        const dist = Math.round(haversineM(last.lat, last.lng, lat, lng));
+        if (dist < GPS_CONFIG.MIN_DISTANCE_METERS) { failGpsGuard('step-distance', `Please move to a different location before interviewing your next respondent.`); return; }
+        setStep('step-distance', 'done', `New location confirmed`);
+      } else { setStep('step-distance', 'done', 'First survey — no location check needed'); }
+      setProgress(80);
+      setStep('step-time', 'active', 'Checking time since last survey…');
+      if (last) {
+        const elapsed = now - last.ts;
+        if (elapsed < GPS_CONFIG.MIN_TIME_GAP_MS) { const wait = Math.ceil((GPS_CONFIG.MIN_TIME_GAP_MS - elapsed) / 1000); failGpsGuard('step-time', `Too soon. Please wait ${wait} more second(s).`); return; }
+        setStep('step-time', 'done', `${Math.round(elapsed/1000)} s since last survey — OK`);
+      } else { setStep('step-time', 'done', 'First survey — no time check needed'); }
+      setProgress(95);
+      setProgress(100);
+      pendingSubmitData.gps = { lat, lng, accuracy: acc };
+      pendingSubmitData.submittedAt = new Date().toISOString();
+      pendingSubmitData.timestamp   = firebase.firestore.FieldValue.serverTimestamp();
+      submitOrEnqueue(pendingSubmitData, lat, lng, now);
+    },
+    err => {
+      const msgs = { 1: 'Location permission denied. Please enable GPS.', 2: 'GPS signal unavailable. Move to open area.', 3: 'Location request timed out. Try again.' };
+      failGpsGuard('step-acquire', msgs[err.code] || err.message);
+    },
+    GPS_CONFIG.GEO_OPTIONS
+  );
+}
+
+/* ══════════════════════════════════════
+   SUBMIT OR ENQUEUE (OFFLINE-AWARE)
+══════════════════════════════════════ */
+function submitOrEnqueue(data, lat, lng, ts) {
+  if (!navigator.onLine) {
+    // Save to offline queue instead
+    document.getElementById('gpsGuardModal').classList.add('hidden');
+    enqueue(data);
+    saveResearcherRecord(lat, lng, ts);
+    clearDraft();
+
+    const status = document.getElementById('status');
+    status.style.display = 'block';
+    status.className = 'status-msg offline';
+    status.innerHTML = '📵 <strong>Offline — survey saved locally.</strong><br>It will be automatically uploaded when you reconnect to the internet.';
+
+    resetFormAfterSubmit();
+    pendingSubmitData = null;
+    return;
+  }
+  submitToFirestore(data, lat, lng, ts);
+}
+
+function submitToFirestore(data, lat, lng, ts) {
+  db.collection('responses').add(data)
+    .then(() => {
+      saveResearcherRecord(lat, lng, ts);
+      clearDraft();
+      document.getElementById('gpsGuardModal').classList.add('hidden');
+
+      const status = document.getElementById('status');
+      status.style.display = 'block';
+      status.className = 'status-msg success';
+      status.innerText = '✓ Survey submitted successfully. Thank you for your contribution!';
+
+      resetFormAfterSubmit();
+      pendingSubmitData = null;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    })
+    .catch(err => {
+      // Network error even though navigator.onLine — queue it
+      document.getElementById('gpsGuardModal').classList.add('hidden');
+      enqueue(data);
+      saveResearcherRecord(lat, lng, ts);
+      clearDraft();
+
+      const status = document.getElementById('status');
+      status.style.display = 'block';
+      status.className = 'status-msg offline';
+      status.innerHTML = '📵 <strong>Upload failed — survey saved locally.</strong><br>Will retry automatically when connection improves. (' + err.message + ')';
+
+      resetFormAfterSubmit();
+      pendingSubmitData = null;
+    });
+}
+
+function resetFormAfterSubmit() {
+  document.getElementById('surveyForm').reset();
+  document.querySelectorAll('.governor-card').forEach(c => c.classList.remove('selected'));
+  updateWards();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false; btn.textContent = '📍 Submit Survey';
+  // Re-check proximity immediately so button locks if researcher hasn't moved
+  if (livePos) updateLiveDistanceChip(livePos.coords.latitude, livePos.coords.longitude);
+}
+
+/* ══════════════════════════════════════
+   DYNAMIC NEGATIVE QUESTION CONTROL
+══════════════════════════════════════ */
+function updateNegativeQuestions() {
+  const sel = document.querySelector('input[name="governor"]:checked');
+  const mOpts = document.getElementById('notMbarireOptions');
+  const mMsg  = document.getElementById('notMbarireDisabledMsg');
+  const kOpts = document.getElementById('notKivutiOptions');
+  const kMsg  = document.getElementById('notKivutiDisabledMsg');
+  if (!sel) {
+    if (mOpts) mOpts.style.display = 'flex'; if (mMsg) mMsg.style.display = 'none';
+    if (kOpts) kOpts.style.display = 'flex'; if (kMsg) kMsg.style.display = 'none';
+    return;
+  }
+  const v = sel.value;
+  if (v === 'Cecily Mbarire') {
+    if (mOpts) mOpts.style.display = 'none'; if (mMsg) mMsg.style.display = 'block';
+    if (kOpts) kOpts.style.display = 'flex'; if (kMsg) kMsg.style.display = 'none';
+  } else if (v === 'Lenny Kivuti') {
+    if (mOpts) mOpts.style.display = 'flex'; if (mMsg) mMsg.style.display = 'none';
+    if (kOpts) kOpts.style.display = 'none'; if (kMsg) kMsg.style.display = 'block';
+  } else {
+    if (mOpts) mOpts.style.display = 'flex'; if (mMsg) mMsg.style.display = 'none';
+    if (kOpts) kOpts.style.display = 'flex'; if (kMsg) kMsg.style.display = 'none';
+  }
+}
+
+function selectGovernor(card, leaderType) {
+  document.querySelectorAll('.governor-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  card.querySelector('input[type="radio"]').checked = true;
+  updateNegativeQuestions();
+}
+
+/* ══════════════════════════════════════
+   CHECKBOX HELPER
+══════════════════════════════════════ */
+function getCheckedById(ids) {
+  return ids.filter(id => { const el = document.getElementById(id); return el && el.checked; })
+            .map(id => document.getElementById(id).value);
+}
+
+/* ══════════════════════════════════════
+   FORM SUBMIT → GPS GUARD
+══════════════════════════════════════ */
+document.getElementById('surveyForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('status');
+  status.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Verifying location…';
+
+  const researcher = JSON.parse(localStorage.getItem('ecs_researcher') || '{}');
+  const data = {
+    researcherName: researcher.name || '',
+    researcherId:   researcher.id   || '',
+    gender:         (document.querySelector('input[name="gender"]:checked')     || {}).value || '',
+    constituency:   document.getElementById('constituency').value,
+    ward:           document.getElementById('ward').value,
+    age:            (document.querySelector('input[name="age"]:checked')        || {}).value || '',
+    education:      (document.querySelector('input[name="education"]:checked')  || {}).value || '',
+    employment:     (document.querySelector('input[name="employment"]:checked') || {}).value || '',
+    voter:          (document.querySelector('input[name="voter"]:checked')      || {}).value || '',
+    engage:         (document.querySelector('input[name="engage"]:checked')     || {}).value || '',
+    motivation:     getCheckedById(['b3a','b3b','b3c','b3d']),
+    opinion:        (document.querySelector('input[name="opinion"]:checked')    || {}).value || '',
+    issues:         document.getElementById('issues').value,
+    notDelivered:   getCheckedById(['b6a','b6b','b6c','b6d','b6e','b6f']),
+    policyAware:    (document.querySelector('input[name="policyAware"]:checked')|| {}).value || '',
+    policyName:     document.getElementById('policyName').value,
+    policyBenefit:  document.getElementById('policyBenefit').value,
+    policyNotBeneficial: document.getElementById('policyNotBeneficial').value,
+    infoSources:    getCheckedById(['c1a','c1b','c1c','c1d','c1e','c1f','c1g']),
+    transparency:   (document.querySelector('input[name="transparency"]:checked')|| {}).value || '',
+    bias:           (document.querySelector('input[name="bias"]:checked')        || {}).value || '',
+    biasExplain:    document.getElementById('biasExplain').value,
+    leadershipChanges: document.getElementById('leadershipChanges').value,
+    performance:    (document.querySelector('input[name="performance"]:checked') || {}).value || '',
+    projectsDelivered: document.getElementById('projectsDelivered').value,
+    projectsMet:    document.getElementById('projectsMet').value,
+    projectsNotMet: document.getElementById('projectsNotMet').value,
+    projectsMissing:document.getElementById('projectsMissing').value,
+    needs:          document.getElementById('needs').value,
+    svc_agriculture:   (document.querySelector('input[name="svc_agri"]:checked')      || {}).value || '',
+    svc_infrastructure:(document.querySelector('input[name="svc_infra"]:checked')     || {}).value || '',
+    svc_education:     (document.querySelector('input[name="svc_edu"]:checked')       || {}).value || '',
+    svc_health:        (document.querySelector('input[name="svc_health"]:checked')    || {}).value || '',
+    svc_youth:         (document.querySelector('input[name="svc_youth"]:checked')     || {}).value || '',
+    svc_women:         (document.querySelector('input[name="svc_women"]:checked')     || {}).value || '',
+    svc_govtAccess:    (document.querySelector('input[name="svc_govtaccess"]:checked')|| {}).value || '',
+    farmingChallenges: getCheckedById(['f1a','f1b','f1c','f1d','f1e','f1f','f1g']),
+    infraRating:       (document.querySelector('input[name="infraRating"]:checked')   || {}).value || '',
+    infraNeeded:       getCheckedById(['f3a','f3b','f3c','f3d','f3e','f3f']),
+    smeObstacles:      getCheckedById(['f4a','f4b','f4c','f4d','f4e','f4f','f4g']),
+    investment:        document.getElementById('investment').value,
+    healthChallenges:  getCheckedById(['f6a','f6b','f6c','f6d','f6e','f6f','f6g']),
+    healthSuggestions: document.getElementById('healthSuggestions').value,
+    eduRating:         (document.querySelector('input[name="eduRating"]:checked')     || {}).value || '',
+    eduConcerns:       getCheckedById(['f9a','f9b','f9c','f9d','f9e','f9f','f9g']),
+    governor:          (document.querySelector('input[name="governor"]:checked')      || {}).value || '',
+    voteReasons:       getCheckedById(['g2a','g2b','g2c','g2d','g2e','g2f','g2g','g2h','g2i','g2j','g2k']),
+    notMbarireReasons: getCheckedById(['g3a','g3b','g3c','g3d','g3e','g3f','g3g','g3h','g3i']),
+    adviceMbarire:     document.getElementById('adviceMbarire').value,
+    notKivutiReasons:  getCheckedById(['g5a','g5b','g5c','g5d','g5e','g5f','g5g','g5h','g5i']),
+    adviceKivuti:      document.getElementById('adviceKivuti').value,
+    comments:          document.getElementById('comments').value,
+    contact: {
+      name:     document.getElementById('contactName').value,
+      phone:    document.getElementById('contactPhone').value,
+      followUp: (document.querySelector('input[name="followUp"]:checked') || {}).value || ''
+    },
+    gps: null, submittedAt: null
+  };
+  openGpsGuard(data);
+});
+
+/* ══════════════════════════════════════
+   WARD DATA
+══════════════════════════════════════ */
+const WARDS = {
+  'Manyatta':     ['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],
+  'Runyenjes':    ['Gaturi North','Kaagari South','Kaagari North','Central Ward','Kyeni North','Kyeni South'],
+  'Mbeere South': ['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],
+  'Mbeere North': ['Nthawa','Muminji','Evurore']
+};
+
+function updateWards(keepValue) {
+  const c  = document.getElementById('constituency').value;
+  const ws = document.getElementById('ward');
+  const prev = keepValue ? ws.value : '';
+  ws.innerHTML = '';
+  if (!c || !WARDS[c]) { ws.innerHTML = '<option value="">— Select constituency first —</option>'; return; }
+  const ph = document.createElement('option'); ph.value = ''; ph.textContent = 'Select ward';
+  ws.appendChild(ph);
+  WARDS[c].forEach(w => { const o = document.createElement('option'); o.value = w; o.textContent = w; ws.appendChild(o); });
+  if (prev) ws.value = prev;
+}
+
+/* ══════════════════════════════════════
+   CONSENT MODAL
+══════════════════════════════════════ */
+function toggleProceed() {
+  document.getElementById('proceedBtn').disabled = !document.getElementById('consentCheck').checked;
+}
+function declineConsent() {
+  document.getElementById('consentModal').classList.add('hidden');
+  document.getElementById('declinedMsg').style.display = 'block';
+}
+function proceedAfterConsent() {
+  if (!document.getElementById('consentCheck').checked) return;
+  document.getElementById('consentModal').classList.add('hidden');
+  checkResearcher();
+}
+
+/* ══════════════════════════════════════
+   RESEARCHER REGISTRATION
+══════════════════════════════════════ */
+function checkResearcher() {
+  const stored = localStorage.getItem('ecs_researcher');
+  if (stored) {
+    try { const r = JSON.parse(stored); if (r.name && r.id) { showSurvey(r.name, r.id); return; } } catch(e) {}
+  }
+  document.getElementById('researcherModal').classList.remove('hidden');
+}
+
+function saveResearcher() {
+  const name = document.getElementById('resName').value.trim();
+  const id   = document.getElementById('resId').value.trim();
+  let ok = true;
+  document.getElementById('resNameErr').style.display = name ? 'none' : 'block'; if (!name) ok = false;
+  document.getElementById('resIdErr').style.display   = id   ? 'none' : 'block'; if (!id) ok = false;
+  if (!ok) return;
+  localStorage.setItem('ecs_researcher', JSON.stringify({ name, id }));
+  document.getElementById('researcherModal').classList.add('hidden');
+  showSurvey(name, id);
+}
+
+function showSurvey(name, id) {
+  document.getElementById('bannerName').textContent = name;
+  document.getElementById('bannerId').textContent   = id;
+  document.getElementById('researcherBanner').style.display = 'flex';
+  document.getElementById('surveyWrapper').style.display    = 'block';
+  startGpsWatch();
+  attachAutosave();
+  refreshPendingUI();
+  checkForDraft();
+  // If came back online, attempt auto-sync
+  if (navigator.onLine) {
+    const q = getQueue();
+    if (q.length > 0) syncPendingNow();
+  }
+  window.scrollTo({ top: 0 });
+}
+
+function changeResearcher() {
+  if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  localStorage.removeItem('ecs_researcher');
+  localStorage.removeItem('ecs_gps_last');
+  document.getElementById('resName').value = '';
+  document.getElementById('resId').value   = '';
+  document.getElementById('surveyWrapper').style.display    = 'none';
+  document.getElementById('researcherBanner').style.display = 'none';
+  document.getElementById('gpsStatusBar').style.display     = 'none';
+  document.getElementById('draftBar').style.display         = 'none';
+  document.getElementById('researcherModal').classList.remove('hidden');
+}
+
+/* Initial network check */
+if (!navigator.onLine) {
+  const badge = document.getElementById('networkBadge');
+  badge.className = 'offline';
+  badge.innerHTML = '📵 Offline — drafts saved locally';
+  badge.style.display = 'flex';
+}
+</script>
+</body>
+</html>
