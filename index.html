@@ -1,375 +1,373 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Embu County Political Survey - ECS-2025</title>
+<title>ECS-2026 · Embu County Social Study</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --navy:    #0f2547;
-  --blue:    #1255cc;
-  --sky:     #3b82f6;
-  --green:   #16a34a;
-  --amber:   #d97706;
-  --red:     #dc2626;
-  --bg:      #f4f6fb;
-  --surface: #ffffff;
-  --border:  #e2e8f4;
-  --text:    #1e293b;
-  --muted:   #64748b;
-  --radius:  10px;
-  --shadow:  0 2px 12px rgba(15,37,71,.08);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0c1a0e;--forest:#1a4a2a;--leaf:#2d7a45;--mint:#4caf78;--sage:#a8d5b5;
+  --cream:#f7f4ee;--warm:#ede8df;--gold:#c8963e;--gold-lt:#f0d9a8;
+  --red:#b83232;--sky:#2563a8;--border:#d6cfc2;--muted:#7a6f62;--r:10px;
+  --sh:0 2px 16px rgba(12,26,14,.09);
 }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; font-size: 14px; }
-.site-header { background: linear-gradient(135deg, var(--navy) 0%, #1a3fa0 100%); color: #fff; padding: 32px 20px 24px; text-align: center; position: relative; overflow: hidden; }
-.site-header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(20px, 5vw, 28px); letter-spacing: .5px; position: relative; }
-.site-header p { font-size: 13px; opacity: .8; margin-top: 4px; position: relative; }
-.header-badge { display: inline-block; margin-top: 12px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3); padding: 4px 16px; border-radius: 20px; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; position: relative; }
-.header-actions { margin-top: 16px; position: relative; }
-.header-btn { background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.4); color: #fff; padding: 8px 22px; border-radius: 24px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .2s; letter-spacing: .3px; }
-.header-btn:hover { background: rgba(255,255,255,.28); }
-.status-strip { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 20px; display: none; }
-.status-strip-inner { max-width: 780px; margin: 0 auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; }
-.gps-dot { width: 9px; height: 9px; border-radius: 50%; background: #bbb; flex-shrink: 0; transition: background .3s; }
-.gps-dot.acquiring { background: var(--amber); animation: pulse 1.2s infinite; }
-.gps-dot.good      { background: var(--green); }
-.gps-dot.poor      { background: var(--red); }
-@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.35} }
-#draftBar { display: none; position: sticky; top: 0; z-index: 200; background: #fffbeb; border-bottom: 2px solid #fcd34d; padding: 8px 16px; }
-.draft-inner { max-width: 780px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; }
-.draft-left { display: flex; align-items: center; gap: 8px; }
-.draft-text { color: #78350f; font-weight: 600; }
-.draft-sub  { color: #92400e; font-size: 11.5px; }
-.draft-btn { font-size: 11.5px; font-weight: 700; padding: 5px 14px; border-radius: 20px; cursor: pointer; border: 1.5px solid; font-family: inherit; transition: all .15s; }
-.draft-btn.restore { background: var(--blue); color: #fff; border-color: var(--blue); }
-.draft-btn.discard { background: #fff; color: var(--red); border-color: #fca5a5; }
-#proximityLockBanner { display: none; background: #fff1f2; border-bottom: 2px solid #fecdd3; padding: 9px 20px; position: sticky; top: 0; z-index: 199; }
-.lock-inner { max-width: 780px; margin: 0 auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #991b1b; font-weight: 600; }
-#networkBadge { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 999; padding: 10px 18px; border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: 0 4px 20px rgba(0,0,0,.2); pointer-events: none; transition: all .3s; align-items: center; gap: 7px; }
-#networkBadge.offline { background: var(--red); color: #fff; display: flex; }
-#networkBadge.online  { background: var(--green); color: #fff; display: flex; }
-#autosaveIndicator { position: fixed; bottom: 72px; right: 20px; z-index: 998; font-size: 11.5px; color: #555; background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 5px 13px; box-shadow: var(--shadow); display: none; transition: opacity .4s; }
-#surveyWrapper { display: none; }
-.container { max-width: 780px; margin: 0 auto; padding: 22px 16px 60px; }
-#researcherBanner { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid var(--green); border-radius: var(--radius); padding: 11px 16px; margin-bottom: 18px; display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; color: #166534; }
-.res-action-btn { font-size: 11px; padding: 5px 13px; border: 1px solid var(--green); background: #fff; color: var(--green); border-radius: 20px; cursor: pointer; font-weight: 700; font-family: inherit; transition: all .15s; }
-.res-action-btn:hover { background: var(--green); color: #fff; }
-.res-action-btn.pending { background: var(--amber); color: #fff; border-color: var(--amber); }
-#pendingBanner { display: none; background: #fef3c7; border: 1.5px solid #fcd34d; border-left: 5px solid var(--amber); border-radius: var(--radius); padding: 11px 16px; margin-bottom: 16px; font-size: 13px; color: #78350f; }
-.sync-btn { display: inline-block; margin-top: 7px; background: var(--amber); color: #fff; border: none; border-radius: 20px; padding: 5px 18px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
-.card { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 22px; overflow: hidden; border: 1px solid var(--border); }
-.card-head { background: linear-gradient(135deg, var(--navy), #1a3fa0); color: #fff; padding: 13px 20px; display: flex; align-items: center; gap: 12px; }
-.card-head.green { background: linear-gradient(135deg, #166534, #16a34a); }
-.section-badge { background: rgba(255,255,255,.2); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
-.card-head h3 { font-size: 13px; letter-spacing: .6px; text-transform: uppercase; font-weight: 600; }
-.card-body { padding: 20px; }
-.field { margin-bottom: 18px; }
-.field:last-child { margin-bottom: 0; }
-.field-label { display: block; font-weight: 600; font-size: 13px; color: var(--text); margin-bottom: 7px; }
-.field-label .qn { color: var(--blue); margin-right: 4px; }
-.field-note { font-size: 11px; color: var(--muted); font-style: italic; margin-left: 4px; }
-select, input[type="text"], textarea { width: 100%; padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; background: #fafbff; color: var(--text); transition: border-color .2s, box-shadow .2s; font-family: inherit; }
-select:focus, input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--sky); background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
-textarea { min-height: 76px; resize: vertical; }
-.pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
-.pill { position: relative; }
-.pill input { position: absolute; opacity: 0; width: 0; height: 0; }
-.pill label { display: inline-block; padding: 7px 15px; border: 1.5px solid var(--border); border-radius: 24px; font-size: 13px; cursor: pointer; color: var(--muted); background: #fafbff; transition: all .15s; user-select: none; }
-.pill input:checked + label { background: var(--blue); color: #fff; border-color: var(--blue); font-weight: 600; }
-.svc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.svc-table th, .svc-table td { padding: 9px 8px; border: 1px solid var(--border); text-align: center; }
-.svc-table th { background: #eef2ff; color: var(--navy); font-size: 11.5px; font-weight: 600; }
-.svc-table td:first-child { text-align: left; font-weight: 600; color: var(--text); }
-.svc-table tr:nth-child(even) td { background: #fafbff; }
-.svc-table input[type="radio"] { width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer; }
-.gov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media(max-width:480px) { .gov-grid { grid-template-columns: 1fr; } }
-.gov-card { border: 2px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all .15s; text-align: center; }
-.gov-card:hover { border-color: var(--sky); background: #f0f8ff; }
-.gov-card.selected { border-color: var(--blue); background: #eef3ff; }
-.gov-card input { display: none; }
-.gov-card .gc-name { font-weight: 700; font-size: 14px; color: var(--navy); }
-.gov-card .gc-tag  { font-size: 11px; color: var(--muted); margin-top: 3px; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media(max-width:500px) { .two-col { grid-template-columns: 1fr; } }
-.section-note { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 13px; }
-.opt-badge { display: inline-block; background: #f0fdf4; color: var(--green); font-size: 10.5px; font-weight: 700; padding: 2px 9px; border-radius: 10px; margin-left: 8px; }
-.submit-wrap { margin-top: 8px; }
-#submitBtn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--blue), var(--navy)); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; letter-spacing: .4px; transition: opacity .2s; font-family: inherit; }
-#submitBtn:disabled { opacity: .4; cursor: not-allowed; }
-#submitBtn:not(:disabled):hover { opacity: .88; }
-.status-msg { text-align: center; margin-top: 14px; font-size: 14px; font-weight: 600; padding: 11px 16px; border-radius: 8px; }
-.status-msg.success { color: #166534; background: #dcfce7; border: 1px solid #86efac; }
-.status-msg.error   { color: #991b1b; background: #fee2e2; border: 1px solid #fca5a5; }
-.status-msg.warning { color: #92400e; background: #fef3c7; border: 1px solid #fcd34d; }
-.status-msg.offline { color: #1e40af; background: #dbeafe; border: 1px solid #93c5fd; }
-.loc-box { background: #f8faff; border: 1.5px solid #c7d7f9; border-radius: 10px; padding: 14px 16px; margin-top: 14px; font-size: 13px; }
-.loc-box-head { font-weight: 700; color: var(--navy); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-.loc-row { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
-.loc-val { font-weight: 600; color: var(--text); }
-.loc-acc { font-weight: 700; }
-.loc-acc.good { color: var(--green); }
-.loc-acc.poor { color: var(--red); }
-.modal-overlay { position: fixed; inset: 0; background: rgba(10,20,50,.65); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px); }
-.modal-overlay.hidden { display: none; }
-.modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 660px; max-height: 92vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 32px 80px rgba(0,0,0,.25); animation: mIn .22s ease; }
-@keyframes mIn { from{transform:scale(.93);opacity:0} to{transform:scale(1);opacity:1} }
-.modal-head { background: linear-gradient(135deg, var(--navy), #1a3fa0); color: #fff; padding: 22px 26px; flex-shrink: 0; }
-.modal-head h2 { font-size: 19px; font-family: 'DM Serif Display', serif; margin-bottom: 3px; }
-.modal-head p  { font-size: 12px; opacity: .8; font-style: italic; }
-.modal-scroll  { overflow-y: auto; padding: 22px 26px; flex: 1; }
-.modal-foot    { padding: 16px 26px; border-top: 2px solid var(--border); background: #f8faff; flex-shrink: 0; }
-.consent-h4 { color: var(--navy); font-size: 12.5px; text-transform: uppercase; letter-spacing: .5px; margin: 18px 0 6px; }
-.consent-h4:first-child { margin-top: 0; }
-.consent-section p, .consent-section li { font-size: 13px; color: #444; line-height: 1.75; margin: 2px 0; }
-.consent-section ul { padding-left: 20px; margin: 4px 0; }
-.consent-check { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 18px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 13px 15px; }
-.consent-check input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: var(--blue); cursor: pointer; }
-.consent-check label { font-size: 13px; color: #333; font-weight: 600; cursor: pointer; line-height: 1.55; }
-.btn-row { display: flex; gap: 10px; justify-content: flex-end; }
-.btn-decline { padding: 10px 22px; border: 1.5px solid #ccc; border-radius: 8px; background: #fff; color: var(--muted); font-size: 14px; cursor: pointer; font-weight: 700; font-family: inherit; transition: all .15s; }
-.btn-decline:hover { background: #f5f5f5; }
-.btn-proceed { padding: 10px 28px; border: none; border-radius: 8px; background: linear-gradient(135deg, var(--blue), var(--navy)); color: #fff; font-size: 14px; cursor: pointer; font-weight: 700; font-family: inherit; transition: opacity .15s; }
-.btn-proceed:disabled { opacity: .35; cursor: not-allowed; }
-.btn-proceed:not(:disabled):hover { opacity: .88; }
-.res-field { margin-bottom: 16px; }
-.res-field label { display: block; font-weight: 600; font-size: 13px; color: var(--text); margin-bottom: 5px; }
-.res-field input { width: 100%; padding: 11px 13px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; background: #fafbff; font-family: inherit; }
-.res-field input:focus { outline: none; border-color: var(--sky); }
-.res-err { color: #c62828; font-size: 12px; margin-top: 3px; display: none; }
-.res-note { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; }
-#gpsGuardModal .modal-box { max-width: 500px; }
-.gps-steps { list-style: none; margin: 14px 0; }
-.gps-steps li { display: flex; align-items: flex-start; gap: 13px; padding: 11px 13px; border-radius: 8px; margin-bottom: 8px; background: #f8faff; border: 1px solid #e2eaf8; font-size: 13px; color: var(--text); }
-.gps-steps li.done   { background: #f0fdf4; border-color: #bbf7d0; }
-.gps-steps li.active { background: #fffbeb; border-color: #fde68a; }
-.gps-steps li.fail   { background: #fff1f2; border-color: #fecdd3; }
-.gps-steps li.skipped { background: #f0fdf4; border-color: #bbf7d0; opacity: .65; }
-.step-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-.step-text strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 1px; }
-.step-text span   { font-size: 12px; color: var(--muted); }
-.gps-prog { height: 4px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin: 14px 0 0; }
-.gps-prog-bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--green)); border-radius: 4px; transition: width .4s; width: 0; }
-.first-survey-note { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 11px 14px; margin-bottom: 14px; font-size: 13px; color: #1e40af; display: none; }
-.first-survey-note strong { display: block; margin-bottom: 3px; }
-.live-gps-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; margin-top: 14px; font-size: 12.5px; }
-.live-gps-card strong { color: var(--navy); display: block; margin-bottom: 6px; font-size: 13px; }
-.gps-coords { font-family: monospace; font-size: 12px; color: #166634; margin: 2px 0; }
-#offlineModal .modal-box { max-width: 480px; }
-.q-list { max-height: 240px; overflow-y: auto; margin: 12px 0; }
-.q-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 13px; border-radius: 8px; margin-bottom: 8px; background: #fef3c7; border: 1px solid #fde68a; font-size: 13px; }
-.q-item .qi-info { color: #78350f; }
-.q-item .qi-time { font-size: 11px; color: #92400e; margin-top: 2px; }
-.q-item .qi-del  { font-size: 18px; cursor: pointer; color: var(--red); padding: 0 4px; border: none; background: none; }
-.sync-prog-wrap { margin: 12px 0; display: none; }
-.sync-prog-outer { height: 6px; background: #e5e7eb; border-radius: 6px; overflow: hidden; }
-.sync-prog-inner { height: 100%; background: linear-gradient(90deg, var(--blue), var(--green)); border-radius: 6px; transition: width .4s; width: 0; }
-.sync-status { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: center; }
-#declinedMsg { display: none; text-align: center; padding: 70px 20px; }
-#gpsDistanceChip { display: none; margin-left: auto; font-size: 11.5px; font-weight: 700; padding: 3px 11px; border-radius: 12px; }
-.conditional-field { display: none; margin-top: 10px; }
-.conditional-field.visible { display: block; }
-.elective-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
-@media(max-width:500px) { .elective-grid { grid-template-columns: 1fr; } }
-.elective-item label { display: block; font-weight: 600; font-size: 12px; color: var(--navy); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
-.disabled-note { background: #f5f5f5; padding: 11px; border-radius: 7px; color: var(--muted); font-size: 13px; margin-top: 8px; display: none; }
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;font-size:14px;min-height:100vh;}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--forest);position:relative;overflow:hidden;}
+#loginScreen::before{content:'ECS';position:absolute;right:-40px;bottom:-60px;font-family:'Fraunces',serif;font-size:280px;font-weight:700;color:rgba(255,255,255,.04);line-height:1;pointer-events:none;}
+.login-card{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.3);text-align:center;position:relative;z-index:2;}
+.login-logo{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--forest),var(--leaf));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#fff;}
+.login-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--forest);margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+.login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;font-size:12px;color:var(--muted);}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.google-btn{width:100%;padding:13px 20px;border:2px solid var(--border);border-radius:12px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .18s;color:var(--ink);}
+.google-btn:hover{border-color:var(--leaf);background:#f0fdf4;transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,122,69,.15);}
+.google-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.google-icon{width:20px;height:20px;flex-shrink:0;}
+.login-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:24px;}
+.login-pill{background:var(--warm);color:var(--muted);padding:4px 12px;border-radius:20px;font-size:11px;border:1px solid var(--border);}
+.login-err{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:14px;display:none;}
+.login-loading{font-size:13px;color:var(--muted);margin-top:14px;display:none;}
+
+/* ── RESEARCHER MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(8,20,10,.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
+.overlay.hidden{display:none;}
+.mbox{background:#fff;border-radius:18px;width:100%;max-width:640px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.25);animation:mIn .22s ease;}
+@keyframes mIn{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
+.mbox-sm{max-width:460px;}
+.mhead{padding:22px 26px;flex-shrink:0;border-bottom:1px solid var(--border);}
+.mhead.forest{background:var(--forest);color:#fff;}
+.mhead h2{font-family:'Fraunces',serif;font-size:20px;margin-bottom:3px;}
+.mhead p{font-size:12.5px;opacity:.8;font-style:italic;}
+.mscroll{overflow-y:auto;padding:22px 26px;flex:1;}
+.mfoot{padding:16px 26px;border-top:1px solid var(--border);background:var(--warm);flex-shrink:0;}
+.btn-row{display:flex;gap:10px;justify-content:flex-end;}
+.btn-dec{padding:10px 22px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--muted);font-size:14px;cursor:pointer;font-weight:700;font-family:inherit;}
+.btn-dec:hover{background:var(--warm);}
+.btn-proc{padding:10px 28px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff;font-size:14px;cursor:pointer;font-weight:700;font-family:inherit;}
+.btn-proc:disabled{opacity:.35;cursor:not-allowed;}
+.btn-proc:not(:disabled):hover{opacity:.88;}
+.res-field{margin-bottom:16px;}
+.res-field label{display:block;font-weight:600;font-size:13px;color:var(--ink);margin-bottom:5px;}
+.res-field input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;}
+.res-field input:focus{outline:none;border-color:var(--leaf);}
+.res-err{color:var(--red);font-size:12px;margin-top:3px;display:none;}
+.res-note{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:20px;}
+.user-chip{display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:20px;}
+.user-chip img{width:36px;height:36px;border-radius:50%;object-fit:cover;}
+.user-chip-info{font-size:13px;}
+.user-chip-name{font-weight:700;color:var(--forest);}
+.user-chip-email{color:var(--muted);font-size:12px;}
+
+/* ── SURVEY LAYOUT ── */
+.site-header{background:var(--forest);color:#fff;padding:0;position:relative;overflow:hidden;}
+.header-stripe{height:5px;background:linear-gradient(90deg,var(--gold) 0%,var(--mint) 50%,var(--gold) 100%);}
+.header-inner{padding:28px 24px 24px;position:relative;z-index:2;}
+.header-eyebrow{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--sage);font-weight:500;margin-bottom:8px;}
+.header-title{font-family:'Fraunces',serif;font-size:clamp(22px,5vw,32px);font-weight:700;line-height:1.2;color:#fff;margin-bottom:4px;}
+.header-title em{font-style:italic;color:var(--gold-lt);}
+.header-sub{font-size:13px;color:var(--sage);margin-bottom:18px;}
+.header-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.hpill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);padding:4px 13px;border-radius:20px;font-size:11.5px;}
+.header-bg-text{position:absolute;right:-10px;top:-10px;font-family:'Fraunces',serif;font-size:140px;font-weight:700;color:rgba(255,255,255,.04);line-height:1;user-select:none;z-index:1;}
+.hbtn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid;transition:all .18s;}
+.hbtn-primary{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+.hbtn-primary:hover{background:#b07a2a;color:#fff;}
+.hbtn-ghost{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.3);}
+.hbtn-ghost:hover{background:rgba(255,255,255,.2);}
+.gps-bar{background:#fff;border-bottom:1px solid var(--border);padding:7px 20px;display:none;}
+.gps-bar-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;gap:10px;font-size:12.5px;}
+.gps-dot{width:8px;height:8px;border-radius:50%;background:#bbb;flex-shrink:0;transition:background .3s;}
+.gps-dot.acquiring{background:var(--gold);animation:pulse 1.2s infinite;}
+.gps-dot.good{background:var(--leaf);}
+.gps-dot.poor{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#draftBar{display:none;position:sticky;top:0;z-index:200;background:#fffbeb;border-bottom:2px solid var(--gold-lt);padding:8px 16px;}
+.draft-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;}
+.draft-btn{font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;border:1.5px solid;font-family:inherit;}
+.draft-btn.restore{background:var(--sky);color:#fff;border-color:var(--sky);}
+.draft-btn.discard{background:#fff;color:var(--red);border-color:#fca5a5;}
+#proximityBanner{display:none;background:#fff8ee;border-bottom:2px solid var(--gold);padding:9px 20px;position:sticky;top:0;z-index:199;}
+.prox-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;gap:10px;font-size:13px;color:#7a4f0a;font-weight:600;}
+#netBadge{display:none;position:fixed;bottom:20px;right:20px;z-index:999;padding:10px 18px;border-radius:30px;font-size:13px;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.2);pointer-events:none;align-items:center;gap:7px;}
+#netBadge.offline{background:var(--red);color:#fff;display:flex;}
+#netBadge.online{background:var(--leaf);color:#fff;display:flex;}
+#autosave{position:fixed;bottom:70px;right:20px;z-index:998;font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:20px;padding:5px 13px;box-shadow:var(--sh);display:none;transition:opacity .4s;}
+#surveyWrapper{display:none;}
+.container{max-width:800px;margin:0 auto;padding:24px 16px 72px;}
+#resBanner{background:#f0fdf4;border:1px solid #bbf7d0;border-left:5px solid var(--leaf);border-radius:var(--r);padding:12px 16px;margin-bottom:20px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;color:#166534;}
+.res-small-btn{font-size:11px;padding:5px 13px;border:1px solid var(--leaf);background:#fff;color:var(--leaf);border-radius:20px;cursor:pointer;font-weight:700;font-family:inherit;}
+.res-small-btn:hover{background:var(--leaf);color:#fff;}
+.res-small-btn.pend{background:var(--gold);color:#fff;border-color:var(--gold);}
+.res-small-btn.danger{border-color:var(--red);color:var(--red);}
+.res-small-btn.danger:hover{background:var(--red);color:#fff;}
+#pendBanner{display:none;background:#fffbeb;border:1.5px solid var(--gold-lt);border-left:5px solid var(--gold);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;font-size:13px;color:#78350f;}
+.sync-btn{display:inline-block;margin-top:7px;background:var(--gold);color:#fff;border:none;border-radius:20px;padding:5px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+.card{background:#fff;border-radius:14px;box-shadow:var(--sh);margin-bottom:24px;overflow:hidden;border:1px solid var(--border);}
+.card-head{padding:14px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);}
+.card-head.th-forest{background:var(--forest);}
+.card-head.th-leaf{background:var(--leaf);}
+.card-head.th-gold{background:var(--gold);}
+.card-head.th-sky{background:var(--sky);}
+.card-head.th-ink{background:var(--ink);}
+.card-head.th-opt{background:#2d6a4f;}
+.sec-badge{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:15px;color:#fff;flex-shrink:0;}
+.sec-label{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.9);font-weight:600;}
+.sec-label span{font-size:10px;opacity:.7;display:block;letter-spacing:.3px;font-weight:400;text-transform:none;}
+.card-body{padding:22px;}
+.field{margin-bottom:20px;}
+.field:last-child{margin-bottom:0;}
+.field-label{display:block;font-weight:600;font-size:13.5px;color:var(--ink);margin-bottom:8px;}
+.qnum{color:var(--leaf);margin-right:5px;font-family:'Fraunces',serif;}
+.fnote{font-size:11px;color:var(--muted);font-style:italic;margin-left:4px;font-weight:400;}
+select,input[type="text"],input[type="password"],textarea{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);color:var(--ink);transition:border-color .2s,box-shadow .2s;font-family:inherit;}
+select:focus,input[type="text"]:focus,input[type="password"]:focus,textarea:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
+textarea{min-height:72px;resize:vertical;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:500px){.two-col{grid-template-columns:1fr;}}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.pill{position:relative;}
+.pill input{position:absolute;opacity:0;width:0;height:0;}
+.pill label{display:inline-block;padding:7px 16px;border:1.5px solid var(--border);border-radius:24px;font-size:13px;cursor:pointer;color:var(--muted);background:#fafaf8;transition:all .15s;user-select:none;}
+.pill input:checked + label{background:var(--leaf);color:#fff;border-color:var(--leaf);font-weight:600;}
+.pill input[type="checkbox"]:checked + label{background:var(--forest);border-color:var(--forest);}
+.gov-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+@media(max-width:460px){.gov-grid{grid-template-columns:1fr;}}
+.gov-card{border:2px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .15s;text-align:center;background:#fafaf8;}
+.gov-card:hover{border-color:var(--mint);background:#f0f8f3;}
+.gov-card.selected{border-color:var(--leaf);background:#ebf7f0;}
+.gov-card input{display:none;}
+.gc-name{font-weight:700;font-size:14px;color:var(--forest);}
+.gc-tag{font-size:11px;color:var(--muted);margin-top:3px;}
+.elec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
+@media(max-width:500px){.elec-grid{grid-template-columns:1fr;}}
+.elec-item label{display:block;font-weight:600;font-size:11.5px;color:var(--forest);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.cond-field{display:none;margin-top:10px;}
+.cond-field.vis{display:block;}
+.disabled-note{background:var(--warm);padding:10px 13px;border-radius:7px;color:var(--muted);font-size:13px;margin-top:6px;display:none;border:1px solid var(--border);}
+.sec-note{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:14px;}
+.opt-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;margin-left:8px;}
+.loc-box{background:var(--warm);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px;margin-top:14px;font-size:13px;display:none;}
+.loc-head{font-weight:700;color:var(--forest);margin-bottom:7px;}
+.loc-row{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);}
+.loc-val{font-weight:600;color:var(--ink);}
+.loc-acc{font-weight:700;}
+.loc-acc.good{color:var(--leaf);}
+.loc-acc.poor{color:var(--red);}
+.submit-wrap{margin-top:8px;}
+#submitBtn{width:100%;padding:16px;background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.4px;transition:opacity .2s;font-family:'Fraunces',serif;}
+#submitBtn:disabled{opacity:.4;cursor:not-allowed;}
+#submitBtn:not(:disabled):hover{opacity:.88;}
+.status-msg{text-align:center;margin-top:14px;font-size:14px;font-weight:600;padding:12px 16px;border-radius:8px;}
+.status-msg.success{color:#166534;background:#dcfce7;border:1px solid #86efac;}
+.status-msg.error{color:#991b1b;background:#fee2e2;border:1px solid #fca5a5;}
+.status-msg.warning{color:#92400e;background:#fef3c7;border:1px solid #fcd34d;}
+.status-msg.offline{color:#1e40af;background:#dbeafe;border:1px solid #93c5fd;}
+
+/* GPS GUARD MODAL */
+.gps-steps{list-style:none;margin:14px 0;}
+.gps-steps li{display:flex;align-items:flex-start;gap:13px;padding:11px 13px;border-radius:8px;margin-bottom:8px;font-size:13px;background:var(--warm);border:1px solid var(--border);}
+.gps-steps li.done{background:#f0fdf4;border-color:#bbf7d0;}
+.gps-steps li.active{background:#fffbeb;border-color:var(--gold-lt);}
+.gps-steps li.fail{background:#fff1f2;border-color:#fecdd3;}
+.gps-steps li.skipped{background:#f0fdf4;border-color:#bbf7d0;opacity:.6;}
+.step-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.step-text strong{display:block;font-size:13px;font-weight:600;margin-bottom:1px;}
+.step-text span{font-size:12px;color:var(--muted);}
+.gps-prog{height:5px;background:var(--border);border-radius:5px;overflow:hidden;margin:14px 0 0;}
+.gps-prog-bar{height:100%;background:linear-gradient(90deg,var(--leaf),var(--mint));border-radius:5px;transition:width .4s;width:0;}
+.live-gps-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-top:14px;font-size:12.5px;}
+.live-gps-card strong{color:var(--forest);display:block;margin-bottom:6px;font-size:13px;}
+.gps-coords{font-family:monospace;font-size:12px;color:#166534;margin:2px 0;}
+.first-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 14px;margin-bottom:14px;font-size:13px;color:#1e40af;display:none;}
+.first-note strong{display:block;margin-bottom:3px;}
+.q-list{max-height:230px;overflow-y:auto;margin:12px 0;}
+.q-item{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:8px;margin-bottom:8px;background:var(--gold-lt);border:1px solid var(--gold);font-size:13px;}
+.qi-del{font-size:18px;cursor:pointer;color:var(--red);padding:0 4px;border:none;background:none;}
+.sync-prog-wrap{margin:12px 0;display:none;}
+.sync-prog-outer{height:6px;background:var(--border);border-radius:6px;overflow:hidden;}
+.sync-prog-inner{height:100%;background:linear-gradient(90deg,var(--leaf),var(--mint));border-radius:6px;transition:width .4s;width:0;}
+.sync-status{font-size:12px;color:var(--muted);margin-top:6px;text-align:center;}
+
+/* OCCUPATION GRID */
+.occ-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+@media(max-width:520px){.occ-grid{grid-template-columns:1fr;}}
+.occ-wrap{position:relative;}
+.occ-wrap select{padding-left:38px;appearance:auto;}
+.occ-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;z-index:1;}
+.occ-selected{display:none;background:var(--warm);border:1.5px solid var(--leaf);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--forest);margin-top:8px;}
+.occ-clear{margin-left:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:700;}
 </style>
 </head>
 <body>
 
-<!-- CONSENT MODAL -->
-<div class="modal-overlay" id="consentModal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h2>&#x1F4CB; Informed Consent</h2>
-      <p>Embu County Political &amp; Service Delivery Survey &middot; ECS-2025 &middot; Please read carefully</p>
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">ECS</div>
+    <div class="login-title">ECS-2026 Research</div>
+    <div class="login-sub">Embu County Social Study &middot; Researcher Portal<br>Sign in with your Google account to continue.</div>
+
+    <button class="google-btn" id="googleSignInBtn" onclick="signInWithGoogle()">
+      <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Sign in with Google
+    </button>
+
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-loading" id="loginLoading">&#x23F3; Signing in...</div>
+
+    <div class="login-pills">
+      <span class="login-pill">&#x1F512; Anonymised Data</span>
+      <span class="login-pill">&#x23F1; 15&ndash;20 min</span>
+      <span class="login-pill">&#x1F4CB; Authorised Researchers Only</span>
     </div>
-    <div class="modal-scroll">
-      <div class="consent-section">
-        <div class="consent-h4">1. Purpose of This Research</div>
-        <p>You are invited to participate in a research study examining political participation, governance, service delivery, and development priorities in Embu County. Findings will inform policy discussions and community development planning.</p>
-        <div class="consent-h4">2. What Participation Involves</div>
-        <p>Your participation involves completing a questionnaire covering:</p>
-        <ul>
-          <li>Your demographic background (age, gender, location, education, employment)</li>
-          <li>Political participation and civic engagement</li>
-          <li>Opinions on local government transparency and accountability</li>
-          <li>Assessment of public service delivery (health, education, agriculture, infrastructure)</li>
-          <li>Economic challenges and development priorities in your ward</li>
-          <li>Sentiment and preferences regarding county leadership</li>
-        </ul>
-        <div class="consent-h4">3. Duration</div>
-        <p>Completing this questionnaire takes approximately <strong>20-35 minutes</strong>.</p>
-        <div class="consent-h4">4. Voluntary Participation</div>
-        <p>Participation is entirely voluntary. You may decline any question and may withdraw at any time without negative consequences.</p>
-        <div class="consent-h4">5. Confidentiality &amp; Data Protection</div>
-        <ul>
-          <li>All information is kept strictly confidential.</li>
-          <li>Responses will be anonymised and cannot be traced to you individually.</li>
-          <li>Data is stored securely, accessible only to authorised research personnel.</li>
-          <li>Aggregated findings may be published; no individual data will be disclosed.</li>
-          <li>Contact information (if provided) is stored separately from survey responses.</li>
-          <li>Your data will be handled per applicable data protection laws.</li>
-          <li><strong>GPS coordinates</strong> are collected only to verify geographic coverage and prevent duplicate submissions - not to identify individuals.</li>
-        </ul>
-        <div class="consent-h4">6. Risks &amp; Benefits</div>
-        <p>There are no known risks. Your contribution ensures community voices are represented in Embu County governance and policy-making.</p>
-      </div>
+  </div>
+</div>
+
+<!-- ═══ RESEARCHER WELCOME MODAL (shown after Google login) ═══ -->
+<div class="overlay hidden" id="researcherModal">
+  <div class="mbox mbox-sm">
+    <div class="mhead forest">
+      <h2>&#x1F44B; Welcome, Researcher</h2>
+      <p>Your account has been verified &mdash; your ID is auto-generated</p>
     </div>
-    <div class="modal-foot">
-      <div class="consent-check">
-        <input type="checkbox" id="consentCheck" onchange="toggleProceed()">
-        <label for="consentCheck">I have read and understood the above. I voluntarily agree to participate and consent to data collection including GPS location for quality assurance purposes.</label>
+    <div class="mscroll">
+      <div class="user-chip" id="userChip">
+        <img id="userAvatar" src="" alt="avatar" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">
+        <div class="user-chip-info">
+          <div class="user-chip-name" id="userDisplayName"></div>
+          <div class="user-chip-email" id="userEmail"></div>
+        </div>
       </div>
+      <div style="background:var(--warm);border:2px solid var(--leaf);border-radius:12px;padding:18px 20px;text-align:center;margin:14px 0;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:6px;">Your Researcher ID</div>
+        <div id="generatedIdDisplay" style="font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--forest);letter-spacing:2px;"></div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Auto-generated from your Google account &mdash; unique &amp; permanent</div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;">This ID is automatically assigned and recorded with every submission you make. You will see it in your dashboard banner. No manual entry needed.</p>
+    </div>
+    <div class="mfoot">
       <div class="btn-row">
-        <button class="btn-decline" onclick="declineConsent()">Decline</button>
-        <button class="btn-proceed" id="proceedBtn" disabled onclick="proceedAfterConsent()">I Agree &amp; Continue &#x2192;</button>
+        <button class="btn-dec" onclick="signOutGoogle()">&#x2190; Sign Out</button>
+        <button class="btn-proc" onclick="confirmResearcher()">&#x1F680; Start Survey</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- RESEARCHER MODAL -->
-<div class="modal-overlay hidden" id="researcherModal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-head">
-      <h2>&#x1F464; Researcher Registration</h2>
-      <p>First-time setup - saved on this device</p>
-    </div>
-    <div class="modal-scroll">
-      <p class="res-note">Enter your name and researcher ID. These are saved locally so you don't need to re-enter them, and are attached to each submission for quality assurance.</p>
-      <div class="res-field">
-        <label for="resName">Full Name *</label>
-        <input type="text" id="resName" placeholder="e.g. Jane Muthoni Kariuki" autocomplete="off">
-        <div class="res-err" id="resNameErr">Please enter your full name.</div>
-      </div>
-      <div class="res-field">
-        <label for="resId">Researcher / Enumerator ID *</label>
-        <input type="text" id="resId" placeholder="e.g. ECS-R-001" autocomplete="off">
-        <div class="res-err" id="resIdErr">Please enter your researcher ID.</div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <div class="btn-row">
-        <button class="btn-proceed" onclick="saveResearcher()">Save &amp; Start Survey &#x2192;</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- GPS GUARD MODAL -->
-<div class="modal-overlay hidden" id="gpsGuardModal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-head">
+<!-- ═══ GPS GUARD MODAL ═══ -->
+<div class="overlay hidden" id="gpsGuardModal">
+  <div class="mbox mbox-sm">
+    <div class="mhead forest">
       <h2>&#x1F4CD; Location Verification</h2>
-      <p id="gpsGuardSubtitle">Capturing GPS location - please wait</p>
+      <p id="gpsGuardSub">Capturing GPS location &mdash; please wait</p>
     </div>
-    <div class="modal-scroll">
-      <div class="first-survey-note" id="firstSurveyNote">
+    <div class="mscroll">
+      <div class="first-note" id="firstNote">
         <strong>&#x1F4CC; First survey of the day</strong>
-        Your starting location is being recorded. From the next survey onwards, the system will check that you have moved to a new location before submitting.
+        Your starting location is being recorded. From the next survey onwards the system will check you have moved to a new location before submitting.
       </div>
       <ul class="gps-steps">
-        <li id="step-acquire" class="active">
-          <span class="step-icon">&#x1F6F0;</span>
-          <div class="step-text"><strong>Acquiring GPS Signal</strong><span id="step-acquire-detail">Waiting for location...</span></div>
-        </li>
-        <li id="step-accuracy">
-          <span class="step-icon">&#x1F3AF;</span>
-          <div class="step-text"><strong>Accuracy Check</strong><span id="step-accuracy-detail">Requires &le; 80 m accuracy</span></div>
-        </li>
-        <li id="step-distance">
-          <span class="step-icon">&#x1F4CF;</span>
-          <div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be 500 m from last survey</span></div>
-        </li>
-        <li id="step-time">
-          <span class="step-icon">&#x23F1;</span>
-          <div class="step-text"><strong>Time Gap Check</strong><span id="step-time-detail">Checking time since last survey</span></div>
-        </li>
+        <li id="step-acquire" class="active"><span class="step-icon">&#x1F6F0;</span><div class="step-text"><strong>Acquiring GPS Signal</strong><span id="step-acquire-detail">Waiting for location...</span></div></li>
+        <li id="step-accuracy"><span class="step-icon">&#x1F3AF;</span><div class="step-text"><strong>Accuracy Check</strong><span id="step-accuracy-detail">Requires &le; 80 m accuracy</span></div></li>
+        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be 500 m from last survey</span></div></li>
+        <li id="step-time"><span class="step-icon">&#x23F1;</span><div class="step-text"><strong>Time Gap Check</strong><span id="step-time-detail">Checking time since last survey</span></div></li>
       </ul>
-      <div class="gps-prog"><div class="gps-prog-bar" id="gpsProgressBar"></div></div>
+      <div class="gps-prog"><div class="gps-prog-bar" id="gpsProg"></div></div>
       <div class="live-gps-card" id="liveGpsCard" style="display:none;">
         <strong>&#x1F4E1; GPS Fix Acquired</strong>
-        <div class="gps-coords" id="liveGpsCoordsDisplay"></div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="liveGpsAccDisplay"></div>
+        <div class="gps-coords" id="liveCoords"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="liveAcc"></div>
       </div>
     </div>
-    <div class="modal-foot">
+    <div class="mfoot">
       <div class="btn-row">
-        <button class="btn-decline" id="gpsCancelBtn" onclick="cancelGpsCheck()">Cancel</button>
-        <button class="btn-proceed" id="gpsRetryBtn" style="display:none;" onclick="retryGpsCheck()">&#x1F504; Retry</button>
+        <button class="btn-dec" id="gpsCancelBtn" onclick="cancelGps()">Cancel</button>
+        <button class="btn-proc" id="gpsRetryBtn" style="display:none;" onclick="retryGps()">&#x1F504; Retry</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- OFFLINE QUEUE MODAL -->
-<div class="modal-overlay hidden" id="offlineModal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-head">
+<!-- ═══ OFFLINE QUEUE MODAL ═══ -->
+<div class="overlay hidden" id="offlineModal">
+  <div class="mbox mbox-sm">
+    <div class="mhead forest">
       <h2>&#x1F4E4; Pending Submissions</h2>
       <p>Surveys saved locally while offline</p>
     </div>
-    <div class="modal-scroll">
+    <div class="mscroll">
       <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">These surveys were completed while offline. Connect to the internet and tap <strong>Sync Now</strong> to upload them.</p>
       <div class="q-list" id="queueList"></div>
-      <div class="sync-prog-wrap" id="syncProgressWrap">
-        <div class="sync-prog-outer"><div class="sync-prog-inner" id="syncProgressBar"></div></div>
-        <div class="sync-status" id="syncStatusText">Syncing...</div>
+      <div class="sync-prog-wrap" id="syncWrap">
+        <div class="sync-prog-outer"><div class="sync-prog-inner" id="syncBar"></div></div>
+        <div class="sync-status" id="syncStat">Syncing...</div>
       </div>
     </div>
-    <div class="modal-foot">
+    <div class="mfoot">
       <div class="btn-row">
-        <button class="btn-decline" onclick="closeOfflineModal()">Close</button>
-        <button class="btn-proceed" id="syncNowBtn" onclick="syncPendingNow()">&#x1F4E1; Sync Now</button>
+        <button class="btn-dec" onclick="closeOfflineModal()">Close</button>
+        <button class="btn-proc" id="syncNowBtn" onclick="syncNow()">&#x1F4E1; Sync Now</button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="declinedMsg">
-  <div style="font-size:52px;margin-bottom:16px;">&#x1F64F;</div>
-  <h2 style="color:var(--navy);font-family:'DM Serif Display',serif;">Thank you for your time</h2>
-  <p style="color:var(--muted);font-size:14px;margin-top:8px;">You have chosen not to participate.<br>Refresh this page if you change your mind.</p>
-</div>
-
-<div class="site-header">
-  <h1>Embu County Political Survey</h1>
-  <p>Research Questionnaire &amp; Informed Consent - ECS-2025</p>
-  <div class="header-badge">Confidential &middot; Research Purposes Only</div>
-  <div class="header-actions">
-    <button class="header-btn" onclick="downloadQuestionnaire()">&#x2B07; Download Questionnaire (PDF)</button>
+<!-- ═══ SITE HEADER (hidden until logged in) ═══ -->
+<div class="site-header" id="siteHeader" style="display:none;">
+  <div class="header-stripe"></div>
+  <div class="header-inner">
+    <div class="header-bg-text">ECS</div>
+    <div class="header-eyebrow">Embu County &middot; Social Study &middot; ECS-2026</div>
+    <h1 class="header-title">Embu County <em>Research</em><br>Questionnaire</h1>
+    <p class="header-sub">Research Questionnaire &middot; Confidential</p>
+    <div class="header-pills">
+      <span class="hpill">&#x1F4CB; Socio-Economic Research</span>
+      <span class="hpill">&#x1F512; Anonymised Data</span>
+      <span class="hpill">&#x23F1; 15&ndash;20 minutes</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="hbtn hbtn-primary" onclick="downloadQuestionnaire()">&#x2B07; Download PDF</button>
+      <button class="hbtn hbtn-ghost" onclick="signOutGoogle()">&#x1F6AA; Sign Out</button>
+    </div>
   </div>
 </div>
 
-<div class="status-strip" id="gpsStatusBar">
-  <div class="status-strip-inner">
+<div class="gps-bar" id="gpsBar">
+  <div class="gps-bar-inner">
     <div class="gps-dot" id="gpsDot"></div>
-    <span style="font-weight:600;color:var(--text);">GPS:</span>
+    <span style="font-weight:600;">GPS:</span>
     <span id="gpsStatusText" style="color:var(--muted);">Inactive</span>
-    <span id="gpsDistanceChip"></span>
   </div>
 </div>
 
-<div id="proximityLockBanner">
-  <div class="lock-inner">
+<div id="proximityBanner">
+  <div class="prox-inner">
     <span style="font-size:18px;">&#x1F512;</span>
-    <span id="proximityLockMsg">Please move to a different location before your next respondent.</span>
+    <span id="proxMsg">Please move to a different location before your next respondent.</span>
   </div>
 </div>
 
 <div id="draftBar">
   <div class="draft-inner">
-    <div class="draft-left">
+    <div style="display:flex;align-items:center;gap:8px;">
       <span style="font-size:17px;">&#x1F4DD;</span>
       <div>
-        <div class="draft-text">Unsaved draft found</div>
-        <div class="draft-sub" id="draftSubText">Saved on ...</div>
+        <div style="font-weight:700;color:#78350f;">Unsaved draft found</div>
+        <div style="font-size:11.5px;color:#92400e;" id="draftSub">Saved on ...</div>
       </div>
     </div>
     <div style="display:flex;gap:8px;">
@@ -379,39 +377,41 @@ textarea { min-height: 76px; resize: vertical; }
   </div>
 </div>
 
-<div id="networkBadge"></div>
-<div id="autosaveIndicator">&#x1F4BE; Draft saved</div>
+<div id="netBadge"></div>
+<div id="autosave">&#x1F4BE; Draft saved</div>
 
-<div id="surveyWrapper">
+<!-- ═══ SURVEY WRAPPER ═══ -->
+<div id="surveyWrapper" style="display:none;">
 <div class="container">
 
-  <div id="researcherBanner">
+  <div id="resBanner">
     <div>
-      <strong>&#x1F52C; Researcher: <span id="bannerName"></span></strong>
-      &nbsp;&middot;&nbsp; ID: <span id="bannerId"></span>
+      <img id="bannerAvatar" src="" alt="" style="width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:6px;">
+      <strong>&#x1F52C; <span id="bannerName"></span></strong> &nbsp;&middot;&nbsp; ID: <span id="bannerId"></span>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-      <button class="res-action-btn pending" id="pendingQueueBtn" onclick="openOfflineModal()" style="display:none;">
-        &#x1F4E4; Pending <span id="pendingCountBadge">0</span>
-      </button>
-      <button class="res-action-btn" onclick="changeResearcher()">Change Researcher</button>
+      <button class="res-small-btn pend" id="pendBtn" onclick="openOfflineModal()" style="display:none;">&#x1F4E4; Pending <span id="pendCount">0</span></button>
+      <button class="res-small-btn danger" onclick="signOutGoogle()">Sign Out</button>
     </div>
   </div>
 
-  <div id="pendingBanner">
-    <strong>&#x1F4E4; You have <span id="pendingCountText">0</span> survey(s) queued for upload.</strong>
-    <div style="font-size:12px;margin-top:3px;">Saved while offline. Connect to sync them.</div>
-    <button class="sync-btn" onclick="openOfflineModal()">View &amp; Sync &#x2192;</button>
+  <div id="pendBanner">
+    <strong>&#x1F4E4; You have <span id="pendCountText">0</span> survey(s) queued for upload.</strong>
+    <div style="font-size:12px;margin-top:3px;">Saved while offline. Connect to sync.</div>
+    <button class="sync-btn" onclick="openOfflineModal()">View &amp; Sync &rarr;</button>
   </div>
 
   <form id="surveyForm" autocomplete="off">
 
   <!-- SECTION A -->
   <div class="card">
-    <div class="card-head"><div class="section-badge">A</div><h3>Section A - Respondent Demographics</h3></div>
+    <div class="card-head th-forest">
+      <div class="sec-badge">A</div>
+      <div class="sec-label">Section A &mdash; Respondent Demographics<span>Personal background information</span></div>
+    </div>
     <div class="card-body">
       <div class="field">
-        <label class="field-label"><span class="qn">A1.</span> Gender</label>
+        <label class="field-label"><span class="qnum">A1.</span> Gender</label>
         <div class="pill-row">
           <div class="pill"><input type="radio" name="gender" id="gm" value="Male" required><label for="gm">Male</label></div>
           <div class="pill"><input type="radio" name="gender" id="gf" value="Female"><label for="gf">Female</label></div>
@@ -419,7 +419,7 @@ textarea { min-height: 76px; resize: vertical; }
         </div>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">A2.</span> Constituency</label>
+        <label class="field-label"><span class="qnum">A2.</span> Constituency</label>
         <select id="constituency" required onchange="updateWards()">
           <option value="">Select constituency</option>
           <option>Manyatta</option><option>Runyenjes</option>
@@ -427,106 +427,91 @@ textarea { min-height: 76px; resize: vertical; }
         </select>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">A3.</span> Ward</label>
+        <label class="field-label"><span class="qnum">A3.</span> Ward</label>
         <select id="ward" required>
-          <option value="">- Select constituency first -</option>
+          <option value="">&mdash; Select constituency first &mdash;</option>
         </select>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">A4.</span> Sub-Location / Village</label>
-        <input type="text" id="subLocation" placeholder="Enter your sub-location or village name">
+        <label class="field-label"><span class="qnum">A4.</span> Polling Station</label>
+        <input type="text" id="pollingStation" placeholder="Enter your polling station name">
       </div>
-      <div class="loc-box" id="locationBox" style="display:none;">
-        <div class="loc-box-head">&#x1F4CD; Interview Location (GPS)</div>
+      <div class="loc-box" id="locationBox">
+        <div class="loc-head">&#x1F4CD; Interview Location (GPS)</div>
         <div class="loc-row">
           <span>Latitude: <span class="loc-val" id="locLat">-</span></span>
           <span>Longitude: <span class="loc-val" id="locLng">-</span></span>
           <span>Accuracy: <span class="loc-acc" id="locAcc">-</span></span>
         </div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Location captured automatically - not linked to your identity.</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Location captured automatically &mdash; not linked to your identity.</div>
       </div>
-      <div class="field">
-        <label class="field-label"><span class="qn">A5.</span> Age Category</label>
+      <div class="field" style="margin-top:18px;">
+        <label class="field-label"><span class="qnum">A5.</span> Age Category</label>
         <div class="pill-row">
-          <div class="pill"><input type="radio" name="age" id="a1" value="18-35" required><label for="a1">18-35</label></div>
-          <div class="pill"><input type="radio" name="age" id="a2" value="36-60"><label for="a2">36-60</label></div>
-          <div class="pill"><input type="radio" name="age" id="a3" value="61+"><label for="a3">61+</label></div>
+          <div class="pill"><input type="radio" name="age" id="a1" value="18-34" required><label for="a1">18&ndash;34</label></div>
+          <div class="pill"><input type="radio" name="age" id="a2" value="35-44"><label for="a2">35&ndash;44</label></div>
+          <div class="pill"><input type="radio" name="age" id="a3" value="45-60"><label for="a3">45&ndash;60</label></div>
+          <div class="pill"><input type="radio" name="age" id="a4" value="61+"><label for="a4">61+</label></div>
         </div>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">A6.</span> Highest Education Level</label>
+        <label class="field-label"><span class="qnum">A6.</span> Highest Education Level</label>
         <div class="pill-row">
           <div class="pill"><input type="radio" name="education" id="enon" value="None" required><label for="enon">None</label></div>
           <div class="pill"><input type="radio" name="education" id="epri" value="Primary"><label for="epri">Primary</label></div>
           <div class="pill"><input type="radio" name="education" id="esec" value="Secondary"><label for="esec">Secondary</label></div>
-          <div class="pill"><input type="radio" name="education" id="eter" value="Tertiary (College/University)"><label for="eter">Tertiary (College / University)</label></div>
+          <div class="pill"><input type="radio" name="education" id="ecol" value="College"><label for="ecol">College</label></div>
+          <div class="pill"><input type="radio" name="education" id="euni" value="University"><label for="euni">University</label></div>
         </div>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">A7.</span> Employment Status</label>
+        <label class="field-label"><span class="qnum">A7.</span> Employment Status</label>
         <div class="pill-row">
           <div class="pill"><input type="radio" name="employment" id="ee" value="Employed" required><label for="ee">Employed</label></div>
           <div class="pill"><input type="radio" name="employment" id="ese" value="Self-Employed"><label for="ese">Self-Employed</label></div>
           <div class="pill"><input type="radio" name="employment" id="eu" value="Unemployed"><label for="eu">Unemployed</label></div>
         </div>
       </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A8.</span> Occupation <span class="fnote">Select the category that best describes your work &mdash; or type below if not listed</span></label>
+        <div class="occ-grid">
+          <div class="occ-wrap"><span class="occ-icon">&#x1F33E;</span><select id="occ_farmer" onchange="handleOccSelect('occ_farmer')"><option value="">Farming / Agriculture</option><option value="Subsistence Farmer">Subsistence Farmer</option><option value="Commercial Farmer">Commercial Farmer</option><option value="Livestock Farmer">Livestock Farmer</option><option value="Horticulture Farmer">Horticulture Farmer</option><option value="Agro-dealer">Agro-dealer</option></select></div>
+          <div class="occ-wrap"><span class="occ-icon">&#x1F6D2;</span><select id="occ_business" onchange="handleOccSelect('occ_business')"><option value="">Business / Trade</option><option value="Retail Shop Owner">Retail Shop Owner</option><option value="Wholesale Trader">Wholesale Trader</option><option value="Hawker / Street Vendor">Hawker / Street Vendor</option><option value="Market Trader">Market Trader</option><option value="Restaurant / Food Business">Restaurant / Food Business</option><option value="Online Business">Online Business</option></select></div>
+          <div class="occ-wrap"><span class="occ-icon">&#x1F4DA;</span><select id="occ_teacher" onchange="handleOccSelect('occ_teacher')"><option value="">Teaching / Education</option><option value="ECDE / Nursery Teacher">ECDE / Nursery Teacher</option><option value="Primary School Teacher">Primary School Teacher</option><option value="Secondary School Teacher">Secondary School Teacher</option><option value="College Lecturer">College Lecturer</option><option value="University Lecturer">University Lecturer</option><option value="VTC Instructor">VTC Instructor</option><option value="Private Tutor">Private Tutor</option></select></div>
+          <div class="occ-wrap"><span class="occ-icon">&#x1F4BC;</span><select id="occ_professional" onchange="handleOccSelect('occ_professional')"><option value="">Professional / Specialist</option><option value="Doctor / Clinical Officer">Doctor / Clinical Officer</option><option value="Nurse / Midwife">Nurse / Midwife</option><option value="Engineer">Engineer</option><option value="Accountant / Auditor">Accountant / Auditor</option><option value="Lawyer / Advocate">Lawyer / Advocate</option><option value="ICT / Technology">ICT / Technology</option><option value="Banker / Finance">Banker / Finance</option><option value="Government Officer">Government Officer</option><option value="NGO / Non-profit Worker">NGO / Non-profit Worker</option></select></div>
+          <div class="occ-wrap"><span class="occ-icon">&#x1F690;</span><select id="occ_transport" onchange="handleOccSelect('occ_transport')"><option value="">Transport / Logistics</option><option value="Matatu Driver">Matatu Driver</option><option value="Matatu Conductor">Matatu Conductor</option><option value="Boda Boda Rider">Boda Boda Rider</option><option value="Truck / Lorry Driver">Truck / Lorry Driver</option><option value="Taxi / Cab Driver">Taxi / Cab Driver</option></select></div>
+          <div class="occ-wrap"><span class="occ-icon">&#x1F527;</span><select id="occ_artisan" onchange="handleOccSelect('occ_artisan')"><option value="">Artisan / Skilled Trade</option><option value="Mason / Fundi">Mason / Fundi</option><option value="Carpenter">Carpenter</option><option value="Electrician">Electrician</option><option value="Plumber">Plumber</option><option value="Mechanic">Mechanic</option><option value="Tailor / Seamstress">Tailor / Seamstress</option><option value="Welder / Metal Worker">Welder / Metal Worker</option><option value="Hairdresser / Barber">Hairdresser / Barber</option></select></div>
+        </div>
+        <div style="margin-top:4px;"><label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:5px;">Or specify if not listed above:</label><input type="text" id="occ_other" placeholder="Type occupation here..." oninput="handleOccOther()"></div>
+        <div class="occ-selected" id="occDisplay"><strong>Selected:</strong> <span id="occText"></span><button type="button" class="occ-clear" onclick="clearOcc()">&#x2715; Clear</button></div>
+        <input type="hidden" id="occupation">
+      </div>
     </div>
   </div>
 
   <!-- SECTION B -->
   <div class="card">
-    <div class="card-head"><div class="section-badge">B</div><h3>Section B - Political Participation &amp; Governance</h3></div>
+    <div class="card-head th-leaf">
+      <div class="sec-badge">B</div>
+      <div class="sec-label">Section B &mdash; Political Participation &amp; Governance<span>Civic engagement and opinions</span></div>
+    </div>
     <div class="card-body">
       <div class="field">
-        <label class="field-label"><span class="qn">B1.</span> Are you a registered voter?</label>
+        <label class="field-label"><span class="qnum">B1.</span> Are you a registered voter?</label>
         <div class="pill-row">
           <div class="pill"><input type="radio" name="voter" id="vy" value="Yes" required><label for="vy">Yes</label></div>
           <div class="pill"><input type="radio" name="voter" id="vn" value="No"><label for="vn">No</label></div>
         </div>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">B2.</span> How often do you engage in politics?</label>
+        <label class="field-label"><span class="qnum">B2.</span> Areas where the county government has <strong>NOT</strong> delivered: <span class="fnote">(tick all that apply)</span></label>
         <div class="pill-row">
-          <div class="pill"><input type="radio" name="engage" id="ef" value="Frequently" required onchange="toggleEngageExplain()"><label for="ef">Frequently</label></div>
-          <div class="pill"><input type="radio" name="engage" id="eo2" value="Occasionally" onchange="toggleEngageExplain()"><label for="eo2">Occasionally</label></div>
-          <div class="pill"><input type="radio" name="engage" id="er" value="Rarely" onchange="toggleEngageExplain()"><label for="er">Rarely</label></div>
-          <div class="pill"><input type="radio" name="engage" id="en" value="Never" onchange="toggleEngageExplain()"><label for="en">Never</label></div>
-        </div>
-        <div class="conditional-field" id="engageNeverExplain">
-          <label class="field-label" style="margin-top:8px;"><span class="qn">B2.1.</span> If Never - please explain why:</label>
-          <textarea id="engageNeverReason" placeholder="Please explain why you do not engage in politics..."></textarea>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label"><span class="qn">B2.2.</span> What motivates your participation in politics? <span class="field-note">(tick all that apply)</span></label>
-        <div class="pill-row">
-          <div class="pill"><input type="checkbox" id="b3a" value="Community development"><label for="b3a">Community development</label></div>
-          <div class="pill"><input type="checkbox" id="b3b" value="Personal interests"><label for="b3b">Personal interests</label></div>
-          <div class="pill"><input type="checkbox" id="b3c" value="Civic duty"><label for="b3c">Civic duty</label></div>
-          <div class="pill"><input type="checkbox" id="b3d" value="Other"><label for="b3d">Other</label></div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label"><span class="qn">B3.</span> Do you feel your opinions are considered in governance?</label>
-        <div class="pill-row">
-          <div class="pill"><input type="radio" name="opinion" id="opy" value="Yes" required><label for="opy">Yes</label></div>
-          <div class="pill"><input type="radio" name="opinion" id="opn" value="No"><label for="opn">No</label></div>
-          <div class="pill"><input type="radio" name="opinion" id="opns" value="Not sure"><label for="opns">Not sure</label></div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label"><span class="qn">B4.</span> What are the most pressing political issues in the county?</label>
-        <textarea id="issues" placeholder="Describe the key political issues..."></textarea>
-      </div>
-      <div class="field">
-        <label class="field-label"><span class="qn">B5.</span> Areas where the county government has NOT delivered: <span class="field-note">(tick all that apply)</span></label>
-        <div class="pill-row">
-          <div class="pill"><input type="checkbox" id="b6a" value="Agriculture"><label for="b6a">Agriculture</label></div>
-          <div class="pill"><input type="checkbox" id="b6b" value="Infrastructure"><label for="b6b">Infrastructure</label></div>
-          <div class="pill"><input type="checkbox" id="b6c" value="Investments"><label for="b6c">Investments</label></div>
-          <div class="pill"><input type="checkbox" id="b6d" value="SMEs"><label for="b6d">SMEs</label></div>
-          <div class="pill"><input type="checkbox" id="b6e" value="Health"><label for="b6e">Health</label></div>
-          <div class="pill"><input type="checkbox" id="b6f" value="Education"><label for="b6f">Education</label></div>
+          <div class="pill"><input type="checkbox" id="b5a" value="Agriculture"><label for="b5a">Agriculture</label></div>
+          <div class="pill"><input type="checkbox" id="b5b" value="Infrastructure"><label for="b5b">Infrastructure</label></div>
+          <div class="pill"><input type="checkbox" id="b5c" value="Water"><label for="b5c">Water</label></div>
+          <div class="pill"><input type="checkbox" id="b5d" value="SMEs"><label for="b5d">SMEs</label></div>
+          <div class="pill"><input type="checkbox" id="b5e" value="Health"><label for="b5e">Health</label></div>
+          <div class="pill"><input type="checkbox" id="b5f" value="Education"><label for="b5f">Education</label></div>
         </div>
       </div>
     </div>
@@ -534,10 +519,13 @@ textarea { min-height: 76px; resize: vertical; }
 
   <!-- SECTION C -->
   <div class="card">
-    <div class="card-head"><div class="section-badge">C</div><h3>Section C - Political Information &amp; Transparency</h3></div>
+    <div class="card-head th-gold">
+      <div class="sec-badge">C</div>
+      <div class="sec-label">Section C &mdash; Political Information &amp; Transparency<span>How you access information</span></div>
+    </div>
     <div class="card-body">
       <div class="field">
-        <label class="field-label"><span class="qn">C1.</span> How do you usually get political information? <span class="field-note">(tick all that apply)</span></label>
+        <label class="field-label"><span class="qnum">C1.</span> How do you usually get political information? <span class="fnote">(tick all that apply)</span></label>
         <div class="pill-row">
           <div class="pill"><input type="checkbox" id="c1a" value="Radio"><label for="c1a">Radio</label></div>
           <div class="pill"><input type="checkbox" id="c1b" value="TV"><label for="c1b">TV</label></div>
@@ -548,24 +536,18 @@ textarea { min-height: 76px; resize: vertical; }
           <div class="pill"><input type="checkbox" id="c1g" value="Other"><label for="c1g">Other</label></div>
         </div>
       </div>
-      <div class="field">
-        <label class="field-label"><span class="qn">C2.</span> Rate the transparency of the government:</label>
-        <div class="pill-row">
-          <div class="pill"><input type="radio" name="transparency" id="tex" value="Excellent" required><label for="tex">Excellent</label></div>
-          <div class="pill"><input type="radio" name="transparency" id="tgd" value="Good"><label for="tgd">Good</label></div>
-          <div class="pill"><input type="radio" name="transparency" id="tfa" value="Fair"><label for="tfa">Fair</label></div>
-          <div class="pill"><input type="radio" name="transparency" id="tpo" value="Poor"><label for="tpo">Poor</label></div>
-        </div>
-      </div>
     </div>
   </div>
 
   <!-- SECTION D -->
   <div class="card">
-    <div class="card-head"><div class="section-badge">D</div><h3>Section D - Project Delivery Assessment</h3></div>
+    <div class="card-head th-forest">
+      <div class="sec-badge">D</div>
+      <div class="sec-label">Section D &mdash; Project Delivery Assessment<span>County government performance</span></div>
+    </div>
     <div class="card-body">
       <div class="field">
-        <label class="field-label"><span class="qn">D1.</span> Rate the performance of the current county government:</label>
+        <label class="field-label"><span class="qnum">D1.</span> Rate the performance of the current county government:</label>
         <div class="pill-row">
           <div class="pill"><input type="radio" name="performance" id="pex" value="Excellent" required><label for="pex">Excellent</label></div>
           <div class="pill"><input type="radio" name="performance" id="pgd" value="Good"><label for="pgd">Good</label></div>
@@ -574,88 +556,51 @@ textarea { min-height: 76px; resize: vertical; }
         </div>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">D2.</span> Are you aware of any projects delivered by the county government in your area? If yes, name up to 2:</label>
+        <label class="field-label"><span class="qnum">D2.</span> Are you aware of any projects delivered by the county government in your area?</label>
         <div class="pill-row" style="margin-bottom:8px;">
-          <div class="pill"><input type="radio" name="projectsAware" id="paw_y" value="Yes" onchange="toggleProjectsDelivered()"><label for="paw_y">Yes</label></div>
-          <div class="pill"><input type="radio" name="projectsAware" id="paw_n" value="No" onchange="toggleProjectsDelivered()"><label for="paw_n">No</label></div>
+          <div class="pill"><input type="radio" name="projectsAware" id="paw_y" value="Yes" onchange="toggleCond('projectsAware','Yes','projectsDeliveredField')"><label for="paw_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="projectsAware" id="paw_n" value="No" onchange="toggleCond('projectsAware','Yes','projectsDeliveredField')"><label for="paw_n">No</label></div>
         </div>
-        <div class="conditional-field" id="projectsDeliveredField">
+        <div class="cond-field" id="projectsDeliveredField">
+          <label class="field-label" style="font-size:12.5px;">If Yes &mdash; name any 2 projects:</label>
           <textarea id="projectsDelivered" placeholder="1. &#10;2. "></textarea>
         </div>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">D3.</span> Are there any projects that were promised but have not been delivered? If yes, name up to 2:</label>
+        <label class="field-label"><span class="qnum">D3.</span> Are there any projects promised but not delivered?</label>
         <div class="pill-row" style="margin-bottom:8px;">
-          <div class="pill"><input type="radio" name="missedPromises" id="mp_y" value="Yes" onchange="toggleProjectsMissing()"><label for="mp_y">Yes</label></div>
-          <div class="pill"><input type="radio" name="missedPromises" id="mp_n" value="No" onchange="toggleProjectsMissing()"><label for="mp_n">No</label></div>
+          <div class="pill"><input type="radio" name="missedPromises" id="mp_y" value="Yes" onchange="toggleCond('missedPromises','Yes','projectsMissingField')"><label for="mp_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="missedPromises" id="mp_n" value="No" onchange="toggleCond('missedPromises','Yes','projectsMissingField')"><label for="mp_n">No</label></div>
         </div>
-        <div class="conditional-field" id="projectsMissingField">
+        <div class="cond-field" id="projectsMissingField">
+          <label class="field-label" style="font-size:12.5px;">If Yes &mdash; name any 2 projects:</label>
           <textarea id="projectsMissing" placeholder="1. &#10;2. "></textarea>
         </div>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">D4.</span> List your top 5 priority needs in your ward (in order of priority):</label>
-        <textarea id="needs" placeholder="1. &#10;2. &#10;3. &#10;4. &#10;5. " style="min-height:110px;"></textarea>
+        <label class="field-label"><span class="qnum">D4.</span> List your top 2 priority needs in your ward (in order of priority):</label>
+        <textarea id="needs" placeholder="1. &#10;2. "></textarea>
       </div>
     </div>
   </div>
 
   <!-- SECTION E -->
   <div class="card">
-    <div class="card-head"><div class="section-badge">E</div><h3>Section E - Service Delivery Rating</h3></div>
-    <div class="card-body">
-      <div class="field">
-        <label class="field-label"><span class="qn">E1.</span> How often do you pay attention to development activities in Embu County?</label>
-        <div class="pill-row">
-          <div class="pill"><input type="radio" name="devAttention" id="da1" value="Always" required><label for="da1">Always</label></div>
-          <div class="pill"><input type="radio" name="devAttention" id="da2" value="Often"><label for="da2">Often</label></div>
-          <div class="pill"><input type="radio" name="devAttention" id="da3" value="Sometimes"><label for="da3">Sometimes</label></div>
-          <div class="pill"><input type="radio" name="devAttention" id="da4" value="Rarely"><label for="da4">Rarely</label></div>
-          <div class="pill"><input type="radio" name="devAttention" id="da5" value="Never"><label for="da5">Never</label></div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label"><span class="qn">E2.</span> Rate how the county government has performed in the following areas:</label>
-        <p class="section-note">Not Sure / Very Poor / Poor / Fair / Good / Excellent</p>
-        <div style="overflow-x:auto;">
-          <table class="svc-table">
-            <thead>
-              <tr>
-                <th style="text-align:left;min-width:180px;">Service Area</th>
-                <th>Not Sure</th><th>Very Poor</th><th>Poor</th><th>Fair</th><th>Good</th><th>Excellent</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Agriculture Services</td><td><input type="radio" name="svc_agri" value="Not Sure"></td><td><input type="radio" name="svc_agri" value="Very Poor"></td><td><input type="radio" name="svc_agri" value="Poor"></td><td><input type="radio" name="svc_agri" value="Fair"></td><td><input type="radio" name="svc_agri" value="Good"></td><td><input type="radio" name="svc_agri" value="Excellent"></td></tr>
-              <tr><td>Infrastructure (Roads &amp; Markets)</td><td><input type="radio" name="svc_infra" value="Not Sure"></td><td><input type="radio" name="svc_infra" value="Very Poor"></td><td><input type="radio" name="svc_infra" value="Poor"></td><td><input type="radio" name="svc_infra" value="Fair"></td><td><input type="radio" name="svc_infra" value="Good"></td><td><input type="radio" name="svc_infra" value="Excellent"></td></tr>
-              <tr><td>Education - ECD / ECDE</td><td><input type="radio" name="svc_ecd" value="Not Sure"></td><td><input type="radio" name="svc_ecd" value="Very Poor"></td><td><input type="radio" name="svc_ecd" value="Poor"></td><td><input type="radio" name="svc_ecd" value="Fair"></td><td><input type="radio" name="svc_ecd" value="Good"></td><td><input type="radio" name="svc_ecd" value="Excellent"></td></tr>
-              <tr><td>Education - VTCs</td><td><input type="radio" name="svc_vtc" value="Not Sure"></td><td><input type="radio" name="svc_vtc" value="Very Poor"></td><td><input type="radio" name="svc_vtc" value="Poor"></td><td><input type="radio" name="svc_vtc" value="Fair"></td><td><input type="radio" name="svc_vtc" value="Good"></td><td><input type="radio" name="svc_vtc" value="Excellent"></td></tr>
-              <tr><td>Health Services</td><td><input type="radio" name="svc_health" value="Not Sure"></td><td><input type="radio" name="svc_health" value="Very Poor"></td><td><input type="radio" name="svc_health" value="Poor"></td><td><input type="radio" name="svc_health" value="Fair"></td><td><input type="radio" name="svc_health" value="Good"></td><td><input type="radio" name="svc_health" value="Excellent"></td></tr>
-              <tr><td>Youth Empowerment (SIGPs)</td><td><input type="radio" name="svc_youth" value="Not Sure"></td><td><input type="radio" name="svc_youth" value="Very Poor"></td><td><input type="radio" name="svc_youth" value="Poor"></td><td><input type="radio" name="svc_youth" value="Fair"></td><td><input type="radio" name="svc_youth" value="Good"></td><td><input type="radio" name="svc_youth" value="Excellent"></td></tr>
-              <tr><td>Women Empowerment (SIGPs)</td><td><input type="radio" name="svc_women" value="Not Sure"></td><td><input type="radio" name="svc_women" value="Very Poor"></td><td><input type="radio" name="svc_women" value="Poor"></td><td><input type="radio" name="svc_women" value="Fair"></td><td><input type="radio" name="svc_women" value="Good"></td><td><input type="radio" name="svc_women" value="Excellent"></td></tr>
-              <tr><td>PWDs Support (SIGPs)</td><td><input type="radio" name="svc_pwds" value="Not Sure"></td><td><input type="radio" name="svc_pwds" value="Very Poor"></td><td><input type="radio" name="svc_pwds" value="Poor"></td><td><input type="radio" name="svc_pwds" value="Fair"></td><td><input type="radio" name="svc_pwds" value="Good"></td><td><input type="radio" name="svc_pwds" value="Excellent"></td></tr>
-              <tr><td>Access to Gov't Services</td><td><input type="radio" name="svc_govtaccess" value="Not Sure"></td><td><input type="radio" name="svc_govtaccess" value="Very Poor"></td><td><input type="radio" name="svc_govtaccess" value="Poor"></td><td><input type="radio" name="svc_govtaccess" value="Fair"></td><td><input type="radio" name="svc_govtaccess" value="Good"></td><td><input type="radio" name="svc_govtaccess" value="Excellent"></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div class="card-head th-leaf">
+      <div class="sec-badge">E</div>
+      <div class="sec-label">Section E &mdash; Business &amp; Economic Issues<span>SME challenges in Embu County</span></div>
     </div>
-  </div>
-
-  <!-- SECTION F -->
-  <div class="card">
-    <div class="card-head"><div class="section-badge">F</div><h3>Section F - Business &amp; Economic Issues</h3></div>
     <div class="card-body">
       <div class="field">
-        <label class="field-label"><span class="qn">F1.</span> What are the main challenges faced by business people / SMEs in Embu County? <span class="field-note">(tick all that apply)</span></label>
+        <label class="field-label"><span class="qnum">E1.</span> Main challenges faced by business people / SMEs in Embu County: <span class="fnote">(tick all that apply)</span></label>
         <div class="pill-row">
-          <div class="pill"><input type="checkbox" id="f4a" value="Finance / Capital"><label for="f4a">Finance / Capital</label></div>
-          <div class="pill"><input type="checkbox" id="f4b" value="High Taxes"><label for="f4b">High Taxes</label></div>
-          <div class="pill"><input type="checkbox" id="f4c" value="Limited Market"><label for="f4c">Limited Market</label></div>
-          <div class="pill"><input type="checkbox" id="f4d" value="Lack of Government Support"><label for="f4d">Lack of Government Support</label></div>
-          <div class="pill"><input type="checkbox" id="f4e" value="Competition"><label for="f4e">Competition</label></div>
-          <div class="pill"><input type="checkbox" id="f4f" value="Poor Infrastructure"><label for="f4f">Poor Infrastructure</label></div>
-          <div class="pill"><input type="checkbox" id="f4g" value="Other"><label for="f4g">Other</label></div>
+          <div class="pill"><input type="checkbox" id="e1a" value="Finance / Capital"><label for="e1a">Finance / Capital</label></div>
+          <div class="pill"><input type="checkbox" id="e1b" value="High Taxes"><label for="e1b">High Taxes</label></div>
+          <div class="pill"><input type="checkbox" id="e1c" value="Limited Market"><label for="e1c">Limited Market</label></div>
+          <div class="pill"><input type="checkbox" id="e1d" value="Lack of Government Support"><label for="e1d">Lack of Gov&apos;t Support</label></div>
+          <div class="pill"><input type="checkbox" id="e1e" value="Competition"><label for="e1e">Competition</label></div>
+          <div class="pill"><input type="checkbox" id="e1f" value="Poor Infrastructure"><label for="e1f">Poor Infrastructure</label></div>
+          <div class="pill"><input type="checkbox" id="e1g" value="Other"><label for="e1g">Other</label></div>
         </div>
       </div>
     </div>
@@ -663,103 +608,64 @@ textarea { min-height: 76px; resize: vertical; }
 
   <!-- SECTION G -->
   <div class="card">
-    <div class="card-head"><div class="section-badge">G</div><h3>Section G - Political Sentiment &amp; Inclination</h3></div>
+    <div class="card-head th-ink">
+      <div class="sec-badge">G</div>
+      <div class="sec-label">Section G &mdash; Political Sentiment &amp; Inclination<span>Candidate preferences and party affiliation</span></div>
+    </div>
     <div class="card-body">
       <div class="field">
-        <label class="field-label"><span class="qn">G1.</span> If elections were held today, would you re-elect President William Ruto?</label>
+        <label class="field-label"><span class="qnum">G1.</span> If elections were held today, would you re-elect President William Ruto?</label>
         <div class="pill-row">
-          <div class="pill"><input type="radio" name="reelectRuto" id="ruto_y" value="Yes" required onchange="toggleRutoCandidate()"><label for="ruto_y">Yes</label></div>
-          <div class="pill"><input type="radio" name="reelectRuto" id="ruto_n" value="No" onchange="toggleRutoCandidate()"><label for="ruto_n">No</label></div>
+          <div class="pill"><input type="radio" name="reelectRuto" id="ruto_y" value="Yes" required onchange="toggleRuto()"><label for="ruto_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="reelectRuto" id="ruto_n" value="No" onchange="toggleRuto()"><label for="ruto_n">No</label></div>
         </div>
-        <div class="conditional-field" id="rutoNoCandidateField">
-          <label class="field-label" style="margin-top:10px;"><span class="qn">G1.1.</span> If No - who would be your most preferred presidential candidate?</label>
-          <input type="text" id="preferredPresCandidate" placeholder="Enter preferred candidate's name...">
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label"><span class="qn">G2.</span> If elections were held today, who would you elect as Governor of Embu County?</label>
-        <div class="gov-grid" id="governorGrid">
-          <div class="gov-card" onclick="selectGovernor(this,'cecily')">
-            <input type="radio" name="governor" value="Cecily Mbarire" onchange="updateNegativeQuestions()">
-            <div class="gc-name">Cecily Mbarire</div>
-            <div class="gc-tag">Incumbent Governor</div>
-          </div>
-          <div class="gov-card" onclick="selectGovernor(this,'lenny')">
-            <input type="radio" name="governor" value="Lenny Kivuti" onchange="updateNegativeQuestions()">
-            <div class="gc-name">Lenny Kivuti</div>
-            <div class="gc-tag">Challenger</div>
-          </div>
-          <div class="gov-card" onclick="selectGovernor(this,'gitonga')">
-            <input type="radio" name="governor" value="Gitonga Mukunji" onchange="updateNegativeQuestions()">
-            <div class="gc-name">Gitonga Mukunji</div>
-            <div class="gc-tag">Challenger</div>
-          </div>
-          <div class="gov-card" onclick="selectGovernor(this,'other')">
-            <input type="radio" name="governor" value="Other" onchange="updateNegativeQuestions()">
-            <div class="gc-name">Other</div>
-            <div class="gc-tag">Specify below</div>
-          </div>
-        </div>
-        <div class="conditional-field" id="govOtherField" style="margin-top:10px;">
-          <input type="text" id="governorOther" placeholder="Please specify the candidate's name...">
+        <div class="cond-field" id="rutoCandField">
+          <label class="field-label" style="margin-top:8px;font-size:12.5px;"><span class="qnum">G1.1.</span> If No &mdash; who would be your most preferred presidential candidate?</label>
+          <input type="text" id="preferredPres" placeholder="Enter preferred candidate's name...">
         </div>
       </div>
-
       <div class="field">
-        <label class="field-label"><span class="qn">G3.</span> What is your most preferred political party in Embu County?</label>
+        <label class="field-label"><span class="qnum">G2.</span> If elections were held today, who would you elect as Governor of Embu County?</label>
+        <div class="gov-grid" id="govGrid">
+          <div class="gov-card" onclick="selectGov(this,'Cecily Mbarire')"><input type="radio" name="governor" value="Cecily Mbarire" onchange="updateNeg()"><div class="gc-name">Cecily Mbarire</div><div class="gc-tag">Incumbent Governor</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Lenny Kivuti')"><input type="radio" name="governor" value="Lenny Kivuti" onchange="updateNeg()"><div class="gc-name">Lenny Kivuti</div><div class="gc-tag">Challenger</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Gitonga Mukunji')"><input type="radio" name="governor" value="Gitonga Mukunji" onchange="updateNeg()"><div class="gc-name">Gitonga Mukunji</div><div class="gc-tag">Challenger</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Other')"><input type="radio" name="governor" value="Other" onchange="updateNeg()"><div class="gc-name">Other</div><div class="gc-tag">Specify below</div></div>
+        </div>
+        <div class="cond-field" id="govOtherField" style="margin-top:10px;"><input type="text" id="governorOther" placeholder="Please specify the candidate's name..."></div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G3.</span> Most preferred political party in Embu County:</label>
         <div class="pill-row">
-          <div class="pill"><input type="radio" name="politicalParty" id="party_BUS " value="BUS "><label for="party_BUS ">BUS </label></div>
-          <div class="pill"><input type="radio" name="politicalParty" id="party_uda" value="UDA"><label for="party_uda">UDA</label></div>
-          <div class="pill"><input type="radio" name="politicalParty" id="party_jub" value="Jubilee"><label for="party_jub">Jubilee</label></div>
-          <div class="pill"><input type="radio" name="politicalParty" id="party_dp" value="DP"><label for="party_dp">DP</label></div>
-          <div class="pill"><input type="radio" name="politicalParty" id="party_dcp" value="DCP"><label for="party_dcp">DCP</label></div>
-          <div class="pill"><input type="radio" name="politicalParty" id="party_other" value="Other"><label for="party_other">Other</label></div>
-          <div class="pill"><input type="radio" name="politicalParty" id="party_none" value="None"><label for="party_none">None</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_bus" value="BUS"><label for="p_bus">BUS</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_uda" value="UDA"><label for="p_uda">UDA</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_odm" value="ODM"><label for="p_odm">ODM</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_jub" value="Jubilee"><label for="p_jub">Jubilee</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_dp" value="DP"><label for="p_dp">DP</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_dcp" value="DCP"><label for="p_dcp">DCP</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_wip" value="Wiper"><label for="p_wip">Wiper</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_oth" value="Other"><label for="p_oth">Other</label></div>
         </div>
       </div>
-
       <div class="field">
-        <label class="field-label"><span class="qn">G4.</span> Why would you vote for your preferred governor? <span class="field-note">(tick all that apply)</span></label>
+        <label class="field-label"><span class="qnum">G4.</span> Why would you vote for your preferred governor? <span class="fnote">(tick all that apply)</span></label>
         <div class="pill-row">
-          <div class="pill"><input type="checkbox" id="g2a" value="Track record"><label for="g2a">Track record</label></div>
-          <div class="pill"><input type="checkbox" id="g2b" value="Development agenda"><label for="g2b">Development agenda</label></div>
-          <div class="pill"><input type="checkbox" id="g2c" value="Trustworthy"><label for="g2c">Trustworthy</label></div>
-          <div class="pill"><input type="checkbox" id="g2d" value="Leadership qualities"><label for="g2d">Leadership qualities</label></div>
-          <div class="pill"><input type="checkbox" id="g2e" value="Community connection"><label for="g2e">Community connection</label></div>
-          <div class="pill"><input type="checkbox" id="g2f" value="Communication"><label for="g2f">Communication</label></div>
-          <div class="pill"><input type="checkbox" id="g2g" value="Proven delivery"><label for="g2g">Proven delivery</label></div>
-          <div class="pill"><input type="checkbox" id="g2h" value="Party affiliation"><label for="g2h">Party affiliation</label></div>
-          <div class="pill"><input type="checkbox" id="g2i" value="New ideas"><label for="g2i">New ideas</label></div>
-          <div class="pill"><input type="checkbox" id="g2j" value="Personal help"><label for="g2j">Personal help</label></div>
-          <div class="pill"><input type="checkbox" id="g2k" value="Other"><label for="g2k">Other</label></div>
+          <div class="pill"><input type="checkbox" id="g4a" value="Track record"><label for="g4a">Track record</label></div>
+          <div class="pill"><input type="checkbox" id="g4b" value="Development agenda"><label for="g4b">Development agenda</label></div>
+          <div class="pill"><input type="checkbox" id="g4c" value="Trustworthy"><label for="g4c">Trustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g4d" value="Leadership qualities"><label for="g4d">Leadership qualities</label></div>
+          <div class="pill"><input type="checkbox" id="g4e" value="Community connection"><label for="g4e">Community connection</label></div>
+          <div class="pill"><input type="checkbox" id="g4f" value="Communication"><label for="g4f">Communication</label></div>
+          <div class="pill"><input type="checkbox" id="g4g" value="Proven delivery"><label for="g4g">Proven delivery</label></div>
+          <div class="pill"><input type="checkbox" id="g4h" value="Party affiliation"><label for="g4h">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g4i" value="New ideas"><label for="g4i">New ideas</label></div>
+          <div class="pill"><input type="checkbox" id="g4j" value="Personal help"><label for="g4j">Personal help</label></div>
+          <div class="pill"><input type="checkbox" id="g4k" value="Other"><label for="g4k">Other</label></div>
         </div>
       </div>
-
-      <div class="field" id="notMbarireField">
-        <label class="field-label"><span class="qn">G5.</span> Reasons for NOT voting for Cecily Mbarire: <span class="field-note">(tick all that apply)</span></label>
-        <div class="pill-row" id="notMbarireOptions">
-          <div class="pill"><input type="checkbox" id="g3a" value="Poor performance"><label for="g3a">Poor performance</label></div>
-          <div class="pill"><input type="checkbox" id="g3b" value="Corruption"><label for="g3b">Corruption</label></div>
-          <div class="pill"><input type="checkbox" id="g3c" value="Untrustworthy"><label for="g3c">Untrustworthy</label></div>
-          <div class="pill"><input type="checkbox" id="g3d" value="Tribal favoritism"><label for="g3d">Tribal favoritism</label></div>
-          <div class="pill"><input type="checkbox" id="g3e" value="Party affiliation"><label for="g3e">Party affiliation</label></div>
-          <div class="pill"><input type="checkbox" id="g3f" value="Weak leadership"><label for="g3f">Weak leadership</label></div>
-          <div class="pill"><input type="checkbox" id="g3g" value="No vision"><label for="g3g">No vision</label></div>
-          <div class="pill"><input type="checkbox" id="g3h" value="Land issues"><label for="g3h">Land issues</label></div>
-          <div class="pill"><input type="checkbox" id="g3i" value="Other"><label for="g3i">Other</label></div>
-        </div>
-        <div id="notMbarireDisabledMsg" class="disabled-note">&#x26A0; Disabled - you selected Cecily Mbarire as your preferred candidate.</div>
-      </div>
-
       <div class="field">
-        <label class="field-label"><span class="qn">G6.</span> Advice to Cecily Mbarire:</label>
-        <textarea id="adviceMbarire" placeholder="Your advice or message to Cecily Mbarire..."></textarea>
-      </div>
-
-      <div class="field" id="notKivutiField">
-        <label class="field-label"><span class="qn">G7.</span> Reasons for NOT voting for Lenny Kivuti: <span class="field-note">(tick all that apply)</span></label>
-        <div class="pill-row" id="notKivutiOptions">
+        <label class="field-label"><span class="qnum">G5.</span> Reasons for NOT voting for Cecily Mbarire: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notMbarireOpts">
           <div class="pill"><input type="checkbox" id="g5a" value="Poor performance"><label for="g5a">Poor performance</label></div>
           <div class="pill"><input type="checkbox" id="g5b" value="Corruption"><label for="g5b">Corruption</label></div>
           <div class="pill"><input type="checkbox" id="g5c" value="Untrustworthy"><label for="g5c">Untrustworthy</label></div>
@@ -770,72 +676,75 @@ textarea { min-height: 76px; resize: vertical; }
           <div class="pill"><input type="checkbox" id="g5h" value="Land issues"><label for="g5h">Land issues</label></div>
           <div class="pill"><input type="checkbox" id="g5i" value="Other"><label for="g5i">Other</label></div>
         </div>
-        <div id="notKivutiDisabledMsg" class="disabled-note">&#x26A0; Disabled - you selected Lenny Kivuti as your preferred candidate.</div>
+        <div id="notMbarireDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Cecily Mbarire as your preferred candidate.</div>
       </div>
-
-      <div class="field" id="notGitongaField">
-        <label class="field-label"><span class="qn">G8.</span> Reasons for NOT voting for Gitonga Mukunji: <span class="field-note">(tick all that apply)</span></label>
-        <div class="pill-row" id="notGitongaOptions">
-          <div class="pill"><input type="checkbox" id="g6a" value="Poor performance"><label for="g6a">Poor performance</label></div>
-          <div class="pill"><input type="checkbox" id="g6b" value="Corruption"><label for="g6b">Corruption</label></div>
-          <div class="pill"><input type="checkbox" id="g6c" value="Untrustworthy"><label for="g6c">Untrustworthy</label></div>
-          <div class="pill"><input type="checkbox" id="g6d" value="Tribal favoritism"><label for="g6d">Tribal favoritism</label></div>
-          <div class="pill"><input type="checkbox" id="g6e" value="Party affiliation"><label for="g6e">Party affiliation</label></div>
-          <div class="pill"><input type="checkbox" id="g6f" value="Weak leadership"><label for="g6f">Weak leadership</label></div>
-          <div class="pill"><input type="checkbox" id="g6g" value="No vision"><label for="g6g">No vision</label></div>
-          <div class="pill"><input type="checkbox" id="g6h" value="Land issues"><label for="g6h">Land issues</label></div>
-          <div class="pill"><input type="checkbox" id="g6i" value="Other"><label for="g6i">Other</label></div>
-        </div>
-        <div id="notGitongaDisabledMsg" class="disabled-note">&#x26A0; Disabled - you selected Gitonga Mukunji as your preferred candidate.</div>
-      </div>
-
       <div class="field">
-        <label class="field-label"><span class="qn">G9.</span> If elections were held today, who would be your preferred candidate for the following positions?</label>
-        <p class="section-note">Write the name of your preferred candidate for each position.</p>
-        <div class="elective-grid">
-          <div class="elective-item">
-            <label>&#x1F3DB; Senator</label>
-            <input type="text" id="prefSenator" placeholder="Preferred senator candidate...">
-          </div>
-          <div class="elective-item">
-            <label>&#x1F469; Women Representative</label>
-            <input type="text" id="prefWomenRep" placeholder="Preferred Women Rep candidate...">
-          </div>
-          <div class="elective-item">
-            <label>&#x1F5F3; Member of Parliament (MP)</label>
-            <input type="text" id="prefMP" placeholder="Preferred MP candidate...">
-          </div>
-          <div class="elective-item">
-            <label>&#x1F4CD; Member of County Assembly (MCA)</label>
-            <input type="text" id="prefMCA" placeholder="Preferred MCA candidate...">
-          </div>
-        </div>
+        <label class="field-label"><span class="qnum">G6.</span> Advice to Cecily Mbarire:</label>
+        <textarea id="adviceMbarire" placeholder="Your advice or message to Cecily Mbarire..."></textarea>
       </div>
-
       <div class="field">
-        <label class="field-label"><span class="qn">G10.</span> Additional comments about the political state of Embu County:</label>
-        <textarea id="comments" placeholder="Share any final thoughts..."></textarea>
+        <label class="field-label"><span class="qnum">G7.</span> Reasons for NOT voting for Lenny Kivuti: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notKivutiOpts">
+          <div class="pill"><input type="checkbox" id="g7a" value="Poor performance"><label for="g7a">Poor performance</label></div>
+          <div class="pill"><input type="checkbox" id="g7b" value="Corruption"><label for="g7b">Corruption</label></div>
+          <div class="pill"><input type="checkbox" id="g7c" value="Untrustworthy"><label for="g7c">Untrustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g7d" value="Tribal favoritism"><label for="g7d">Tribal favoritism</label></div>
+          <div class="pill"><input type="checkbox" id="g7e" value="Party affiliation"><label for="g7e">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g7f" value="Weak leadership"><label for="g7f">Weak leadership</label></div>
+          <div class="pill"><input type="checkbox" id="g7g" value="No vision"><label for="g7g">No vision</label></div>
+          <div class="pill"><input type="checkbox" id="g7h" value="Land issues"><label for="g7h">Land issues</label></div>
+          <div class="pill"><input type="checkbox" id="g7i" value="Other"><label for="g7i">Other</label></div>
+        </div>
+        <div id="notKivutiDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Lenny Kivuti as your preferred candidate.</div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G8.</span> Reasons for NOT voting for Gitonga Mukunji: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notGitongaOpts">
+          <div class="pill"><input type="checkbox" id="g8a" value="Poor performance"><label for="g8a">Poor performance</label></div>
+          <div class="pill"><input type="checkbox" id="g8b" value="Corruption"><label for="g8b">Corruption</label></div>
+          <div class="pill"><input type="checkbox" id="g8c" value="Untrustworthy"><label for="g8c">Untrustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g8d" value="Tribal favoritism"><label for="g8d">Tribal favoritism</label></div>
+          <div class="pill"><input type="checkbox" id="g8e" value="Party affiliation"><label for="g8e">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g8f" value="Weak leadership"><label for="g8f">Weak leadership</label></div>
+          <div class="pill"><input type="checkbox" id="g8g" value="No vision"><label for="g8g">No vision</label></div>
+          <div class="pill"><input type="checkbox" id="g8h" value="Land issues"><label for="g8h">Land issues</label></div>
+          <div class="pill"><input type="checkbox" id="g8i" value="Other"><label for="g8i">Other</label></div>
+        </div>
+        <div id="notGitongaDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Gitonga Mukunji as your preferred candidate.</div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G9.</span> Preferred candidates for the following positions:</label>
+        <p class="sec-note">Write the name of your preferred candidate for each position.</p>
+        <div class="elec-grid">
+          <div class="elec-item"><label>&#x1F3DB; Senator</label><input type="text" id="prefSenator" placeholder="Preferred senator..."></div>
+          <div class="elec-item"><label>&#x1F469; Women Representative</label><input type="text" id="prefWomenRep" placeholder="Preferred Women Rep..."></div>
+          <div class="elec-item"><label>&#x1F5F3; Member of Parliament (MP)</label><input type="text" id="prefMP" placeholder="Preferred MP..."></div>
+          <div class="elec-item"><label>&#x1F4CD; Member of County Assembly (MCA)</label><input type="text" id="prefMCA" placeholder="Preferred MCA..."></div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- SECTION H -->
   <div class="card">
-    <div class="card-head"><div class="section-badge">H</div><h3>Section H - Civic &amp; Community Perspectives</h3></div>
+    <div class="card-head th-sky">
+      <div class="sec-badge">H</div>
+      <div class="sec-label">Section H &mdash; Civic &amp; Community Perspectives<span>Development and community views</span></div>
+    </div>
     <div class="card-body">
       <div class="field">
-        <label class="field-label"><span class="qn">H1.</span> Which office do you think contributes most to development in your area?</label>
+        <label class="field-label"><span class="qnum">H1.</span> Which office has contributed most to development in your area?</label>
         <div class="pill-row">
-          <div class="pill"><input type="radio" name="devOffice" id="dev_pres" value="President" required><label for="dev_pres">President</label></div>
-          <div class="pill"><input type="radio" name="devOffice" id="dev_gov" value="Governor"><label for="dev_gov">Governor</label></div>
-          <div class="pill"><input type="radio" name="devOffice" id="dev_mp" value="MP"><label for="dev_mp">MP</label></div>
-          <div class="pill"><input type="radio" name="devOffice" id="dev_mca" value="MCA"><label for="dev_mca">MCA</label></div>
-          <div class="pill"><input type="radio" name="devOffice" id="dev_sen" value="Senator"><label for="dev_sen">Senator</label></div>
-          <div class="pill"><input type="radio" name="devOffice" id="dev_wr" value="Women Rep"><label for="dev_wr">Women Rep</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_pres" value="President" required><label for="do_pres">President</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_gov" value="Governor"><label for="do_gov">Governor</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_mp" value="MP"><label for="do_mp">MP</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_mca" value="MCA"><label for="do_mca">MCA</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_sen" value="Senator"><label for="do_sen">Senator</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_wr" value="Women Rep"><label for="do_wr">Women Rep</label></div>
         </div>
       </div>
       <div class="field">
-        <label class="field-label"><span class="qn">H2.</span> How often do you attend places of worship (church / mosque)?</label>
+        <label class="field-label"><span class="qnum">H2.</span> How often do you attend places of worship (church / mosque)?</label>
         <div class="pill-row">
           <div class="pill"><input type="radio" name="worship" id="ws_reg" value="Regularly" required><label for="ws_reg">Regularly</label></div>
           <div class="pill"><input type="radio" name="worship" id="ws_rar" value="Rarely"><label for="ws_rar">Rarely</label></div>
@@ -847,15 +756,18 @@ textarea { min-height: 76px; resize: vertical; }
 
   <!-- SECTION I -->
   <div class="card">
-    <div class="card-head green"><div class="section-badge">I</div><h3>Section I - Optional Contact Details <span class="opt-badge" style="background:rgba(255,255,255,.25);color:#fff;">Optional</span></h3></div>
+    <div class="card-head th-opt">
+      <div class="sec-badge">I</div>
+      <div class="sec-label">Section I &mdash; Optional Contact Details<span>Strictly optional &mdash; stored separately from responses</span></div>
+    </div>
     <div class="card-body">
-      <p class="section-note">Strictly optional. Contact details are stored separately from your survey responses and used only for research follow-up - never shared with third parties.</p>
+      <p class="sec-note">Contact details are stored separately from your survey responses and used only for research follow-up &mdash; never shared with third parties.</p>
       <div class="two-col">
         <div class="field"><label class="field-label">Full Name <span class="opt-badge">optional</span></label><input type="text" id="contactName" placeholder="Your full name"></div>
         <div class="field"><label class="field-label">Phone Number <span class="opt-badge">optional</span></label><input type="text" id="contactPhone" placeholder="e.g. 07XX XXX XXX"></div>
       </div>
       <div class="field">
-        <label class="field-label">Consent to be contacted for follow-up?</label>
+        <label class="field-label">Consent to be contacted for follow-up? <span class="opt-badge">optional</span></label>
         <div class="pill-row">
           <div class="pill"><input type="radio" name="followUp" id="fuy" value="Yes"><label for="fuy">Yes</label></div>
           <div class="pill"><input type="radio" name="followUp" id="fun" value="No"><label for="fun">No</label></div>
@@ -864,8 +776,25 @@ textarea { min-height: 76px; resize: vertical; }
     </div>
   </div>
 
+  <!-- DECLARATION -->
+  <div class="card">
+    <div class="card-head th-forest">
+      <div class="sec-badge">&#x2713;</div>
+      <div class="sec-label">Enumerator Declaration<span>Confirm this interview was conducted properly</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label">I confirm this interview was conducted in accordance with the survey guidelines and the respondent gave informed consent.</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="enumDecl" id="decl_y" value="Confirmed" required><label for="decl_y">&#x2713; Confirm</label></div>
+          <div class="pill"><input type="radio" name="enumDecl" id="decl_n" value="Declined"><label for="decl_n">&#x2715; Decline</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="submit-wrap">
-    <button type="submit" id="submitBtn">&#x1F4CD; Submit Survey</button>
+    <button type="submit" id="submitBtn">&#x1F4CD; Submit Research</button>
     <div id="status" class="status-msg" style="display:none;"></div>
   </div>
 
@@ -874,802 +803,339 @@ textarea { min-height: 76px; resize: vertical; }
 </div>
 
 <script>
-/* ===================== FIREBASE INIT ===================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyAXeNgPLKFgfxBKNta7UlGzHW-bjWzghas",
-  authDomain: "survey-842bd.firebaseapp.com",
-  projectId: "survey-842bd",
-  storageBucket: "survey-842bd.firebasestorage.app",
-  messagingSenderId: "916255795370",
-  appId: "1:916255795370:web:3f186720bf9e2b163dc8d3"
+/* ══════════════════════════════════════════════
+   FIREBASE CONFIG
+══════════════════════════════════════════════ */
+const firebaseConfig={
+  apiKey:"AIzaSyAXeNgPLKFgfxBKNta7UlGzHW-bjWzghas",
+  authDomain:"survey-842bd.firebaseapp.com",
+  projectId:"survey-842bd",
+  storageBucket:"survey-842bd.firebasestorage.app",
+  messagingSenderId:"916255795370",
+  appId:"1:916255795370:web:3f186720bf9e2b163dc8d3"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db=firebase.firestore();
+const auth=firebase.auth();
 
-/* ===================== CONFIG ===================== */
-const GPS_CONFIG = {
-  MAX_ACCURACY_METERS: 80,
-  MIN_DISTANCE_METERS: 500,
-  MIN_TIME_GAP_MS: 120000,
-  HIGH_ACC_TIMEOUT_MS: 25000,
-  LOW_ACC_TIMEOUT_MS: 20000,
-  MAX_AGE_MS: 15000
-};
+/* ══════════════════════════════════════════════
+   GOOGLE AUTH
+══════════════════════════════════════════════ */
+let currentUser=null;
+let currentResearcher=null;
+const RES_KEY='ecs26_researcher';
 
-const WARDS = {
-  'Manyatta':     ['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],
-  'Runyenjes':    ['Gaturi North','Kagaari South','Kagaari North','Central Ward','Kyeni North','Kyeni South'],
-  'Mbeere South': ['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],
-  'Mbeere North': ['Nthawa','Muminji','Evurore']
-};
-
-/* ===================== STATE ===================== */
-let capturedGps = null;
-let isOnline = navigator.onLine;
-let autosaveTimer = null;
-let gpsWatchId = null;
-let currentResearcher = null;
-
-const DRAFT_KEY   = 'ecs_form_draft';
-const QUEUE_KEY   = 'ecs_offline_queue';
-const RES_KEY     = 'ecs_researcher';
-const GPS_LAST    = 'ecs_gps_last';
-
-/* ===================== WARD LOGIC ===================== */
-function updateWards(keepVal) {
-  const c = document.getElementById('constituency').value;
-  const ws = document.getElementById('ward');
-  const prev = keepVal ? ws.value : '';
-  ws.innerHTML = '';
-  if (!c || !WARDS[c]) {
-    ws.innerHTML = '<option value="">- Select constituency first -</option>';
-    return;
-  }
-  ws.appendChild(Object.assign(document.createElement('option'), { value:'', textContent:'Select ward' }));
-  WARDS[c].forEach(w => ws.appendChild(Object.assign(document.createElement('option'), { value:w, textContent:w })));
-  if (prev) ws.value = prev;
-}
-
-/* ===================== CONDITIONAL FIELDS ===================== */
-function toggleEngageExplain() {
-  const sel = document.querySelector('input[name="engage"]:checked');
-  const box = document.getElementById('engageNeverExplain');
-  if (sel && sel.value === 'Never') box.classList.add('visible');
-  else { box.classList.remove('visible'); document.getElementById('engageNeverReason').value = ''; }
-}
-
-function toggleProjectsDelivered() {
-  const sel = document.querySelector('input[name="projectsAware"]:checked');
-  document.getElementById('projectsDeliveredField').classList.toggle('visible', sel && sel.value === 'Yes');
-}
-
-function toggleProjectsMissing() {
-  const sel = document.querySelector('input[name="missedPromises"]:checked');
-  document.getElementById('projectsMissingField').classList.toggle('visible', sel && sel.value === 'Yes');
-}
-
-function toggleRutoCandidate() {
-  const sel = document.querySelector('input[name="reelectRuto"]:checked');
-  const field = document.getElementById('rutoNoCandidateField');
-  if (sel && sel.value === 'No') field.classList.add('visible');
-  else { field.classList.remove('visible'); document.getElementById('preferredPresCandidate').value = ''; }
-}
-
-function toggleGovOther() {
-  const sel = document.querySelector('input[name="governor"]:checked');
-  const f = document.getElementById('govOtherField');
-  if (sel && sel.value === 'Other') f.classList.add('visible');
-  else { f.classList.remove('visible'); const el = document.getElementById('governorOther'); if(el) el.value = ''; }
-}
-
-/* ===================== GOVERNOR CARD SELECTION ===================== */
-function selectGovernor(card, key) {
-  document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected'));
-  card.classList.add('selected');
-  const radio = card.querySelector('input[type="radio"]');
-  if (radio) radio.checked = true;
-  toggleGovOther();
-  updateNegativeQuestions();
-}
-
-/* ===================== NEGATIVE QUESTION TOGGLE ===================== */
-function updateNegativeQuestions() {
-  const sel = document.querySelector('input[name="governor"]:checked');
-  const govVal = sel ? sel.value : '';
-
-  const candidates = [
-    { name: 'Cecily Mbarire', optionsId: 'notMbarireOptions', disabledId: 'notMbarireDisabledMsg', checkboxPrefix: 'g3' },
-    { name: 'Lenny Kivuti',   optionsId: 'notKivutiOptions',  disabledId: 'notKivutiDisabledMsg',  checkboxPrefix: 'g5' },
-    { name: 'Gitonga Mukunji',optionsId: 'notGitongaOptions', disabledId: 'notGitongaDisabledMsg', checkboxPrefix: 'g6' }
-  ];
-
-  candidates.forEach(c => {
-    const isSelected = govVal === c.name;
-    const optContainer = document.getElementById(c.optionsId);
-    const disabledMsg  = document.getElementById(c.disabledId);
-    if (!optContainer || !disabledMsg) return;
-    optContainer.style.display = isSelected ? 'none' : 'flex';
-    disabledMsg.style.display  = isSelected ? 'block' : 'none';
-    if (isSelected) {
-      optContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    }
-  });
-}
-
-/* ===================== GPS UTILITIES ===================== */
-function getTodayKey() { return new Date().toISOString().slice(0,10); }
-
-function getLastGpsRecord() {
-  try {
-    const s = JSON.parse(localStorage.getItem(GPS_LAST) || 'null');
-    return (s && s.day === getTodayKey()) ? s : null;
-  } catch(e) { return null; }
-}
-
-function saveLastGpsRecord(lat, lng, ts) {
-  localStorage.setItem(GPS_LAST, JSON.stringify({ lat, lng, ts, day: getTodayKey() }));
-}
-
-function haversineM(lat1, lng1, lat2, lng2) {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-/* ===================== GPS STATUS BAR ===================== */
-function setGpsDot(cls) {
-  const dot = document.getElementById('gpsDot');
-  dot.className = 'gps-dot ' + cls;
-}
-function setGpsStatus(text) {
-  document.getElementById('gpsStatusText').textContent = text;
-}
-
-function startPassiveGpsWatch() {
-  if (!navigator.geolocation) return;
-  document.getElementById('gpsStatusBar').style.display = 'block';
-  setGpsDot('acquiring'); setGpsStatus('Acquiring...');
-  gpsWatchId = navigator.geolocation.watchPosition(pos => {
-    const acc = Math.round(pos.coords.accuracy);
-    setGpsDot(acc <= GPS_CONFIG.MAX_ACCURACY_METERS ? 'good' : 'poor');
-    setGpsStatus(`±${acc}m`);
-    capturedGps = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: acc, ts: Date.now() };
-    document.getElementById('locLat').textContent = pos.coords.latitude.toFixed(6);
-    document.getElementById('locLng').textContent = pos.coords.longitude.toFixed(6);
-    const accEl = document.getElementById('locAcc');
-    accEl.textContent = `±${acc}m`;
-    accEl.className = 'loc-acc ' + (acc <= GPS_CONFIG.MAX_ACCURACY_METERS ? 'good' : 'poor');
-    document.getElementById('locationBox').style.display = 'block';
-  }, err => {
-    setGpsDot('poor'); setGpsStatus('Unavailable');
-  }, { enableHighAccuracy: true, maximumAge: GPS_CONFIG.MAX_AGE_MS, timeout: GPS_CONFIG.HIGH_ACC_TIMEOUT_MS });
-}
-
-/* ===================== GPS GUARD MODAL ===================== */
-let gpsGuardResolve = null;
-
-function setStep(id, state, detail) {
-  const li = document.getElementById('step-' + id);
-  if (!li) return;
-  li.className = state; // active | done | fail | skipped
-  const detailEl = document.getElementById('step-' + id + '-detail');
-  if (detailEl && detail) detailEl.textContent = detail;
-}
-
-function setGpsProgress(pct) {
-  document.getElementById('gpsProgressBar').style.width = pct + '%';
-}
-
-function cancelGpsCheck() {
-  document.getElementById('gpsGuardModal').classList.add('hidden');
-  if (gpsGuardResolve) gpsGuardResolve({ ok: false, reason: 'cancelled' });
-}
-
-function retryGpsCheck() {
-  document.getElementById('gpsRetryBtn').style.display = 'none';
-  runGpsGuard();
-}
-
-async function openGpsGuardModal() {
-  return new Promise(resolve => {
-    gpsGuardResolve = resolve;
-    document.getElementById('gpsGuardModal').classList.remove('hidden');
-    // Reset steps
-    ['acquire','accuracy','distance','time'].forEach(s => setStep(s, ''));
-    setStep('acquire','active','Waiting for location...');
-    setGpsProgress(0);
-    document.getElementById('liveGpsCard').style.display = 'none';
-    document.getElementById('gpsRetryBtn').style.display = 'none';
-    document.getElementById('gpsCancelBtn').textContent = 'Cancel';
-    const lastRec = getLastGpsRecord();
-    const isFirst = !lastRec;
-    const firstNote = document.getElementById('firstSurveyNote');
-    firstNote.style.display = isFirst ? 'block' : 'none';
-    document.getElementById('gpsGuardSubtitle').textContent = isFirst
-      ? 'Recording your starting location for today'
-      : 'Verifying location before submission';
-    runGpsGuard();
-  });
-}
-
-function runGpsGuard() {
-  if (!navigator.geolocation) {
-    setStep('acquire','fail','GPS not available on this device');
-    document.getElementById('gpsRetryBtn').style.display = 'none';
-    if (gpsGuardResolve) gpsGuardResolve({ ok: false, reason: 'no_gps' });
-    return;
-  }
-  setStep('acquire','active','Waiting for location...');
-  setGpsProgress(10);
-
-  const opts = { enableHighAccuracy: true, timeout: GPS_CONFIG.HIGH_ACC_TIMEOUT_MS, maximumAge: 0 };
-  navigator.geolocation.getCurrentPosition(pos => {
-    const { latitude: lat, longitude: lng, accuracy } = pos.coords;
-    const ts = Date.now();
-    setStep('acquire','done', `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
-    setGpsProgress(40);
-    document.getElementById('liveGpsCard').style.display = 'block';
-    document.getElementById('liveGpsCoordsDisplay').textContent = `Lat: ${lat.toFixed(6)} | Lng: ${lng.toFixed(6)}`;
-    document.getElementById('liveGpsAccDisplay').textContent = `Accuracy: ±${Math.round(accuracy)} m`;
-
-    // Accuracy check
-    setStep('accuracy','active');
-    setGpsProgress(55);
-    if (accuracy > GPS_CONFIG.MAX_ACCURACY_METERS) {
-      setStep('accuracy','fail',`±${Math.round(accuracy)}m — too low (max ${GPS_CONFIG.MAX_ACCURACY_METERS}m)`);
-      setGpsProgress(55);
-      document.getElementById('gpsRetryBtn').style.display = 'inline-block';
-      if (gpsGuardResolve) gpsGuardResolve({ ok: false, reason: 'accuracy', accuracy });
-      return;
-    }
-    setStep('accuracy','done',`±${Math.round(accuracy)}m ✓`);
-    setGpsProgress(70);
-
-    // Distance check
-    const lastRec = getLastGpsRecord();
-    setStep('distance','active');
-    setGpsProgress(80);
-    if (lastRec) {
-      const dist = haversineM(lastRec.lat, lastRec.lng, lat, lng);
-      if (dist < GPS_CONFIG.MIN_DISTANCE_METERS) {
-        setStep('distance','fail',`Only ${Math.round(dist)}m from last survey (min ${GPS_CONFIG.MIN_DISTANCE_METERS}m)`);
-        setGpsProgress(80);
-        document.getElementById('gpsRetryBtn').style.display = 'inline-block';
-        if (gpsGuardResolve) gpsGuardResolve({ ok: false, reason: 'distance', dist });
-        return;
-      }
-      setStep('distance','done',`${Math.round(dist)}m from last location ✓`);
-    } else {
-      setStep('distance','skipped','First survey of the day — skipped');
-    }
-    setGpsProgress(90);
-
-    // Time check
-    setStep('time','active');
-    if (lastRec) {
-      const gap = ts - lastRec.ts;
-      if (gap < GPS_CONFIG.MIN_TIME_GAP_MS) {
-        const wait = Math.ceil((GPS_CONFIG.MIN_TIME_GAP_MS - gap) / 60000);
-        setStep('time','fail',`Too soon — wait ~${wait} more minute(s)`);
-        document.getElementById('gpsRetryBtn').style.display = 'inline-block';
-        if (gpsGuardResolve) gpsGuardResolve({ ok: false, reason: 'time', gap });
-        return;
-      }
-      setStep('time','done',`${Math.round(gap/60000)} min gap ✓`);
-    } else {
-      setStep('time','skipped','First survey — skipped');
-    }
-    setGpsProgress(100);
-
-    // All passed
-    capturedGps = { lat, lng, accuracy, ts };
-    saveLastGpsRecord(lat, lng, ts);
-    document.getElementById('gpsCancelBtn').textContent = 'Close';
-    setTimeout(() => {
-      document.getElementById('gpsGuardModal').classList.add('hidden');
-      if (gpsGuardResolve) gpsGuardResolve({ ok: true, lat, lng, accuracy, ts });
-    }, 800);
-
-  }, err => {
-    const msgs = { 1:'Location permission denied', 2:'Position unavailable', 3:'GPS timed out' };
-    setStep('acquire','fail', msgs[err.code] || 'GPS error');
-    document.getElementById('gpsRetryBtn').style.display = 'inline-block';
-    if (gpsGuardResolve) gpsGuardResolve({ ok: false, reason: 'gps_error', code: err.code });
-  }, opts);
-}
-
-/* ===================== CONSENT ===================== */
-function toggleProceed() {
-  document.getElementById('proceedBtn').disabled = !document.getElementById('consentCheck').checked;
-}
-
-function declineConsent() {
-  document.getElementById('consentModal').classList.add('hidden');
-  document.getElementById('declinedMsg').style.display = 'block';
-}
-
-function proceedAfterConsent() {
-  document.getElementById('consentModal').classList.add('hidden');
-  const saved = localStorage.getItem(RES_KEY);
-  if (saved) {
-    currentResearcher = JSON.parse(saved);
-    showSurvey();
-  } else {
-    document.getElementById('researcherModal').classList.remove('hidden');
+async function signInWithGoogle(){
+  const btn=document.getElementById('googleSignInBtn');
+  const err=document.getElementById('loginErr');
+  const loading=document.getElementById('loginLoading');
+  btn.disabled=true;
+  err.style.display='none';
+  loading.style.display='block';
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account'});
+    await auth.signInWithPopup(provider);
+    // onAuthStateChanged will handle the rest
+  }catch(e){
+    btn.disabled=false;
+    loading.style.display='none';
+    err.textContent=e.code==='auth/popup-closed-by-user'?'Sign-in cancelled. Please try again.'
+      :'Sign-in failed: '+e.message;
+    err.style.display='block';
   }
 }
 
-/* ===================== RESEARCHER ===================== */
-function saveResearcher() {
-  const name = document.getElementById('resName').value.trim();
-  const id   = document.getElementById('resId').value.trim();
-  let valid = true;
-  if (!name) { document.getElementById('resNameErr').style.display = 'block'; valid = false; }
-  else document.getElementById('resNameErr').style.display = 'none';
-  if (!id) { document.getElementById('resIdErr').style.display = 'block'; valid = false; }
-  else document.getElementById('resIdErr').style.display = 'none';
-  if (!valid) return;
-  currentResearcher = { name, id };
-  localStorage.setItem(RES_KEY, JSON.stringify(currentResearcher));
+async function signOutGoogle(){
+  if(!confirm('Sign out of ECS-2026?'))return;
+  await auth.signOut();
+  location.reload();
+}
+
+// Listen for auth state changes
+auth.onAuthStateChanged(user=>{
+  if(user){
+    currentUser=user;
+    onUserSignedIn(user);
+  }else{
+    currentUser=null;
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('siteHeader').style.display='none';
+    document.getElementById('surveyWrapper').style.display='none';
+    document.getElementById('googleSignInBtn').disabled=false;
+    document.getElementById('loginLoading').style.display='none';
+  }
+});
+
+function generateResearcherId(user){
+  // Build initials from display name (up to 3 chars)
+  const name=user.displayName||user.email||'XX';
+  const initials=name.trim().split(/\s+/).map(w=>w[0]&&w[0].toUpperCase()||'').join('').slice(0,3).padEnd(2,'X');
+  // Deterministic 4-digit suffix from Google UID (same every time for same user)
+  let hash=0;for(let i=0;i<user.uid.length;i++){hash=(hash*31+user.uid.charCodeAt(i))&0xffffffff;}
+  const suffix=String(Math.abs(hash)%9000+1000); // always 4 digits 1000-9999
+  return 'ECS-'+initials+'-'+suffix;
+}
+
+function onUserSignedIn(user){
+  document.getElementById('loginScreen').style.display='none';
+  // Generate deterministic unique ID from Google account
+  const generatedId=generateResearcherId(user);
+  // Fill modal
+  document.getElementById('userDisplayName').textContent=user.displayName||user.email||'';
+  document.getElementById('userEmail').textContent=user.email||'';
+  document.getElementById('generatedIdDisplay').textContent=generatedId;
+  const avatar=document.getElementById('userAvatar');
+  if(user.photoURL){avatar.src=user.photoURL;}else{avatar.style.display='none';}
+  // Check if researcher already confirmed on this device for this Google account
+  const saved=localStorage.getItem(RES_KEY);
+  if(saved){
+    currentResearcher=JSON.parse(saved);
+    if(currentResearcher.googleUid===user.uid){
+      showSurvey();return; // skip modal, go straight to survey
+    }else{
+      localStorage.removeItem(RES_KEY);
+    }
+  }
+  document.getElementById('researcherModal').classList.remove('hidden');
+}
+
+function confirmResearcher(){
+  const user=currentUser;
+  const generatedId=generateResearcherId(user);
+  currentResearcher={
+    name:user.displayName||user.email,
+    login:generatedId,
+    email:user.email,
+    googleUid:user.uid,
+    photoURL:user.photoURL||''
+  };
+  localStorage.setItem(RES_KEY,JSON.stringify(currentResearcher));
   document.getElementById('researcherModal').classList.add('hidden');
   showSurvey();
 }
 
-function changeResearcher() {
-  document.getElementById('resName').value = currentResearcher ? currentResearcher.name : '';
-  document.getElementById('resId').value   = currentResearcher ? currentResearcher.id : '';
-  document.getElementById('researcherModal').classList.remove('hidden');
+function showSurvey(){
+  document.getElementById('siteHeader').style.display='block';
+  document.getElementById('surveyWrapper').style.display='block';
+  const banner=document.getElementById('resBanner');
+  banner.style.display='flex';
+  document.getElementById('bannerName').textContent=currentResearcher.name;
+  document.getElementById('bannerId').textContent=currentResearcher.login;
+  const av=document.getElementById('bannerAvatar');
+  if(currentResearcher.photoURL){av.src=currentResearcher.photoURL;}else{av.style.display='none';}
+  checkDraft();refreshPendUI();startGpsWatch();attachAutosave();
 }
 
-function showSurvey() {
-  document.getElementById('surveyWrapper').style.display = 'block';
-  if (currentResearcher) {
-    const banner = document.getElementById('researcherBanner');
-    banner.style.display = 'flex';
-    document.getElementById('bannerName').textContent = currentResearcher.name;
-    document.getElementById('bannerId').textContent   = currentResearcher.id;
-  }
-  checkForDraft();
-  refreshPendingUI();
-  startPassiveGpsWatch();
-  attachAutosave();
+/* ══════════════════════════════════════════════
+   WARDS
+══════════════════════════════════════════════ */
+const WARDS={'Manyatta':['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],'Runyenjes':['Gaturi North','Kagaari South','Kagaari North','Central Ward','Kyeni North','Kyeni South'],'Mbeere South':['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],'Mbeere North':['Nthawa','Muminji','Evurore']};
+function updateWards(keep){
+  const c=document.getElementById('constituency').value,ws=document.getElementById('ward'),prev=keep?ws.value:'';
+  ws.innerHTML='';
+  if(!c||!WARDS[c]){ws.innerHTML='<option value="">&mdash; Select constituency first &mdash;</option>';return;}
+  ws.appendChild(Object.assign(document.createElement('option'),{value:'',textContent:'Select ward'}));
+  WARDS[c].forEach(w=>ws.appendChild(Object.assign(document.createElement('option'),{value:w,textContent:w})));
+  if(prev)ws.value=prev;
 }
 
-/* ===================== DRAFT SYSTEM ===================== */
-function collectSnap() {
-  const s = {};
-  document.querySelectorAll('input[type="radio"]').forEach(r => { if(r.checked) s[r.name] = r.value; });
-  document.querySelectorAll('input[type="checkbox"]').forEach(cb => { s['cb_'+cb.id] = cb.checked; });
-  document.querySelectorAll('input[type="text"],textarea,select').forEach(el => { if(el.id) s[el.id] = el.value; });
-  s._savedAt = new Date().toISOString();
-  return s;
+/* ══════════════════════════════════════════════
+   OCCUPATION
+══════════════════════════════════════════════ */
+const OCC_IDS=['occ_farmer','occ_business','occ_teacher','occ_professional','occ_transport','occ_artisan'];
+function handleOccSelect(id){const val=document.getElementById(id).value;if(!val)return;OCC_IDS.forEach(oid=>{if(oid!==id)document.getElementById(oid).selectedIndex=0;});document.getElementById('occ_other').value='';setOcc(val);}
+function handleOccOther(){const val=document.getElementById('occ_other').value.trim();if(!val){clearOcc();return;}OCC_IDS.forEach(id=>document.getElementById(id).selectedIndex=0);setOcc(val);}
+function setOcc(val){document.getElementById('occupation').value=val;document.getElementById('occText').textContent=val;document.getElementById('occDisplay').style.display=val?'block':'none';}
+function clearOcc(){OCC_IDS.forEach(id=>document.getElementById(id).selectedIndex=0);document.getElementById('occ_other').value='';document.getElementById('occupation').value='';document.getElementById('occDisplay').style.display='none';}
+
+/* ══════════════════════════════════════════════
+   CONDITIONAL FIELDS
+══════════════════════════════════════════════ */
+function toggleCond(name,showVal,fieldId){const r=document.querySelector('input[name="'+name+'"]:checked');document.getElementById(fieldId).classList.toggle('vis',r&&r.value===showVal);}
+function toggleRuto(){const r=document.querySelector('input[name="reelectRuto"]:checked');document.getElementById('rutoCandField').classList.toggle('vis',r&&r.value==='No');if(r&&r.value==='Yes')document.getElementById('preferredPres').value='';}
+function toggleGovOther(){const r=document.querySelector('input[name="governor"]:checked');document.getElementById('govOtherField').classList.toggle('vis',r&&r.value==='Other');}
+function selectGov(card,val){document.querySelectorAll('.gov-card').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');card.querySelector('input[type="radio"]').checked=true;toggleGovOther();updateNeg();}
+function updateNeg(){const r=document.querySelector('input[name="governor"]:checked'),sel=r?r.value:'';[{name:'Cecily Mbarire',o:'notMbarireOpts',d:'notMbarireDisabled'},{name:'Lenny Kivuti',o:'notKivutiOpts',d:'notKivutiDisabled'},{name:'Gitonga Mukunji',o:'notGitongaOpts',d:'notGitongaDisabled'}].forEach(c=>{const isSel=sel===c.name,opts=document.getElementById(c.o),dis=document.getElementById(c.d);if(!opts||!dis)return;opts.style.display=isSel?'none':'flex';dis.style.display=isSel?'block':'none';if(isSel)opts.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);});}
+
+/* ══════════════════════════════════════════════
+   GPS
+══════════════════════════════════════════════ */
+const GPS={MAX_ACC:80,MIN_DIST:500,MIN_TIME:120000,TIMEOUT:25000,MAX_AGE:15000};
+let capturedGps=null,gpsWatchId=null;
+const GPS_LAST='ecs26_gps_last';
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function getLastGps(){try{const s=JSON.parse(localStorage.getItem(GPS_LAST)||'null');return(s&&s.day===todayKey())?s:null;}catch{return null;}}
+function saveLastGps(lat,lng,ts){localStorage.setItem(GPS_LAST,JSON.stringify({lat,lng,ts,day:todayKey()}));}
+function haversine(la1,lo1,la2,lo2){const R=6371000,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function setGpsDot(cls){document.getElementById('gpsDot').className='gps-dot '+cls;}
+function setGpsText(t){document.getElementById('gpsStatusText').textContent=t;}
+function startGpsWatch(){
+  if(!navigator.geolocation)return;
+  document.getElementById('gpsBar').style.display='block';
+  setGpsDot('acquiring');setGpsText('Acquiring...');
+  gpsWatchId=navigator.geolocation.watchPosition(pos=>{
+    const acc=Math.round(pos.coords.accuracy);
+    setGpsDot(acc<=GPS.MAX_ACC?'good':'poor');setGpsText('\u00b1'+acc+'m');
+    capturedGps={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:acc,ts:Date.now()};
+    document.getElementById('locLat').textContent=pos.coords.latitude.toFixed(6);
+    document.getElementById('locLng').textContent=pos.coords.longitude.toFixed(6);
+    const ae=document.getElementById('locAcc');ae.textContent='\u00b1'+acc+'m';ae.className='loc-acc '+(acc<=GPS.MAX_ACC?'good':'poor');
+    document.getElementById('locationBox').style.display='block';
+  },()=>{setGpsDot('poor');setGpsText('Unavailable');},{enableHighAccuracy:true,maximumAge:GPS.MAX_AGE,timeout:GPS.TIMEOUT});
 }
 
-function applySnap(s) {
-  if (!s) return;
-  document.querySelectorAll('input[type="radio"]').forEach(r => { if(s[r.name] !== undefined) r.checked = (r.value === s[r.name]); });
-  document.querySelectorAll('input[type="checkbox"]').forEach(cb => { if(s['cb_'+cb.id] !== undefined) cb.checked = s['cb_'+cb.id]; });
-  document.querySelectorAll('input[type="text"],textarea,select').forEach(el => { if(el.id && s[el.id] !== undefined) el.value = s[el.id]; });
-  updateWards(true);
-  const gv = s['governor'];
-  if (gv) {
-    document.querySelectorAll('.gov-card').forEach(c => {
-      const r = c.querySelector('input[type="radio"]');
-      if (r && r.value === gv) c.classList.add('selected');
-    });
-  }
-  updateNegativeQuestions();
-  toggleEngageExplain();
-  toggleProjectsDelivered();
-  toggleProjectsMissing();
-  toggleRutoCandidate();
-  toggleGovOther();
+/* GPS GUARD */
+let gpsResolve=null;
+function setStep(id,state,detail){const li=document.getElementById('step-'+id);if(!li)return;li.className=state;const d=document.getElementById('step-'+id+'-detail');if(d&&detail)d.textContent=detail;}
+function setGpsProg(p){document.getElementById('gpsProg').style.width=p+'%';}
+function cancelGps(){document.getElementById('gpsGuardModal').classList.add('hidden');if(gpsResolve)gpsResolve({ok:false,reason:'cancelled'});}
+function retryGps(){document.getElementById('gpsRetryBtn').style.display='none';runGpsGuard();}
+async function openGpsGuard(){
+  return new Promise(res=>{
+    gpsResolve=res;
+    document.getElementById('gpsGuardModal').classList.remove('hidden');
+    ['acquire','accuracy','distance','time'].forEach(s=>setStep(s,''));
+    setStep('acquire','active','Waiting for location...');setGpsProg(0);
+    document.getElementById('liveGpsCard').style.display='none';
+    document.getElementById('gpsRetryBtn').style.display='none';
+    document.getElementById('gpsCancelBtn').textContent='Cancel';
+    const last=getLastGps();
+    document.getElementById('firstNote').style.display=!last?'block':'none';
+    document.getElementById('gpsGuardSub').textContent=!last?'Recording your starting location for today':'Verifying location before submission';
+    runGpsGuard();
+  });
+}
+function runGpsGuard(){
+  if(!navigator.geolocation){setStep('acquire','fail','GPS not available');if(gpsResolve)gpsResolve({ok:false,reason:'no_gps'});return;}
+  setStep('acquire','active','Waiting for location...');setGpsProg(10);
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lng,accuracy}=pos.coords,ts=Date.now();
+    setStep('acquire','done',lat.toFixed(5)+', '+lng.toFixed(5));setGpsProg(40);
+    document.getElementById('liveGpsCard').style.display='block';
+    document.getElementById('liveCoords').textContent='Lat: '+lat.toFixed(6)+' | Lng: '+lng.toFixed(6);
+    document.getElementById('liveAcc').textContent='Accuracy: \u00b1'+Math.round(accuracy)+' m';
+    setStep('accuracy','active');setGpsProg(55);
+    if(accuracy>GPS.MAX_ACC){setStep('accuracy','fail','\u00b1'+Math.round(accuracy)+'m \u2014 too low');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'accuracy',accuracy});return;}
+    setStep('accuracy','done','\u00b1'+Math.round(accuracy)+'m \u2713');setGpsProg(70);
+    const last=getLastGps();setStep('distance','active');setGpsProg(80);
+    if(last){const dist=haversine(last.lat,last.lng,lat,lng);if(dist<GPS.MIN_DIST){setStep('distance','fail','Only '+Math.round(dist)+'m from last');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'distance',dist});return;}setStep('distance','done',Math.round(dist)+'m \u2713');}else{setStep('distance','skipped','First survey \u2014 skipped');}
+    setGpsProg(90);setStep('time','active');
+    if(last){const gap=ts-last.ts;if(gap<GPS.MIN_TIME){const w=Math.ceil((GPS.MIN_TIME-gap)/60000);setStep('time','fail','Too soon \u2014 wait ~'+w+' min');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'time',gap});return;}setStep('time','done',Math.round(gap/60000)+' min gap \u2713');}else{setStep('time','skipped','First survey \u2014 skipped');}
+    setGpsProg(100);capturedGps={lat,lng,accuracy,ts};saveLastGps(lat,lng,ts);
+    document.getElementById('gpsCancelBtn').textContent='Close';
+    setTimeout(()=>{document.getElementById('gpsGuardModal').classList.add('hidden');if(gpsResolve)gpsResolve({ok:true,lat,lng,accuracy,ts});},800);
+  },err=>{const m={1:'Permission denied',2:'Position unavailable',3:'Timed out'};setStep('acquire','fail',m[err.code]||'GPS error');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'gps_error',code:err.code});},{enableHighAccuracy:true,timeout:GPS.TIMEOUT,maximumAge:0});
 }
 
-function saveDraft() {
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(collectSnap()));
-  showAutoSave();
+/* ══════════════════════════════════════════════
+   DRAFT
+══════════════════════════════════════════════ */
+const DRAFT_KEY='ecs26_draft';
+let autosaveTimer=null;
+function snap(){const s={};document.querySelectorAll('input[type="radio"]').forEach(r=>{if(r.checked)s[r.name]=r.value;});document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{s['cb_'+cb.id]=cb.checked;});document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el=>{if(el.id)s[el.id]=el.value;});s._savedAt=new Date().toISOString();return s;}
+function applySnap(s){if(!s)return;document.querySelectorAll('input[type="radio"]').forEach(r=>{if(s[r.name]!==undefined)r.checked=(r.value===s[r.name]);});document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{if(s['cb_'+cb.id]!==undefined)cb.checked=s['cb_'+cb.id];});document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el=>{if(el.id&&s[el.id]!==undefined)el.value=s[el.id];});updateWards(true);const gv=s['governor'];if(gv)document.querySelectorAll('.gov-card').forEach(c=>{const r=c.querySelector('input[type="radio"]');if(r&&r.value===gv)c.classList.add('selected');});updateNeg();toggleRuto();toggleGovOther();if(s['occupation'])setOcc(s['occupation']);}
+function saveDraft(){localStorage.setItem(DRAFT_KEY,JSON.stringify(snap()));showAutosave();}
+function clearDraft(){localStorage.removeItem(DRAFT_KEY);}
+function loadDraft(){try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}catch{return null;}}
+function showAutosave(){const el=document.getElementById('autosave');el.style.display='block';el.style.opacity='1';clearTimeout(el._t);el._t=setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.style.display='none',400);},2200);}
+function checkDraft(){const d=loadDraft();if(!d)return;const dt=new Date(d._savedAt);document.getElementById('draftSub').textContent='Last saved: '+dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.getElementById('draftBar').style.display='block';}
+function restoreDraft(){applySnap(loadDraft());document.getElementById('draftBar').style.display='none';showAutosave();}
+function discardDraft(){if(!confirm('Discard the saved draft and start fresh?'))return;clearDraft();document.getElementById('draftBar').style.display='none';}
+function attachAutosave(){const f=document.getElementById('surveyForm');f.addEventListener('input',()=>{clearTimeout(autosaveTimer);autosaveTimer=setTimeout(saveDraft,1500);});f.addEventListener('change',()=>{clearTimeout(autosaveTimer);autosaveTimer=setTimeout(saveDraft,1500);});}
+
+/* ══════════════════════════════════════════════
+   OFFLINE QUEUE
+══════════════════════════════════════════════ */
+const QUEUE_KEY='ecs26_queue';
+let isOnline=navigator.onLine;
+function getQueue(){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]');}catch{return[];}}
+function saveQueue(q){localStorage.setItem(QUEUE_KEY,JSON.stringify(q));}
+function enqueue(d){d._queuedAt=new Date().toISOString();d._queueId='q_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);const q=getQueue();q.push(d);saveQueue(q);refreshPendUI();}
+function dequeue(id){saveQueue(getQueue().filter(d=>d._queueId!==id));refreshPendUI();}
+function refreshPendUI(){const n=getQueue().length;const pb=document.getElementById('pendBtn'),pbn=document.getElementById('pendBanner');if(pb)pb.style.display=n>0?'inline-block':'none';if(pbn)pbn.style.display=n>0?'block':'none';const ct=document.getElementById('pendCountText'),cb=document.getElementById('pendCount');if(ct)ct.textContent=n;if(cb)cb.textContent=n;}
+function renderQueue(){const l=document.getElementById('queueList'),q=getQueue();if(q.length===0){l.innerHTML='<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">No pending surveys.</div>';return;}l.innerHTML=q.map(d=>{const dt=new Date(d._queuedAt),label=[d.gender,d.ward||d.constituency].filter(Boolean).join(' \u00b7 ')||'Survey';return'<div class="q-item"><div><div style="font-weight:700;">'+label+'</div><div style="font-size:11px;color:#92400e;">'+dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div></div><button class="qi-del" onclick="removeQ(\''+d._queueId+'\')">&#x1F5D1;</button></div>';}).join('');}
+function removeQ(id){if(!confirm('Remove this queued survey?'))return;dequeue(id);renderQueue();}
+function openOfflineModal(){renderQueue();document.getElementById('offlineModal').classList.remove('hidden');}
+function closeOfflineModal(){document.getElementById('offlineModal').classList.add('hidden');}
+async function syncNow(){
+  if(!navigator.onLine){alert('You are offline. Please connect first.');return;}
+  const q=getQueue();if(q.length===0){closeOfflineModal();return;}
+  const btn=document.getElementById('syncNowBtn');btn.disabled=true;
+  const wrap=document.getElementById('syncWrap'),bar=document.getElementById('syncBar'),stat=document.getElementById('syncStat');
+  wrap.style.display='block';let done=0;
+  for(const e of q){stat.textContent='Syncing '+(done+1)+' of '+q.length+'...';bar.style.width=Math.round(done/q.length*100)+'%';
+    try{const{_queueId,_queuedAt,...data}=e;await db.collection('responses').add({...data,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});dequeue(_queueId);done++;}catch(err){console.error(err);}}
+  bar.style.width='100%';stat.textContent=done+' of '+q.length+' synced.';btn.disabled=false;renderQueue();setTimeout(()=>wrap.style.display='none',2000);
 }
 
-function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
-
-function loadDraft() {
-  try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); }
-  catch(e) { return null; }
+/* ══════════════════════════════════════════════
+   COLLECT & VALIDATE
+══════════════════════════════════════════════ */
+function getChk(ids){return ids.filter(id=>{const e=document.getElementById(id);return e&&e.checked;}).map(id=>document.getElementById(id).value);}
+function gv(name){const e=document.querySelector('input[name="'+name+'"]:checked');return e?e.value:'';}
+function tx(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function collectData(){
+  return{gender:gv('gender'),constituency:tx('constituency'),ward:tx('ward'),pollingStation:tx('pollingStation'),age:gv('age'),education:gv('education'),employment:gv('employment'),occupation:tx('occupation'),voter:gv('voter'),notDelivered:getChk(['b5a','b5b','b5c','b5d','b5e','b5f']),infoSources:getChk(['c1a','c1b','c1c','c1d','c1e','c1f','c1g']),performance:gv('performance'),projectsAware:gv('projectsAware'),projectsDelivered:tx('projectsDelivered'),missedPromises:gv('missedPromises'),projectsMissing:tx('projectsMissing'),needs:tx('needs'),smeChallenges:getChk(['e1a','e1b','e1c','e1d','e1e','e1f','e1g']),reelectRuto:gv('reelectRuto'),preferredPres:tx('preferredPres'),governor:gv('governor'),governorOther:tx('governorOther'),party:gv('party'),voteReasons:getChk(['g4a','g4b','g4c','g4d','g4e','g4f','g4g','g4h','g4i','g4j','g4k']),notMbarire:getChk(['g5a','g5b','g5c','g5d','g5e','g5f','g5g','g5h','g5i']),adviceMbarire:tx('adviceMbarire'),notKivuti:getChk(['g7a','g7b','g7c','g7d','g7e','g7f','g7g','g7h','g7i']),notGitonga:getChk(['g8a','g8b','g8c','g8d','g8e','g8f','g8g','g8h','g8i']),prefSenator:tx('prefSenator'),prefWomenRep:tx('prefWomenRep'),prefMP:tx('prefMP'),prefMCA:tx('prefMCA'),devOffice:gv('devOffice'),worship:gv('worship'),contactName:tx('contactName'),contactPhone:tx('contactPhone'),followUp:gv('followUp'),enumDecl:gv('enumDecl'),_respondentId:'R_'+Date.now(),_submittedAt:new Date().toISOString(),_researcher:currentResearcher?currentResearcher.name:'Unknown',_researcherLogin:currentResearcher?currentResearcher.login:'Unknown',_researcherEmail:currentResearcher?currentResearcher.email:'',_researcherGoogleUid:currentResearcher?currentResearcher.googleUid:'',_gpsLat:capturedGps?capturedGps.lat:null,_gpsLng:capturedGps?capturedGps.lng:null,_gpsAccuracy:capturedGps?capturedGps.accuracy:null};
 }
-
-function showAutoSave() {
-  const el = document.getElementById('autosaveIndicator');
-  el.style.display = 'block'; el.style.opacity = '1';
-  clearTimeout(el._t);
-  el._t = setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 400); }, 2200);
-}
-
-function checkForDraft() {
-  const d = loadDraft();
-  if (!d) return;
-  const dt = new Date(d._savedAt);
-  document.getElementById('draftSubText').textContent = 'Last saved: ' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('draftBar').style.display = 'block';
-}
-
-function restoreDraft() {
-  applySnap(loadDraft());
-  document.getElementById('draftBar').style.display = 'none';
-  showAutoSave();
-}
-
-function discardDraft() {
-  if (!confirm('Discard the saved draft and start fresh?')) return;
-  clearDraft();
-  document.getElementById('draftBar').style.display = 'none';
-}
-
-function attachAutosave() {
-  const f = document.getElementById('surveyForm');
-  f.addEventListener('input',  () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveDraft, 1500); });
-  f.addEventListener('change', () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveDraft, 1500); });
-}
-
-/* ===================== OFFLINE QUEUE ===================== */
-function getQueue()   { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch(e) { return []; } }
-function saveQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
-
-function enqueue(d) {
-  d._queuedAt = new Date().toISOString();
-  d._queueId  = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
-  const q = getQueue(); q.push(d); saveQueue(q);
-  refreshPendingUI();
-}
-
-function dequeue(id) { saveQueue(getQueue().filter(d => d._queueId !== id)); refreshPendingUI(); }
-
-function refreshPendingUI() {
-  const n = getQueue().length;
-  const pqBtn = document.getElementById('pendingQueueBtn');
-  const pBanner = document.getElementById('pendingBanner');
-  if (pqBtn)   pqBtn.style.display   = n > 0 ? 'inline-block' : 'none';
-  if (pBanner) pBanner.style.display = n > 0 ? 'block' : 'none';
-  const ct = document.getElementById('pendingCountText');  if (ct) ct.textContent = n;
-  const cb = document.getElementById('pendingCountBadge'); if (cb) cb.textContent = n;
-}
-
-function renderQueueList() {
-  const list = document.getElementById('queueList');
-  const q = getQueue();
-  if (q.length === 0) { list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">No pending surveys.</div>'; return; }
-  list.innerHTML = q.map(d => {
-    const dt = new Date(d._queuedAt);
-    const label = [d.gender, d.ward || d.constituency, d._respondentId].filter(Boolean).join(' · ') || 'Survey';
-    return `<div class="q-item">
-      <div class="qi-info">
-        <div style="font-weight:700;">${label}</div>
-        <div class="qi-time">${dt.toLocaleDateString()} ${dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
-      </div>
-      <button class="qi-del" onclick="removeQueueItem('${d._queueId}')" title="Delete">&#x1F5D1;</button>
-    </div>`;
-  }).join('');
-}
-
-function removeQueueItem(id) {
-  if (!confirm('Remove this queued survey?')) return;
-  dequeue(id);
-  renderQueueList();
-}
-
-function openOfflineModal()  { renderQueueList(); document.getElementById('offlineModal').classList.remove('hidden'); }
-function closeOfflineModal() { document.getElementById('offlineModal').classList.add('hidden'); }
-
-async function syncPendingNow() {
-  if (!navigator.onLine) { alert('You are offline. Please connect to the internet first.'); return; }
-  const q = getQueue();
-  if (q.length === 0) { closeOfflineModal(); return; }
-  const btn = document.getElementById('syncNowBtn');
-  btn.disabled = true;
-  const wrap = document.getElementById('syncProgressWrap');
-  const bar  = document.getElementById('syncProgressBar');
-  const stat = document.getElementById('syncStatusText');
-  wrap.style.display = 'block';
-  let done = 0;
-  for (const entry of q) {
-    stat.textContent = `Syncing ${done + 1} of ${q.length}...`;
-    bar.style.width  = Math.round((done / q.length) * 100) + '%';
-    try {
-      const { _queueId, _queuedAt, ...data } = entry;
-      await db.collection('responses').add({ ...data, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
-      dequeue(_queueId);
-      done++;
-    } catch(e) {
-      console.error('Sync error:', e);
-    }
-  }
-  bar.style.width = '100%';
-  stat.textContent = `${done} of ${q.length} synced successfully.`;
-  btn.disabled = false;
-  renderQueueList();
-  setTimeout(() => { wrap.style.display = 'none'; }, 2000);
-}
-
-/* ===================== DATA COLLECTION ===================== */
-function getChecked(ids) {
-  return ids.filter(id => { const e = document.getElementById(id); return e && e.checked; }).map(id => document.getElementById(id).value);
-}
-
-function collectFormData() {
-  const g = n => { const el = document.querySelector(`input[name="${n}"]:checked`); return el ? el.value : ''; };
-  const tx = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
-
-  return {
-    // Section A
-    gender:         g('gender'),
-    constituency:   tx('constituency'),
-    ward:           tx('ward'),
-    subLocation:    tx('subLocation'),
-    age:            g('age'),
-    education:      g('education'),
-    employment:     g('employment'),
-    // Section B
-    voter:          g('voter'),
-    engage:         g('engage'),
-    engageNeverReason: tx('engageNeverReason'),
-    motivations:    getChecked(['b3a','b3b','b3c','b3d']),
-    opinion:        g('opinion'),
-    issues:         tx('issues'),
-    notDelivered:   getChecked(['b6a','b6b','b6c','b6d','b6e','b6f']),
-    // Section C
-    infoSources:    getChecked(['c1a','c1b','c1c','c1d','c1e','c1f','c1g']),
-    transparency:   g('transparency'),
-    // Section D
-    performance:    g('performance'),
-    projectsAware:  g('projectsAware'),
-    projectsDelivered: tx('projectsDelivered'),
-    missedPromises: g('missedPromises'),
-    projectsMissing: tx('projectsMissing'),
-    needs:          tx('needs'),
-    // Section E
-    devAttention:   g('devAttention'),
-    svc_agri:       g('svc_agri'),
-    svc_infra:      g('svc_infra'),
-    svc_ecd:        g('svc_ecd'),
-    svc_vtc:        g('svc_vtc'),
-    svc_health:     g('svc_health'),
-    svc_youth:      g('svc_youth'),
-    svc_women:      g('svc_women'),
-    svc_pwds:       g('svc_pwds'),
-    svc_govtaccess: g('svc_govtaccess'),
-    // Section F
-    smeChallenges:  getChecked(['f4a','f4b','f4c','f4d','f4e','f4f','f4g']),
-    // Section G
-    reelectRuto:    g('reelectRuto'),
-    preferredPresCandidate: tx('preferredPresCandidate'),
-    governor:       g('governor'),
-    governorOther:  tx('governorOther'),
-    politicalParty: g('politicalParty'),
-    voteReasons:    getChecked(['g2a','g2b','g2c','g2d','g2e','g2f','g2g','g2h','g2i','g2j','g2k']),
-    notMbarire:     getChecked(['g3a','g3b','g3c','g3d','g3e','g3f','g3g','g3h','g3i']),
-    adviceMbarire:  tx('adviceMbarire'),
-    notKivuti:      getChecked(['g5a','g5b','g5c','g5d','g5e','g5f','g5g','g5h','g5i']),
-    notGitonga:     getChecked(['g6a','g6b','g6c','g6d','g6e','g6f','g6g','g6h','g6i']),
-    prefSenator:    tx('prefSenator'),
-    prefWomenRep:   tx('prefWomenRep'),
-    prefMP:         tx('prefMP'),
-    prefMCA:        tx('prefMCA'),
-    comments:       tx('comments'),
-    // Section H
-    devOffice:      g('devOffice'),
-    worship:        g('worship'),
-    // Section I (contact - stored separately)
-    contactName:    tx('contactName'),
-    contactPhone:   tx('contactPhone'),
-    followUp:       g('followUp'),
-    // Meta
-    _respondentId:  'R_' + Date.now(),
-    _submittedAt:   new Date().toISOString(),
-    _researcher:    currentResearcher ? currentResearcher.name : 'Unknown',
-    _researcherId:  currentResearcher ? currentResearcher.id : 'Unknown',
-    _gpsLat:        capturedGps ? capturedGps.lat : null,
-    _gpsLng:        capturedGps ? capturedGps.lng : null,
-    _gpsAccuracy:   capturedGps ? capturedGps.accuracy : null
-  };
-}
-
-/* ===================== VALIDATION ===================== */
-function validateForm() {
-  const required = [
-    ['gender',      'A1: Please select gender'],
-    ['constituency','A2: Please select constituency'],
-    ['ward',        'A3: Please select ward'],
-    ['age',         'A5: Please select age category'],
-    ['education',   'A6: Please select education level'],
-    ['employment',  'A7: Please select employment status'],
-    ['voter',       'B1: Please indicate if you are a registered voter'],
-    ['engage',      'B2: Please indicate how often you engage in politics'],
-    ['opinion',     'B3: Please indicate whether your opinions are considered'],
-    ['transparency','C2: Please rate government transparency'],
-    ['performance', 'D1: Please rate county government performance'],
-    ['devAttention','E1: Please indicate how often you pay attention to development'],
-    ['devOffice',   'H1: Please select which office contributes most to development'],
-    ['worship',     'H2: Please indicate how often you attend worship']
-  ];
-
-  for (const [name, msg] of required) {
-    let val;
-    if (['constituency','ward'].includes(name)) {
-      val = document.getElementById(name) ? document.getElementById(name).value : '';
-    } else {
-      val = document.querySelector(`input[name="${name}"]:checked`);
-    }
-    if (!val || (typeof val === 'string' && !val.trim())) {
-      return msg;
-    }
-  }
+function validate(){
+  const req=[['gender','A1: Please select gender'],['constituency','A2: Please select constituency'],['ward','A3: Please select ward'],['age','A5: Please select age category'],['education','A6: Please select education level'],['employment','A7: Please select employment status'],['voter','B1: Please indicate if you are a registered voter'],['performance','D1: Please rate county government performance'],['devOffice','H1: Please select which office contributes most to development'],['worship','H2: Please indicate how often you attend worship'],['enumDecl','Declaration: Please confirm enumerator declaration']];
+  for(const[name,msg] of req){let val;if(['constituency','ward'].includes(name)){val=document.getElementById(name)?document.getElementById(name).value:'';}else{val=document.querySelector('input[name="'+name+'"]:checked');}if(!val||(typeof val==='string'&&!val.trim()))return msg;}
   return null;
 }
-
-/* ===================== STATUS MESSAGES ===================== */
-function showStatus(msg, type, duration) {
-  const el = document.getElementById('status');
-  el.textContent = msg;
-  el.className   = 'status-msg ' + type;
-  el.style.display = 'block';
-  if (duration) setTimeout(() => el.style.display = 'none', duration);
-}
-
-function resetForm() {
+function showStatus(msg,type,dur){const el=document.getElementById('status');el.textContent=msg;el.className='status-msg '+type;el.style.display='block';if(dur)setTimeout(()=>el.style.display='none',dur);}
+function resetForm(){
   document.getElementById('surveyForm').reset();
-  document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected'));
-  document.querySelectorAll('.conditional-field').forEach(f => f.classList.remove('visible'));
-  document.querySelectorAll('.disabled-note').forEach(n => n.style.display = 'none');
-  document.querySelectorAll('[id^="notMbarireOptions"],[id^="notKivutiOptions"],[id^="notGitongaOptions"]').forEach(el => el.style.display = 'flex');
-  document.getElementById('ward').innerHTML = '<option value="">- Select constituency first -</option>';
-  capturedGps = null;
-  document.getElementById('locationBox').style.display = 'none';
-  clearDraft();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.querySelectorAll('.gov-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.cond-field').forEach(f=>f.classList.remove('vis'));
+  document.querySelectorAll('.disabled-note').forEach(n=>n.style.display='none');
+  document.querySelectorAll('[id$="Opts"]').forEach(el=>el.style.display='flex');
+  document.getElementById('ward').innerHTML='<option value="">&mdash; Select constituency first &mdash;</option>';
+  clearOcc();capturedGps=null;document.getElementById('locationBox').style.display='none';
+  clearDraft();window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* ===================== FORM SUBMIT ===================== */
-document.getElementById('surveyForm').addEventListener('submit', async function(e) {
+/* ══════════════════════════════════════════════
+   SUBMIT
+══════════════════════════════════════════════ */
+document.getElementById('surveyForm').addEventListener('submit',async function(e){
   e.preventDefault();
-
-  const validationError = validateForm();
-  if (validationError) {
-    showStatus('⚠️ ' + validationError, 'warning');
-    return;
+  const err=validate();if(err){showStatus('\u26a0\ufe0f '+err,'warning');return;}
+  const btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='\u23f3 Verifying location...';
+  showStatus('Verifying GPS location...','warning');
+  const gpsResult=await openGpsGuard();
+  if(!gpsResult.ok){
+    btn.disabled=false;btn.textContent='\ud83d\udccd Submit Research';
+    const reasons={cancelled:'Submission cancelled.',no_gps:'GPS not available. Submission blocked.',accuracy:'GPS accuracy too low (\u00b1'+Math.round(gpsResult.accuracy||0)+'m). Move to open area and retry.',distance:'Too close to previous survey ('+Math.round(gpsResult.dist||0)+'m). Move at least 500m.',time:'Too soon since last survey. Please wait at least 2 minutes.',gps_error:'GPS error. Ensure location is enabled and retry.'};
+    showStatus('\u274c '+(reasons[gpsResult.reason]||'GPS check failed.'),'error');return;
   }
-
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Verifying location...';
-  showStatus('Verifying GPS location...', 'warning');
-
-  // GPS guard check
-  const gpsResult = await openGpsGuardModal();
-  if (!gpsResult.ok) {
-    btn.disabled = false;
-    btn.textContent = '📍 Submit Survey';
-    const reasons = {
-      cancelled:  'Submission cancelled.',
-      no_gps:     'GPS is not available on this device. Submission blocked.',
-      accuracy:   `GPS accuracy too low (±${Math.round(gpsResult.accuracy || 0)}m). Please move to an open area and retry.`,
-      distance:   `You are too close to the previous survey location (${Math.round(gpsResult.dist || 0)}m). Move at least 500m away.`,
-      time:       'Too soon since last survey. Please wait at least 2 minutes.',
-      gps_error:  'GPS error. Please ensure location is enabled and retry.'
-    };
-    showStatus('❌ ' + (reasons[gpsResult.reason] || 'GPS check failed.'), 'error');
-    return;
-  }
-
-  btn.textContent = '📤 Submitting...';
-  showStatus('Submitting survey...', 'warning');
-
-  const data = collectFormData();
-
-  if (!navigator.onLine) {
-    enqueue(data);
-    showStatus('📶 You are offline. Survey saved locally and will sync when you reconnect.', 'offline', 6000);
-    btn.disabled = false;
-    btn.textContent = '📍 Submit Survey';
-    resetForm();
-    return;
-  }
-
-  try {
-    // Separate contact info if provided
-    const { contactName, contactPhone, followUp, ...surveyData } = data;
-    await db.collection('responses').add({
-      ...surveyData,
-      _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    if (contactName || contactPhone) {
-      await db.collection('contacts').add({
-        contactName, contactPhone, followUp,
-        _respondentId: surveyData._respondentId,
-        _submittedAt:  surveyData._submittedAt,
-        _researcher:   surveyData._researcher,
-        _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-    showStatus('✅ Survey submitted successfully! Thank you for your participation.', 'success', 8000);
-    resetForm();
-  } catch (err) {
-    console.error('Firestore error:', err);
-    // Fallback to queue
-    enqueue(data);
-    showStatus('⚠️ Submission failed. Survey saved locally and will retry when reconnected.', 'warning', 7000);
-  }
-
-  btn.disabled = false;
-  btn.textContent = '📍 Submit Survey';
+  btn.textContent='\ud83d\udce4 Submitting...';showStatus('Submitting survey...','warning');
+  const data=collectData();
+  if(!navigator.onLine){enqueue(data);showStatus('\ud83d\udcf6 Offline. Survey saved locally and will sync when reconnected.','offline',6000);btn.disabled=false;btn.textContent='\ud83d\udccd Submit Research';resetForm();return;}
+  try{
+    const{contactName,contactPhone,followUp,...surveyData}=data;
+    await db.collection('responses').add({...surveyData,_serverTimestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    if(contactName||contactPhone){await db.collection('contacts').add({contactName,contactPhone,followUp,_respondentId:surveyData._respondentId,_submittedAt:surveyData._submittedAt,_researcher:surveyData._researcher,_serverTimestamp:firebase.firestore.FieldValue.serverTimestamp()});}
+    showStatus('\u2705 Survey submitted successfully! Thank you.','success',8000);resetForm();
+  }catch(err){console.error(err);enqueue(data);showStatus('\u26a0\ufe0f Submission failed. Survey saved locally and will retry.','warning',7000);}
+  btn.disabled=false;btn.textContent='\ud83d\udccd Submit Research';
 });
 
-/* ===================== NETWORK DETECTION ===================== */
-function updateNetworkBadge(online) {
-  isOnline = online;
-  const badge = document.getElementById('networkBadge');
-  badge.className = online ? 'online' : 'offline';
-  badge.innerHTML = online ? '✅ Online' : '📵 Offline';
-  badge.style.display = 'flex';
-  clearTimeout(badge._t);
-  if (online) {
-    badge._t = setTimeout(() => badge.style.display = 'none', 3000);
-    syncPendingInBackground();
-  }
-}
+/* ══════════════════════════════════════════════
+   NETWORK & PROXIMITY
+══════════════════════════════════════════════ */
+function updateNet(online){isOnline=online;const b=document.getElementById('netBadge');b.className=online?'online':'offline';b.innerHTML=online?'\u2705 Online':'\ud83d\udcf5 Offline';b.style.display='flex';clearTimeout(b._t);if(online){b._t=setTimeout(()=>b.style.display='none',3000);syncBg();}}
+async function syncBg(){const q=getQueue();if(q.length===0)return;for(const e of[...q]){try{const{_queueId,_queuedAt,contactName,contactPhone,followUp,...data}=e;await db.collection('responses').add({...data,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});if(contactName||contactPhone)await db.collection('contacts').add({contactName,contactPhone,followUp,_respondentId:data._respondentId,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});dequeue(_queueId);}catch{break;}}}
+window.addEventListener('online',()=>updateNet(true));
+window.addEventListener('offline',()=>updateNet(false));
+function checkProx(){const last=getLastGps();if(!last||!capturedGps){document.getElementById('proximityBanner').style.display='none';return;}const dist=haversine(last.lat,last.lng,capturedGps.lat,capturedGps.lng),timeDiff=Date.now()-last.ts,tooClose=dist<GPS.MIN_DIST,tooSoon=timeDiff<GPS.MIN_TIME;const banner=document.getElementById('proximityBanner');if(tooClose||tooSoon){let msg='';if(tooClose)msg+='Move at least '+(GPS.MIN_DIST-Math.round(dist))+'m further. ';if(tooSoon)msg+='Wait '+Math.ceil((GPS.MIN_TIME-timeDiff)/60000)+' more minute(s).';document.getElementById('proxMsg').textContent=msg.trim();banner.style.display='block';}else{banner.style.display='none';}}
+setInterval(checkProx,15000);
 
-async function syncPendingInBackground() {
-  const q = getQueue();
-  if (q.length === 0) return;
-  for (const entry of [...q]) {
-    try {
-      const { _queueId, _queuedAt, contactName, contactPhone, followUp, ...data } = entry;
-      await db.collection('responses').add({ ...data, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
-      if (contactName || contactPhone) {
-        await db.collection('contacts').add({ contactName, contactPhone, followUp,
-          _respondentId: data._respondentId, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
-      }
-      dequeue(_queueId);
-    } catch(e) { break; }
-  }
-}
+function downloadQuestionnaire(){alert('To save as PDF:\n\n1. Press Ctrl+P (or Cmd+P on Mac)\n2. Choose "Save as PDF" as your printer\n3. Click Save');window.print();}
 
-window.addEventListener('online',  () => updateNetworkBadge(true));
-window.addEventListener('offline', () => updateNetworkBadge(false));
-
-/* ===================== DOWNLOAD PDF (print fallback) ===================== */
-function downloadQuestionnaire() {
-  alert('To save the questionnaire as PDF:\n\n1. Press Ctrl+P (or Cmd+P on Mac)\n2. Choose "Save as PDF" as your printer\n3. Click Save');
-  window.print();
-}
-
-/* ===================== PROXIMITY LOCK BANNER ===================== */
-function checkProximityLock() {
-  const last = getLastGpsRecord();
-  if (!last || !capturedGps) { document.getElementById('proximityLockBanner').style.display = 'none'; return; }
-  const dist = haversineM(last.lat, last.lng, capturedGps.lat, capturedGps.lng);
-  const timeDiff = Date.now() - last.ts;
-  const tooClose = dist < GPS_CONFIG.MIN_DISTANCE_METERS;
-  const tooSoon  = timeDiff < GPS_CONFIG.MIN_TIME_GAP_MS;
-  const banner = document.getElementById('proximityLockBanner');
-  if (tooClose || tooSoon) {
-    let msg = '';
-    if (tooClose) msg += `Move at least ${GPS_CONFIG.MIN_DISTANCE_METERS - Math.round(dist)}m further. `;
-    if (tooSoon)  msg += `Wait ${Math.ceil((GPS_CONFIG.MIN_TIME_GAP_MS - timeDiff)/60000)} more minute(s).`;
-    document.getElementById('proximityLockMsg').textContent = msg.trim();
-    banner.style.display = 'block';
-  } else {
-    banner.style.display = 'none';
-  }
-}
-setInterval(checkProximityLock, 15000);
-
-/* ===================== INIT ===================== */
-window.addEventListener('DOMContentLoaded', () => {
-  // Show consent modal on load
-  document.getElementById('consentModal').classList.remove('hidden');
-  if (!navigator.onLine) updateNetworkBadge(false);
+window.addEventListener('DOMContentLoaded',()=>{
+  if(!navigator.onLine)updateNet(false);
+  // auth state change handles showing login vs survey
 });
 </script>
 </body>
