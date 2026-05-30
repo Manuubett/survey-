@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -97,6 +98,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);l
 .draft-btn.discard{background:#fff;color:var(--red);border-color:#fca5a5;}
 #proximityBanner{display:none;background:#fff8ee;border-bottom:2px solid var(--gold);padding:9px 20px;position:sticky;top:0;z-index:199;}
 .prox-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;gap:10px;font-size:13px;color:#7a4f0a;font-weight:600;}
+
+/* ── DAILY LIMIT BANNER ── */
+#dailyLimitBanner{display:none;background:#f0fdf4;border-bottom:2px solid var(--leaf);padding:8px 20px;position:sticky;top:0;z-index:198;}
+.daily-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;gap:10px;font-size:13px;color:#166534;font-weight:600;}
+
 #netBadge{display:none;position:fixed;bottom:20px;right:20px;z-index:999;padding:10px 18px;border-radius:30px;font-size:13px;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.2);pointer-events:none;align-items:center;gap:7px;}
 #netBadge.offline{background:var(--red);color:#fff;display:flex;}
 #netBadge.online{background:var(--leaf);color:#fff;display:flex;}
@@ -139,14 +145,60 @@ textarea{min-height:72px;resize:vertical;}
 .pill label{display:inline-block;padding:7px 16px;border:1.5px solid var(--border);border-radius:24px;font-size:13px;cursor:pointer;color:var(--muted);background:#fafaf8;transition:all .15s;user-select:none;}
 .pill input:checked + label{background:var(--leaf);color:#fff;border-color:var(--leaf);font-weight:600;}
 .pill input[type="checkbox"]:checked + label{background:var(--forest);border-color:var(--forest);}
-.gov-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
-@media(max-width:460px){.gov-grid{grid-template-columns:1fr;}}
-.gov-card{border:2px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .15s;text-align:center;background:#fafaf8;}
+
+/* ── PILL-BOX GRIDS for constituency & ward ── */
+.pilbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.pilbox-item{position:relative;}
+.pilbox-item input[type="radio"]{position:absolute;opacity:0;width:0;height:0;}
+.pilbox-item label{display:inline-block;padding:8px 18px;border:1.5px solid var(--border);border-radius:24px;font-size:13px;cursor:pointer;color:var(--muted);background:#fafaf8;transition:all .15px;user-select:none;}
+.pilbox-item input:checked + label{background:var(--forest);color:#fff;border-color:var(--forest);font-weight:600;}
+#wardPilbox{display:none;margin-top:14px;}
+#wardPilbox .pilbox-item input:checked + label{background:var(--leaf);border-color:var(--leaf);}
+
+/* ── DATA VALIDATION STYLES ── */
+.field-valid{border-color:var(--leaf)!important;background:#f0fdf4!important;}
+.field-invalid{border-color:var(--red)!important;background:#fff1f2!important;box-shadow:0 0 0 3px rgba(184,50,50,.1)!important;}
+.validation-badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:20px;margin-top:6px;}
+.validation-badge.ok{background:#dcfce7;color:#166534;border:1px solid #86efac;}
+.validation-badge.warn{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;}
+.validation-badge.err{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+#wardValidMsg,#psValidMsg{margin-top:7px;}
+.ps-mismatch-alert{background:#fff1f2;border:1.5px solid #fca5a5;border-left:4px solid var(--red);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:12.5px;color:#991b1b;display:none;}
+.ps-mismatch-alert strong{display:block;margin-bottom:2px;}
+.ps-match-ok{background:#f0fdf4;border:1.5px solid #bbf7d0;border-left:4px solid var(--leaf);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:12.5px;color:#166534;display:none;}
+
+/* ── POLLING STATION SEARCH WIDGET ── */
+.ps-search-wrap{position:relative;}
+.ps-search-input{width:100%;padding:10px 38px 10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);color:var(--ink);font-family:inherit;transition:border-color .2s,box-shadow .2s;}
+.ps-search-input:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
+.ps-search-input.field-valid{border-color:var(--leaf)!important;background:#f0fdf4!important;}
+.ps-search-input.field-invalid{border-color:var(--red)!important;background:#fff1f2!important;}
+.ps-clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:4px;display:none;line-height:1;}
+.ps-clear-btn:hover{color:var(--red);}
+.ps-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--leaf);border-radius:10px;box-shadow:0 8px 32px rgba(12,26,14,.14);z-index:500;max-height:220px;overflow-y:auto;display:none;}
+.ps-dropdown.open{display:block;}
+.ps-option{padding:10px 14px;font-size:13.5px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;transition:background .1s;}
+.ps-option:last-child{border-bottom:none;}
+.ps-option:hover,.ps-option.focused{background:#f0fdf4;}
+.ps-option.other{color:var(--muted);font-style:italic;}
+.ps-option mark{background:var(--gold-lt);color:var(--ink);border-radius:3px;padding:0 2px;font-style:normal;}
+.ps-empty{padding:12px 14px;font-size:13px;color:var(--muted);font-style:italic;text-align:center;}
+.ps-count{font-size:11px;color:var(--muted);margin-top:5px;}
+.ps-selected-chip{display:none;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid var(--leaf);border-radius:8px;padding:8px 13px;margin-top:8px;font-size:13px;color:var(--forest);}
+.ps-selected-chip.vis{display:flex;}
+.ps-chip-name{font-weight:700;flex:1;}
+.ps-chip-clear{background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;font-weight:700;padding:0 2px;}
+
+/* ── GOVERNOR CARDS ── */
+.gov-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:6px;max-width:640px;}
+@media(max-width:520px){.gov-row{grid-template-columns:repeat(2,1fr);}}
+.gov-card{border:2px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;transition:all .15s;text-align:center;background:#fafaf8;}
 .gov-card:hover{border-color:var(--mint);background:#f0f8f3;}
 .gov-card.selected{border-color:var(--leaf);background:#ebf7f0;}
 .gov-card input{display:none;}
-.gc-name{font-weight:700;font-size:14px;color:var(--forest);}
-.gc-tag{font-size:11px;color:var(--muted);margin-top:3px;}
+.gc-name{font-weight:700;font-size:12.5px;color:var(--forest);line-height:1.2;}
+.gc-tag{font-size:10px;color:var(--muted);margin-top:3px;}
+
 .elec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
 @media(max-width:500px){.elec-grid{grid-template-columns:1fr;}}
 .elec-item label{display:block;font-weight:600;font-size:11.5px;color:var(--forest);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
@@ -196,6 +248,8 @@ textarea{min-height:72px;resize:vertical;}
 .sync-prog-outer{height:6px;background:var(--border);border-radius:6px;overflow:hidden;}
 .sync-prog-inner{height:100%;background:linear-gradient(90deg,var(--leaf),var(--mint));border-radius:6px;transition:width .4s;width:0;}
 .sync-status{font-size:12px;color:var(--muted);margin-top:6px;text-align:center;}
+#gpsSkipBtn{display:none;width:100%;margin-top:10px;padding:9px;border:1.5px dashed var(--gold);border-radius:8px;background:#fffbeb;color:#92400e;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;}
+#gpsSkipBtn:hover{background:#fef3c7;}
 
 /* OCCUPATION GRID */
 .occ-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
@@ -205,17 +259,31 @@ textarea{min-height:72px;resize:vertical;}
 .occ-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;z-index:1;}
 .occ-selected{display:none;background:var(--warm);border:1.5px solid var(--leaf);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--forest);margin-top:8px;}
 .occ-clear{margin-left:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:700;}
+
+/* ── G9 CANDIDATE DROPDOWNS ── */
+.cand-block{margin-bottom:18px;}
+.cand-block:last-child{margin-bottom:0;}
+.cand-block .elec-label{display:block;font-weight:700;font-size:12px;color:var(--forest);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px;}
+.cand-select-wrap{position:relative;}
+.cand-select-wrap select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;}
+.cand-select-wrap select:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
+.cand-other-row{display:none;margin-top:8px;}
+.cand-other-row.vis{display:block;}
+.cand-other-row input{border-color:var(--gold)!important;background:#fffbeb!important;}
+.cand-other-row input:focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px rgba(200,150,62,.15)!important;}
+.cand-hint{font-size:11.5px;color:var(--muted);margin-top:4px;font-style:italic;}
+.g9-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px;}
+@media(max-width:520px){.g9-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 
-<!-- ═══ LOGIN SCREEN ═══ -->
+<!-- LOGIN SCREEN -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">ECS</div>
     <div class="login-title">ECS-2026 Research</div>
     <div class="login-sub">Embu County Social Study &middot; Researcher Portal<br>Sign in with your Google account to continue.</div>
-
     <button class="google-btn" id="googleSignInBtn" onclick="signInWithGoogle()">
       <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -225,10 +293,8 @@ textarea{min-height:72px;resize:vertical;}
       </svg>
       Sign in with Google
     </button>
-
     <div class="login-err" id="loginErr"></div>
     <div class="login-loading" id="loginLoading">&#x23F3; Signing in...</div>
-
     <div class="login-pills">
       <span class="login-pill">&#x1F512; Anonymised Data</span>
       <span class="login-pill">&#x23F1; 15&ndash;20 min</span>
@@ -237,7 +303,7 @@ textarea{min-height:72px;resize:vertical;}
   </div>
 </div>
 
-<!-- ═══ RESEARCHER WELCOME MODAL (shown after Google login) ═══ -->
+<!-- RESEARCHER WELCOME MODAL -->
 <div class="overlay hidden" id="researcherModal">
   <div class="mbox mbox-sm">
     <div class="mhead forest">
@@ -257,7 +323,7 @@ textarea{min-height:72px;resize:vertical;}
         <div id="generatedIdDisplay" style="font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--forest);letter-spacing:2px;"></div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Auto-generated from your Google account &mdash; unique &amp; permanent</div>
       </div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.65;">This ID is automatically assigned and recorded with every submission you make. You will see it in your dashboard banner. No manual entry needed.</p>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;">This ID is automatically assigned and recorded with every submission you make.</p>
     </div>
     <div class="mfoot">
       <div class="btn-row">
@@ -268,7 +334,7 @@ textarea{min-height:72px;resize:vertical;}
   </div>
 </div>
 
-<!-- ═══ GPS GUARD MODAL ═══ -->
+<!-- GPS GUARD MODAL -->
 <div class="overlay hidden" id="gpsGuardModal">
   <div class="mbox mbox-sm">
     <div class="mhead forest">
@@ -278,12 +344,12 @@ textarea{min-height:72px;resize:vertical;}
     <div class="mscroll">
       <div class="first-note" id="firstNote">
         <strong>&#x1F4CC; First survey of the day</strong>
-        Your starting location is being recorded. From the next survey onwards the system will check you have moved to a new location before submitting.
+        Your starting location is being recorded.
       </div>
       <ul class="gps-steps">
         <li id="step-acquire" class="active"><span class="step-icon">&#x1F6F0;</span><div class="step-text"><strong>Acquiring GPS Signal</strong><span id="step-acquire-detail">Waiting for location...</span></div></li>
         <li id="step-accuracy"><span class="step-icon">&#x1F3AF;</span><div class="step-text"><strong>Accuracy Check</strong><span id="step-accuracy-detail">Requires &le; 80 m accuracy</span></div></li>
-        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be 500 m from last survey</span></div></li>
+        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be 500 m from all prior surveys</span></div></li>
         <li id="step-time"><span class="step-icon">&#x23F1;</span><div class="step-text"><strong>Time Gap Check</strong><span id="step-time-detail">Checking time since last survey</span></div></li>
       </ul>
       <div class="gps-prog"><div class="gps-prog-bar" id="gpsProg"></div></div>
@@ -292,6 +358,7 @@ textarea{min-height:72px;resize:vertical;}
         <div class="gps-coords" id="liveCoords"></div>
         <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="liveAcc"></div>
       </div>
+      <button id="gpsSkipBtn" onclick="skipGps()">&#x26A0; GPS taking too long &mdash; supervisor override (PIN required)</button>
     </div>
     <div class="mfoot">
       <div class="btn-row">
@@ -302,7 +369,7 @@ textarea{min-height:72px;resize:vertical;}
   </div>
 </div>
 
-<!-- ═══ OFFLINE QUEUE MODAL ═══ -->
+<!-- OFFLINE QUEUE MODAL -->
 <div class="overlay hidden" id="offlineModal">
   <div class="mbox mbox-sm">
     <div class="mhead forest">
@@ -326,7 +393,7 @@ textarea{min-height:72px;resize:vertical;}
   </div>
 </div>
 
-<!-- ═══ SITE HEADER (hidden until logged in) ═══ -->
+<!-- SITE HEADER -->
 <div class="site-header" id="siteHeader" style="display:none;">
   <div class="header-stripe"></div>
   <div class="header-inner">
@@ -351,6 +418,7 @@ textarea{min-height:72px;resize:vertical;}
     <div class="gps-dot" id="gpsDot"></div>
     <span style="font-weight:600;">GPS:</span>
     <span id="gpsStatusText" style="color:var(--muted);">Inactive</span>
+    <span id="dailyCountBadge" style="margin-left:auto;font-size:11.5px;color:var(--muted);"></span>
   </div>
 </div>
 
@@ -380,7 +448,7 @@ textarea{min-height:72px;resize:vertical;}
 <div id="netBadge"></div>
 <div id="autosave">&#x1F4BE; Draft saved</div>
 
-<!-- ═══ SURVEY WRAPPER ═══ -->
+<!-- SURVEY WRAPPER -->
 <div id="surveyWrapper" style="display:none;">
 <div class="container">
 
@@ -388,6 +456,7 @@ textarea{min-height:72px;resize:vertical;}
     <div>
       <img id="bannerAvatar" src="" alt="" style="width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:6px;">
       <strong>&#x1F52C; <span id="bannerName"></span></strong> &nbsp;&middot;&nbsp; ID: <span id="bannerId"></span>
+      &nbsp;&middot;&nbsp; <span id="bannerDailyCount" style="font-size:12px;"></span>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
       <button class="res-small-btn pend" id="pendBtn" onclick="openOfflineModal()" style="display:none;">&#x1F4E4; Pending <span id="pendCount">0</span></button>
@@ -418,24 +487,54 @@ textarea{min-height:72px;resize:vertical;}
           <div class="pill"><input type="radio" name="gender" id="gp" value="Prefer not to say"><label for="gp">Prefer not to say</label></div>
         </div>
       </div>
+
       <div class="field">
         <label class="field-label"><span class="qnum">A2.</span> Constituency</label>
-        <select id="constituency" required onchange="updateWards()">
-          <option value="">Select constituency</option>
-          <option>Manyatta</option><option>Runyenjes</option>
-          <option>Mbeere North</option><option>Mbeere South</option>
-        </select>
+        <div class="pilbox" id="constPilbox">
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_man" value="Manyatta" onchange="onConstChange('Manyatta')"><label for="c_man">Manyatta</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_run" value="Runyenjes" onchange="onConstChange('Runyenjes')"><label for="c_run">Runyenjes</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_mbn" value="Mbeere North" onchange="onConstChange('Mbeere North')"><label for="c_mbn">Mbeere North</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_mbs" value="Mbeere South" onchange="onConstChange('Mbeere South')"><label for="c_mbs">Mbeere South</label></div>
+        </div>
+        <input type="hidden" id="constituency">
       </div>
-      <div class="field">
+
+      <div class="field" id="wardPilbox" style="display:none;">
         <label class="field-label"><span class="qnum">A3.</span> Ward</label>
-        <select id="ward" required>
-          <option value="">&mdash; Select constituency first &mdash;</option>
-        </select>
+        <div class="pilbox" id="wardPills"></div>
+        <input type="hidden" id="ward">
+        <div id="wardValidMsg"></div>
       </div>
-      <div class="field">
-        <label class="field-label"><span class="qnum">A4.</span> Polling Station</label>
-        <input type="text" id="pollingStation" placeholder="Enter your polling station name">
+
+      <!-- A4: Polling Station live-search widget -->
+      <div class="field" id="pollingStationField" style="display:none;">
+        <label class="field-label"><span class="qnum">A4.</span> Polling Station
+          <span class="fnote" id="psConstLabel"></span>
+        </label>
+        <div class="ps-search-wrap" id="psSearchWrap">
+          <input type="text" class="ps-search-input" id="psSearchInput"
+            placeholder="Type to search polling stations..."
+            autocomplete="off" spellcheck="false"
+            oninput="psOnInput()" onfocus="psOnFocus()" onkeydown="psOnKey(event)">
+          <button type="button" class="ps-clear-btn" id="psClearBtn" onclick="psClear()" title="Clear">&#x2715;</button>
+          <div class="ps-dropdown" id="psDropdown"></div>
+        </div>
+        <div class="ps-selected-chip" id="psChip">
+          <span>&#x1F3EB;</span>
+          <span class="ps-chip-name" id="psChipName"></span>
+          <button type="button" class="ps-chip-clear" onclick="psClear()" title="Change">&#x270F; Change</button>
+        </div>
+        <input type="hidden" id="pollingStation">
+        <div id="psValidMsg"></div>
+        <div class="ps-mismatch-alert" id="psMismatchAlert">
+          <strong>&#x26A0; Polling station / ward mismatch</strong>
+          This station is not listed under the selected ward. Please verify.
+        </div>
+        <div class="ps-match-ok" id="psMatchOk">
+          &#x2705; Confirmed in <strong id="psMatchWard"></strong> ward, <strong id="psMatchConst"></strong> constituency.
+        </div>
       </div>
+
       <div class="loc-box" id="locationBox">
         <div class="loc-head">&#x1F4CD; Interview Location (GPS)</div>
         <div class="loc-row">
@@ -445,6 +544,7 @@ textarea{min-height:72px;resize:vertical;}
         </div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Location captured automatically &mdash; not linked to your identity.</div>
       </div>
+
       <div class="field" style="margin-top:18px;">
         <label class="field-label"><span class="qnum">A5.</span> Age Category</label>
         <div class="pill-row">
@@ -626,8 +726,8 @@ textarea{min-height:72px;resize:vertical;}
       </div>
       <div class="field">
         <label class="field-label"><span class="qnum">G2.</span> If elections were held today, who would you elect as Governor of Embu County?</label>
-        <div class="gov-grid" id="govGrid">
-          <div class="gov-card" onclick="selectGov(this,'Cecily Mbarire')"><input type="radio" name="governor" value="Cecily Mbarire" onchange="updateNeg()"><div class="gc-name">Cecily Mbarire</div><div class="gc-tag">Incumbent Governor</div></div>
+        <div class="gov-row" id="govGrid">
+          <div class="gov-card" onclick="selectGov(this,'Cecily Mbarire')"><input type="radio" name="governor" value="Cecily Mbarire" onchange="updateNeg()"><div class="gc-name">Cecily Mbarire</div><div class="gc-tag">Incumbent</div></div>
           <div class="gov-card" onclick="selectGov(this,'Lenny Kivuti')"><input type="radio" name="governor" value="Lenny Kivuti" onchange="updateNeg()"><div class="gc-name">Lenny Kivuti</div><div class="gc-tag">Challenger</div></div>
           <div class="gov-card" onclick="selectGov(this,'Gitonga Mukunji')"><input type="radio" name="governor" value="Gitonga Mukunji" onchange="updateNeg()"><div class="gc-name">Gitonga Mukunji</div><div class="gc-tag">Challenger</div></div>
           <div class="gov-card" onclick="selectGov(this,'Other')"><input type="radio" name="governor" value="Other" onchange="updateNeg()"><div class="gc-name">Other</div><div class="gc-tag">Specify below</div></div>
@@ -712,14 +812,76 @@ textarea{min-height:72px;resize:vertical;}
         </div>
         <div id="notGitongaDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Gitonga Mukunji as your preferred candidate.</div>
       </div>
+
+      <!-- G9 -->
       <div class="field">
         <label class="field-label"><span class="qnum">G9.</span> Preferred candidates for the following positions:</label>
-        <p class="sec-note">Write the name of your preferred candidate for each position.</p>
-        <div class="elec-grid">
-          <div class="elec-item"><label>&#x1F3DB; Senator</label><input type="text" id="prefSenator" placeholder="Preferred senator..."></div>
-          <div class="elec-item"><label>&#x1F469; Women Representative</label><input type="text" id="prefWomenRep" placeholder="Preferred Women Rep..."></div>
-          <div class="elec-item"><label>&#x1F5F3; Member of Parliament (MP)</label><input type="text" id="prefMP" placeholder="Preferred MP..."></div>
-          <div class="elec-item"><label>&#x1F4CD; Member of County Assembly (MCA)</label><input type="text" id="prefMCA" placeholder="Preferred MCA..."></div>
+        <p class="sec-note">Select from known candidates or choose <em>"Other (specify)"</em> to type a name.</p>
+        <div class="g9-grid">
+          <div class="cand-block">
+            <span class="elec-item"><label>&#x1F3DB; Senator</label></span>
+            <div class="cand-select-wrap">
+              <select id="prefSenatorSel" onchange="handleCandSelect('Senator','prefSenatorSel','prefSenatorOther','prefSenator')">
+                <option value="">— Select senator —</option>
+                <option value="Njeru Ndwiga">Njeru Ndwiga</option>
+                <option value="Clive Imanyara">Clive Imanyara</option>
+                <option value="Lenny Kivuti">Lenny Kivuti</option>
+                <option value="Njeru Githae">Njeru Githae</option>
+                <option value="Cecily Mbarire">Cecily Mbarire</option>
+                <option value="__other__">Other (specify below)</option>
+              </select>
+            </div>
+            <div class="cand-other-row" id="prefSenatorOther">
+              <input type="text" id="prefSenatorText" placeholder="Type senator's name..." oninput="syncCandOther('prefSenatorText','prefSenator')">
+              <div class="cand-hint">&#x1F4DD; Type the full name of your preferred senator</div>
+            </div>
+            <input type="hidden" id="prefSenator">
+          </div>
+          <div class="cand-block">
+            <span class="elec-item"><label>&#x1F469; Women Representative</label></span>
+            <div class="cand-select-wrap">
+              <select id="prefWomenRepSel" onchange="handleCandSelect('WomenRep','prefWomenRepSel','prefWomenRepOther','prefWomenRep')">
+                <option value="">— Select Women Rep —</option>
+                <option value="Millicent Omanga">Millicent Omanga</option>
+                <option value="Wanjiru Githae">Wanjiru Githae</option>
+                <option value="Tabitha Mutinda">Tabitha Mutinda</option>
+                <option value="Mary Njue">Mary Njue</option>
+                <option value="Grace Kamau">Grace Kamau</option>
+                <option value="__other__">Other (specify below)</option>
+              </select>
+            </div>
+            <div class="cand-other-row" id="prefWomenRepOther">
+              <input type="text" id="prefWomenRepText" placeholder="Type Women Rep's name..." oninput="syncCandOther('prefWomenRepText','prefWomenRep')">
+              <div class="cand-hint">&#x1F4DD; Type the full name of your preferred Women Representative</div>
+            </div>
+            <input type="hidden" id="prefWomenRep">
+          </div>
+          <div class="cand-block">
+            <span class="elec-item"><label>&#x1F5F3; Member of Parliament (MP)</label></span>
+            <div class="cand-select-wrap">
+              <select id="prefMPSel" onchange="handleCandSelect('MP','prefMPSel','prefMPOther','prefMP')">
+                <option value="">— Select constituency first (A2) —</option>
+              </select>
+            </div>
+            <div class="cand-other-row" id="prefMPOther">
+              <input type="text" id="prefMPText" placeholder="Type MP candidate's name..." oninput="syncCandOther('prefMPText','prefMP')">
+              <div class="cand-hint">&#x1F4DD; Type the full name of your preferred MP candidate</div>
+            </div>
+            <input type="hidden" id="prefMP">
+          </div>
+          <div class="cand-block">
+            <span class="elec-item"><label>&#x1F4CD; Member of County Assembly (MCA)</label></span>
+            <div class="cand-select-wrap">
+              <select id="prefMCASel" onchange="handleCandSelect('MCA','prefMCASel','prefMCAOther','prefMCA')">
+                <option value="">— Select ward first (A3) —</option>
+              </select>
+            </div>
+            <div class="cand-other-row" id="prefMCAOther">
+              <input type="text" id="prefMCAText" placeholder="Type MCA candidate's name..." oninput="syncCandOther('prefMCAText','prefMCA')">
+              <div class="cand-hint">&#x1F4DD; Type the full name of your preferred MCA candidate</div>
+            </div>
+            <input type="hidden" id="prefMCA">
+          </div>
         </div>
       </div>
     </div>
@@ -802,341 +964,977 @@ textarea{min-height:72px;resize:vertical;}
 </div>
 </div>
 
+<script src="ecs_polling_stations.js"></script>
+
 <script>
-/* ══════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    FIREBASE CONFIG
-══════════════════════════════════════════════ */
-const firebaseConfig={
-  apiKey:"AIzaSyAXeNgPLKFgfxBKNta7UlGzHW-bjWzghas",
-  authDomain:"survey-842bd.firebaseapp.com",
-  projectId:"survey-842bd",
-  storageBucket:"survey-842bd.firebasestorage.app",
-  messagingSenderId:"916255795370",
-  appId:"1:916255795370:web:3f186720bf9e2b163dc8d3"
+   ══════════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey:            "AIzaSyAXeNgPLKFgfxBKNta7UlGzHW-bjWzghas",
+  authDomain:        "survey-842bd.firebaseapp.com",
+  projectId:         "survey-842bd",
+  storageBucket:     "survey-842bd.firebasestorage.app",
+  messagingSenderId: "916255795370",
+  appId:             "1:916255795370:web:3f186720bf9e2b163dc8d3"
 };
 firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
-const auth=firebase.auth();
+const db   = firebase.firestore();
+const auth = firebase.auth();
 
-/* ══════════════════════════════════════════════
-   GOOGLE AUTH
-══════════════════════════════════════════════ */
-let currentUser=null;
-let currentResearcher=null;
-const RES_KEY='ecs26_researcher';
+/* ══════════════════════════════════════════════════════════════
+   GPS SETTINGS
+   ══════════════════════════════════════════════════════════════ */
+const GPS = { MAX_ACC:80, MIN_DIST:500, MIN_TIME:120000, TIMEOUT:45000, MAX_AGE:15000, SKIP_DELAY:20000 };
 
-async function signInWithGoogle(){
-  const btn=document.getElementById('googleSignInBtn');
-  const err=document.getElementById('loginErr');
-  const loading=document.getElementById('loginLoading');
-  btn.disabled=true;
-  err.style.display='none';
-  loading.style.display='block';
-  try{
-    const provider=new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({prompt:'select_account'});
-    await auth.signInWithPopup(provider);
-    // onAuthStateChanged will handle the rest
-  }catch(e){
-    btn.disabled=false;
-    loading.style.display='none';
-    err.textContent=e.code==='auth/popup-closed-by-user'?'Sign-in cancelled. Please try again.'
-      :'Sign-in failed: '+e.message;
-    err.style.display='block';
+/* ══════════════════════════════════════════════════════════════
+   SUPERVISOR PIN (Layer 4)
+   ══════════════════════════════════════════════════════════════ */
+const SUPERVISOR_PIN = '2026'; // Change this in production
+
+/* ══════════════════════════════════════════════════════════════
+   DAILY LIMIT (Layer 5)
+   ══════════════════════════════════════════════════════════════ */
+const DAILY_LIMIT = 15;
+const DAILY_COUNT_KEY = 'ecs26_daily_count';
+
+function getDailyCount() {
+  try {
+    const s = JSON.parse(localStorage.getItem(DAILY_COUNT_KEY) || '{}');
+    return s.day === todayKey() ? (s.count || 0) : 0;
+  } catch { return 0; }
+}
+
+function incrementDailyCount() {
+  const count = getDailyCount() + 1;
+  localStorage.setItem(DAILY_COUNT_KEY, JSON.stringify({ day: todayKey(), count }));
+  updateDailyCountUI();
+}
+
+function checkDailyLimit() {
+  const count = getDailyCount();
+  if (count >= DAILY_LIMIT) {
+    showStatus('\u26D4 Daily limit reached (' + DAILY_LIMIT + ' surveys). Contact your supervisor to continue.', 'error');
+    return false;
+  }
+  return true;
+}
+
+function updateDailyCountUI() {
+  const count = getDailyCount();
+  const badge = document.getElementById('dailyCountBadge');
+  const bannerCount = document.getElementById('bannerDailyCount');
+  const text = 'Today: ' + count + ' / ' + DAILY_LIMIT + ' surveys';
+  if (badge) badge.textContent = text;
+  if (bannerCount) bannerCount.textContent = text;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DATA ACCESSORS
+   ══════════════════════════════════════════════════════════════ */
+function _PS()  { return window.ECS_POLLING_STATIONS  || {}; }
+function _MP()  { return window.ECS_MP_CANDIDATES     || {}; }
+function _MCA() { return window.ECS_MCA_CANDIDATES    || {}; }
+function _WC()  { return window.ECS_WARD_CONSTITUENCY || {}; }
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION GPS LOG (Layer 2) — replaces simple getLastGps/saveLastGps
+   Tracks ALL GPS points this session (today), not just the last one.
+   ══════════════════════════════════════════════════════════════ */
+const SESSION_GPS_KEY = 'ecs26_gps_session';
+
+function todayKey() { return new Date().toISOString().slice(0,10); }
+
+function getSessionLog() {
+  try { return JSON.parse(localStorage.getItem(SESSION_GPS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function addToSessionLog(lat, lng, ts) {
+  const log = getSessionLog();
+  log.push({ lat, lng, ts, day: todayKey() });
+  // Keep only today's entries
+  const today = log.filter(e => e.day === todayKey());
+  localStorage.setItem(SESSION_GPS_KEY, JSON.stringify(today));
+}
+
+function getLastGps() {
+  const log = getSessionLog();
+  return log.length ? log[log.length - 1] : null;
+}
+
+// Layer 2: check against ALL prior GPS points, not just the last
+function checkDistanceAllPrior(lat, lng) {
+  const log = getSessionLog();
+  for (const prior of log) {
+    const dist = haversine(prior.lat, prior.lng, lat, lng);
+    if (dist < GPS.MIN_DIST) return { tooClose: true, dist: Math.round(dist) };
+  }
+  return { tooClose: false };
+}
+
+function saveLastGps(lat, lng, ts) { addToSessionLog(lat, lng, ts); }
+
+/* ══════════════════════════════════════════════════════════════
+   CROSS-ENUMERATOR SPATIAL CONFLICT CHECK (Layer 3)
+   ══════════════════════════════════════════════════════════════ */
+async function checkSpatialConflict(lat, lng) {
+  if (!lat || !lng) return { conflict: false };
+  const since = new Date(Date.now() - 90 * 60 * 1000);
+  try {
+    const snap = await db.collection('responses')
+      .where('_submittedAt', '>', since.toISOString())
+      .get();
+    for (const doc of snap.docs) {
+      const d = doc.data();
+      if (!d._gpsLat || !d._gpsLng) continue;
+      const dist = haversine(d._gpsLat, d._gpsLng, lat, lng);
+      if (dist < 200) return { conflict: true, dist: Math.round(dist), researcher: d._researcher };
+    }
+  } catch (e) { console.warn('Spatial conflict check failed:', e); }
+  return { conflict: false };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   POLLING STATION LIVE-SEARCH WIDGET
+   ══════════════════════════════════════════════════════════════ */
+let _psStations = [];
+let _psFocused  = -1;
+
+window.loadPollingStations = function (ward) {
+  _psStations = (_PS()[ward]) || [];
+  const field = document.getElementById('pollingStationField');
+  const lbl   = document.getElementById('psConstLabel');
+  if (field) field.style.display = _psStations.length ? 'block' : 'none';
+  if (lbl)   lbl.textContent     = _psStations.length
+    ? '(' + _psStations.length + ' stations in ' + ward + ' — type to search)'
+    : '(no stations found for this ward)';
+  resetPollingStation();
+};
+
+function resetPollingStation() {
+  _psFocused = -1;
+  const inp  = document.getElementById('psSearchInput');
+  const hid  = document.getElementById('pollingStation');
+  const chip = document.getElementById('psChip');
+  const dd   = document.getElementById('psDropdown');
+  const clr  = document.getElementById('psClearBtn');
+  if (inp)  { inp.value = ''; inp.classList.remove('field-valid','field-invalid'); }
+  if (hid)  hid.value = '';
+  if (chip) chip.classList.remove('vis');
+  if (dd)   { dd.innerHTML = ''; dd.classList.remove('open'); }
+  if (clr)  clr.style.display = 'none';
+  const alert = document.getElementById('psMismatchAlert');
+  const ok    = document.getElementById('psMatchOk');
+  const msg   = document.getElementById('psValidMsg');
+  if (alert) alert.style.display = 'none';
+  if (ok)    ok.style.display    = 'none';
+  if (msg)   msg.innerHTML       = '';
+}
+
+function psOnInput() {
+  const q = document.getElementById('psSearchInput').value.trim();
+  document.getElementById('psClearBtn').style.display = q ? 'block' : 'none';
+  _psFocused = -1;
+  if (!q) { psCloseDropdown(); return; }
+  psRenderDropdown(q);
+}
+
+function psOnFocus() {
+  const q = document.getElementById('psSearchInput').value.trim();
+  if (q) psRenderDropdown(q);
+  else if (_psStations.length) psRenderDropdown('');
+}
+
+function psOnKey(e) {
+  const dd    = document.getElementById('psDropdown');
+  const items = dd.querySelectorAll('.ps-option');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault(); _psFocused = Math.min(_psFocused + 1, items.length - 1); psHighlight(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault(); _psFocused = Math.max(_psFocused - 1, 0); psHighlight(items);
+  } else if (e.key === 'Enter') {
+    e.preventDefault(); if (_psFocused >= 0 && items[_psFocused]) items[_psFocused].click();
+  } else if (e.key === 'Escape') {
+    psCloseDropdown();
   }
 }
 
-async function signOutGoogle(){
-  if(!confirm('Sign out of ECS-2026?'))return;
-  await auth.signOut();
-  location.reload();
+function psHighlight(items) {
+  items.forEach((el, i) => el.classList.toggle('focused', i === _psFocused));
+  if (_psFocused >= 0) items[_psFocused].scrollIntoView({ block: 'nearest' });
 }
 
-// Listen for auth state changes
-auth.onAuthStateChanged(user=>{
-  if(user){
-    currentUser=user;
-    onUserSignedIn(user);
-  }else{
-    currentUser=null;
-    document.getElementById('loginScreen').style.display='flex';
-    document.getElementById('siteHeader').style.display='none';
-    document.getElementById('surveyWrapper').style.display='none';
-    document.getElementById('googleSignInBtn').disabled=false;
-    document.getElementById('loginLoading').style.display='none';
+function psRenderDropdown(q) {
+  const dd   = document.getElementById('psDropdown');
+  const norm = q.toLowerCase();
+  let matches;
+  if (!q) {
+    matches = _psStations.slice(0, 8);
+  } else {
+    const sw = _psStations.filter(s => s.toLowerCase().startsWith(norm));
+    const ct = _psStations.filter(s => !s.toLowerCase().startsWith(norm) && s.toLowerCase().includes(norm));
+    matches  = [...sw, ...ct].slice(0, 12);
+  }
+  if (!matches.length && q) {
+    dd.innerHTML = '<div class="ps-empty">No station matches &ldquo;' + escHtml(q) + '&rdquo;<br><small>Try fewer letters or choose &ldquo;Other&rdquo; below</small></div>';
+  } else {
+    dd.innerHTML = matches.map(s => {
+      const hl = q ? s.replace(new RegExp('(' + escReg(q) + ')','gi'), '<mark>$1</mark>') : escHtml(s);
+      return '<div class="ps-option" onclick="psSelect(\'' + escHtml(s).replace(/'/g,"&#39;") + '\')">&#x1F3EB; ' + hl + '</div>';
+    }).join('');
+  }
+  dd.innerHTML += '<div class="ps-option other" onclick="psSelect(\'__other__\')">&#x270F; Other / Not listed</div>';
+  dd.classList.add('open');
+  _psFocused = -1;
+}
+
+function psSelect(val) {
+  psCloseDropdown();
+  const inp  = document.getElementById('psSearchInput');
+  const hid  = document.getElementById('pollingStation');
+  const chip = document.getElementById('psChip');
+  const name = document.getElementById('psChipName');
+  const clr  = document.getElementById('psClearBtn');
+  if (val === '__other__') {
+    inp.value = '';
+    inp.placeholder = 'Type station name manually...';
+    hid.value = '__other__';
+    if (chip) chip.classList.remove('vis');
+    clr.style.display = 'none';
+    inp.classList.remove('field-valid','field-invalid');
+    const msg = document.getElementById('psValidMsg');
+    if (msg) msg.innerHTML = '<span class="validation-badge warn">&#x270F; Manual entry — type the exact station name above</span>';
+    inp.focus();
+    return;
+  }
+  inp.value = val;
+  hid.value = val;
+  clr.style.display = 'block';
+  if (name) name.textContent = val;
+  if (chip) chip.classList.add('vis');
+  validatePollingStation();
+}
+
+function psClear() {
+  resetPollingStation();
+  document.getElementById('pollingStationField').style.display = _psStations.length ? 'block' : 'none';
+  document.getElementById('psSearchInput').focus();
+}
+
+function psCloseDropdown() {
+  const dd = document.getElementById('psDropdown');
+  if (dd) dd.classList.remove('open');
+}
+
+document.addEventListener('click', function (e) {
+  const wrap = document.getElementById('psSearchWrap');
+  if (wrap && !wrap.contains(e.target)) psCloseDropdown();
+});
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escReg(s)  { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+function validatePollingStation() {
+  const ps    = document.getElementById('pollingStation').value;
+  const ward  = document.getElementById('ward').value;
+  const con   = document.getElementById('constituency').value;
+  const alert = document.getElementById('psMismatchAlert');
+  const ok    = document.getElementById('psMatchOk');
+  const msg   = document.getElementById('psValidMsg');
+  const inp   = document.getElementById('psSearchInput');
+  if (alert) alert.style.display = 'none';
+  if (ok)    ok.style.display    = 'none';
+  if (msg)   msg.innerHTML       = '';
+  if (!ps || ps === '__other__') return;
+  if (!ward) { if (msg) msg.innerHTML = '<span class="validation-badge warn">&#x26A0; Please select a ward first (A3)</span>'; return; }
+  const valid = (_PS()[ward] || []).includes(ps);
+  if (valid) {
+    if (inp) { inp.classList.add('field-valid'); inp.classList.remove('field-invalid'); }
+    if (ok)  { ok.style.display = 'block'; document.getElementById('psMatchWard').textContent = ward; document.getElementById('psMatchConst').textContent = con; }
+  } else {
+    if (inp)  { inp.classList.add('field-invalid'); inp.classList.remove('field-valid'); }
+    if (alert) alert.style.display = 'block';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GOOGLE AUTH
+   ══════════════════════════════════════════════════════════════ */
+let currentUser = null, currentResearcher = null;
+const RES_KEY = 'ecs26_researcher';
+
+async function signInWithGoogle() {
+  const btn = document.getElementById('googleSignInBtn');
+  const err = document.getElementById('loginErr');
+  const loading = document.getElementById('loginLoading');
+  btn.disabled = true; err.style.display = 'none'; loading.style.display = 'block';
+  try {
+    const p = new firebase.auth.GoogleAuthProvider();
+    p.setCustomParameters({ prompt: 'select_account' });
+    await auth.signInWithPopup(p);
+  } catch (e) {
+    btn.disabled = false; loading.style.display = 'none';
+    err.textContent = e.code === 'auth/popup-closed-by-user' ? 'Sign-in cancelled. Please try again.' : 'Sign-in failed: ' + e.message;
+    err.style.display = 'block';
+  }
+}
+
+async function signOutGoogle() {
+  if (!confirm('Sign out of ECS-2026?')) return;
+  await auth.signOut(); location.reload();
+}
+
+auth.onAuthStateChanged(user => {
+  if (user) { currentUser = user; onUserSignedIn(user); }
+  else {
+    currentUser = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('siteHeader').style.display = 'none';
+    document.getElementById('surveyWrapper').style.display = 'none';
+    document.getElementById('googleSignInBtn').disabled = false;
+    document.getElementById('loginLoading').style.display = 'none';
   }
 });
 
-function generateResearcherId(user){
-  // Build initials from display name (up to 3 chars)
-  const name=user.displayName||user.email||'XX';
-  const initials=name.trim().split(/\s+/).map(w=>w[0]&&w[0].toUpperCase()||'').join('').slice(0,3).padEnd(2,'X');
-  // Deterministic 4-digit suffix from Google UID (same every time for same user)
-  let hash=0;for(let i=0;i<user.uid.length;i++){hash=(hash*31+user.uid.charCodeAt(i))&0xffffffff;}
-  const suffix=String(Math.abs(hash)%9000+1000); // always 4 digits 1000-9999
-  return 'ECS-'+initials+'-'+suffix;
+function generateResearcherId(user) {
+  const name = user.displayName || user.email || 'XX';
+  const initials = name.trim().split(/\s+/).map(w => w[0] && w[0].toUpperCase() || '').join('').slice(0,3).padEnd(2,'X');
+  let hash = 0;
+  for (let i = 0; i < user.uid.length; i++) hash = (hash * 31 + user.uid.charCodeAt(i)) & 0xffffffff;
+  return 'ECS-' + initials + '-' + String(Math.abs(hash) % 9000 + 1000);
 }
 
-function onUserSignedIn(user){
-  document.getElementById('loginScreen').style.display='none';
-  // Generate deterministic unique ID from Google account
-  const generatedId=generateResearcherId(user);
-  // Fill modal
-  document.getElementById('userDisplayName').textContent=user.displayName||user.email||'';
-  document.getElementById('userEmail').textContent=user.email||'';
-  document.getElementById('generatedIdDisplay').textContent=generatedId;
-  const avatar=document.getElementById('userAvatar');
-  if(user.photoURL){avatar.src=user.photoURL;}else{avatar.style.display='none';}
-  // Check if researcher already confirmed on this device for this Google account
-  const saved=localStorage.getItem(RES_KEY);
-  if(saved){
-    currentResearcher=JSON.parse(saved);
-    if(currentResearcher.googleUid===user.uid){
-      showSurvey();return; // skip modal, go straight to survey
-    }else{
-      localStorage.removeItem(RES_KEY);
-    }
+function onUserSignedIn(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  const id = generateResearcherId(user);
+  document.getElementById('userDisplayName').textContent = user.displayName || user.email || '';
+  document.getElementById('userEmail').textContent = user.email || '';
+  document.getElementById('generatedIdDisplay').textContent = id;
+  const av = document.getElementById('userAvatar');
+  if (user.photoURL) av.src = user.photoURL; else av.style.display = 'none';
+  const saved = localStorage.getItem(RES_KEY);
+  if (saved) {
+    currentResearcher = JSON.parse(saved);
+    if (currentResearcher.googleUid === user.uid) { showSurvey(); return; }
+    else { localStorage.removeItem(RES_KEY); }
   }
   document.getElementById('researcherModal').classList.remove('hidden');
 }
 
-function confirmResearcher(){
-  const user=currentUser;
-  const generatedId=generateResearcherId(user);
-  currentResearcher={
-    name:user.displayName||user.email,
-    login:generatedId,
-    email:user.email,
-    googleUid:user.uid,
-    photoURL:user.photoURL||''
-  };
-  localStorage.setItem(RES_KEY,JSON.stringify(currentResearcher));
+function confirmResearcher() {
+  const user = currentUser, id = generateResearcherId(user);
+  currentResearcher = { name: user.displayName || user.email, login: id, email: user.email, googleUid: user.uid, photoURL: user.photoURL || '' };
+  localStorage.setItem(RES_KEY, JSON.stringify(currentResearcher));
   document.getElementById('researcherModal').classList.add('hidden');
   showSurvey();
 }
 
-function showSurvey(){
-  document.getElementById('siteHeader').style.display='block';
-  document.getElementById('surveyWrapper').style.display='block';
-  const banner=document.getElementById('resBanner');
-  banner.style.display='flex';
-  document.getElementById('bannerName').textContent=currentResearcher.name;
-  document.getElementById('bannerId').textContent=currentResearcher.login;
-  const av=document.getElementById('bannerAvatar');
-  if(currentResearcher.photoURL){av.src=currentResearcher.photoURL;}else{av.style.display='none';}
-  checkDraft();refreshPendUI();startGpsWatch();attachAutosave();
+function showSurvey() {
+  document.getElementById('siteHeader').style.display = 'block';
+  document.getElementById('surveyWrapper').style.display = 'block';
+  const banner = document.getElementById('resBanner'); banner.style.display = 'flex';
+  document.getElementById('bannerName').textContent = currentResearcher.name;
+  document.getElementById('bannerId').textContent   = currentResearcher.login;
+  const av = document.getElementById('bannerAvatar');
+  if (currentResearcher.photoURL) av.src = currentResearcher.photoURL; else av.style.display = 'none';
+  updateDailyCountUI();
+  checkDraft(); refreshPendUI(); startGpsWatch(); attachAutosave();
 }
 
-/* ══════════════════════════════════════════════
-   WARDS
-══════════════════════════════════════════════ */
-const WARDS={'Manyatta':['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],'Runyenjes':['Gaturi North','Kagaari South','Kagaari North','Central Ward','Kyeni North','Kyeni South'],'Mbeere South':['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],'Mbeere North':['Nthawa','Muminji','Evurore']};
-function updateWards(keep){
-  const c=document.getElementById('constituency').value,ws=document.getElementById('ward'),prev=keep?ws.value:'';
-  ws.innerHTML='';
-  if(!c||!WARDS[c]){ws.innerHTML='<option value="">&mdash; Select constituency first &mdash;</option>';return;}
-  ws.appendChild(Object.assign(document.createElement('option'),{value:'',textContent:'Select ward'}));
-  WARDS[c].forEach(w=>ws.appendChild(Object.assign(document.createElement('option'),{value:w,textContent:w})));
-  if(prev)ws.value=prev;
+/* ══════════════════════════════════════════════════════════════
+   CONSTITUENCY / WARD
+   ══════════════════════════════════════════════════════════════ */
+const WARDS = {
+  'Manyatta':    ['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],
+  'Runyenjes':   ['Gaturi North','Kagaari South','Kagaari North','Central Ward','Kyeni North','Kyeni South'],
+  'Mbeere South':['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],
+  'Mbeere North':['Nthawa','Muminji','Evurore']
+};
+
+function onConstChange(val) {
+  document.getElementById('constituency').value = val;
+  document.getElementById('ward').value = '';
+  document.getElementById('wardValidMsg').innerHTML = '';
+  const wbox   = document.getElementById('wardPilbox');
+  const wpills = document.getElementById('wardPills');
+  const wards  = WARDS[val] || [];
+  wpills.innerHTML = '';
+  wards.forEach((w, i) => {
+    const id = 'w_' + i;
+    wpills.innerHTML += '<div class="pilbox-item"><input type="radio" name="ward_pill" id="' + id + '" value="' + w + '" onchange="onWardChange(\'' + w + '\')"><label for="' + id + '">' + w + '</label></div>';
+  });
+  wbox.style.display = wards.length ? 'block' : 'none';
+  resetPollingStation();
+  document.getElementById('pollingStationField').style.display = 'none';
+  updateMPCandidates(val);
 }
 
-/* ══════════════════════════════════════════════
+function onWardChange(val) {
+  document.getElementById('ward').value = val;
+  const constVal = document.getElementById('constituency').value;
+  const expected = _WC()[val];
+  const msgEl    = document.getElementById('wardValidMsg');
+  if (constVal && expected && expected !== constVal) {
+    msgEl.innerHTML = '<span class="validation-badge err">&#x26A0; Ward "' + val + '" belongs to ' + expected + ', not ' + constVal + '. Please check.</span>';
+  } else {
+    msgEl.innerHTML = '<span class="validation-badge ok">&#x2713; Ward confirmed in ' + constVal + '</span>';
+  }
+  window.loadPollingStations(val);
+  updateMCACandidates(val);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   G9 CANDIDATE DROPDOWN LOGIC
+   ══════════════════════════════════════════════════════════════ */
+function buildCandOptions(selectId, candidates, placeholder) {
+  const sel = document.getElementById(selectId);
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">' + placeholder + '</option>';
+  candidates.forEach(name => {
+    const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o);
+  });
+  const other = document.createElement('option'); other.value = '__other__'; other.textContent = 'Other (specify below)'; sel.appendChild(other);
+  if (cur) sel.value = cur;
+}
+
+function handleCandSelect(type, selId, otherRowId, hiddenId) {
+  const val      = document.getElementById(selId).value;
+  const otherRow = document.getElementById(otherRowId);
+  const hidden   = document.getElementById(hiddenId);
+  if (val === '__other__') { otherRow.classList.add('vis'); hidden.value = ''; }
+  else { otherRow.classList.remove('vis'); hidden.value = val; const t = document.getElementById(hiddenId + 'Text'); if (t) t.value = ''; }
+}
+
+function syncCandOther(textId, hiddenId) {
+  document.getElementById(hiddenId).value = document.getElementById(textId).value.trim();
+}
+
+function updateMPCandidates(constituency) {
+  const candidates = _MP()[constituency] || [];
+  if (candidates.length) {
+    buildCandOptions('prefMPSel', candidates, '— Select MP candidate —');
+  } else {
+    document.getElementById('prefMPSel').innerHTML = '<option value="">— Select constituency first (A2) —</option><option value="__other__">Other (specify below)</option>';
+  }
+  document.getElementById('prefMP').value = '';
+  document.getElementById('prefMPOther').classList.remove('vis');
+}
+
+function updateMCACandidates(ward) {
+  const candidates = _MCA()[ward] || [];
+  if (candidates.length) {
+    buildCandOptions('prefMCASel', candidates, '— Select MCA candidate —');
+  } else {
+    document.getElementById('prefMCASel').innerHTML = '<option value="">— Select ward first (A3) —</option><option value="__other__">Other (specify below)</option>';
+  }
+  document.getElementById('prefMCA').value = '';
+  document.getElementById('prefMCAOther').classList.remove('vis');
+}
+
+/* ══════════════════════════════════════════════════════════════
    OCCUPATION
-══════════════════════════════════════════════ */
-const OCC_IDS=['occ_farmer','occ_business','occ_teacher','occ_professional','occ_transport','occ_artisan'];
-function handleOccSelect(id){const val=document.getElementById(id).value;if(!val)return;OCC_IDS.forEach(oid=>{if(oid!==id)document.getElementById(oid).selectedIndex=0;});document.getElementById('occ_other').value='';setOcc(val);}
-function handleOccOther(){const val=document.getElementById('occ_other').value.trim();if(!val){clearOcc();return;}OCC_IDS.forEach(id=>document.getElementById(id).selectedIndex=0);setOcc(val);}
-function setOcc(val){document.getElementById('occupation').value=val;document.getElementById('occText').textContent=val;document.getElementById('occDisplay').style.display=val?'block':'none';}
-function clearOcc(){OCC_IDS.forEach(id=>document.getElementById(id).selectedIndex=0);document.getElementById('occ_other').value='';document.getElementById('occupation').value='';document.getElementById('occDisplay').style.display='none';}
+   ══════════════════════════════════════════════════════════════ */
+const OCC_IDS = ['occ_farmer','occ_business','occ_teacher','occ_professional','occ_transport','occ_artisan'];
+function handleOccSelect(id) { const v = document.getElementById(id).value; if (!v) return; OCC_IDS.forEach(o => { if (o !== id) document.getElementById(o).selectedIndex = 0; }); document.getElementById('occ_other').value = ''; setOcc(v); }
+function handleOccOther()    { const v = document.getElementById('occ_other').value.trim(); if (!v) { clearOcc(); return; } OCC_IDS.forEach(id => document.getElementById(id).selectedIndex = 0); setOcc(v); }
+function setOcc(val)         { document.getElementById('occupation').value = val; document.getElementById('occText').textContent = val; document.getElementById('occDisplay').style.display = val ? 'block' : 'none'; }
+function clearOcc()          { OCC_IDS.forEach(id => document.getElementById(id).selectedIndex = 0); document.getElementById('occ_other').value = ''; document.getElementById('occupation').value = ''; document.getElementById('occDisplay').style.display = 'none'; }
 
-/* ══════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    CONDITIONAL FIELDS
-══════════════════════════════════════════════ */
-function toggleCond(name,showVal,fieldId){const r=document.querySelector('input[name="'+name+'"]:checked');document.getElementById(fieldId).classList.toggle('vis',r&&r.value===showVal);}
-function toggleRuto(){const r=document.querySelector('input[name="reelectRuto"]:checked');document.getElementById('rutoCandField').classList.toggle('vis',r&&r.value==='No');if(r&&r.value==='Yes')document.getElementById('preferredPres').value='';}
-function toggleGovOther(){const r=document.querySelector('input[name="governor"]:checked');document.getElementById('govOtherField').classList.toggle('vis',r&&r.value==='Other');}
-function selectGov(card,val){document.querySelectorAll('.gov-card').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');card.querySelector('input[type="radio"]').checked=true;toggleGovOther();updateNeg();}
-function updateNeg(){const r=document.querySelector('input[name="governor"]:checked'),sel=r?r.value:'';[{name:'Cecily Mbarire',o:'notMbarireOpts',d:'notMbarireDisabled'},{name:'Lenny Kivuti',o:'notKivutiOpts',d:'notKivutiDisabled'},{name:'Gitonga Mukunji',o:'notGitongaOpts',d:'notGitongaDisabled'}].forEach(c=>{const isSel=sel===c.name,opts=document.getElementById(c.o),dis=document.getElementById(c.d);if(!opts||!dis)return;opts.style.display=isSel?'none':'flex';dis.style.display=isSel?'block':'none';if(isSel)opts.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);});}
-
-/* ══════════════════════════════════════════════
-   GPS
-══════════════════════════════════════════════ */
-const GPS={MAX_ACC:80,MIN_DIST:500,MIN_TIME:120000,TIMEOUT:25000,MAX_AGE:15000};
-let capturedGps=null,gpsWatchId=null;
-const GPS_LAST='ecs26_gps_last';
-function todayKey(){return new Date().toISOString().slice(0,10);}
-function getLastGps(){try{const s=JSON.parse(localStorage.getItem(GPS_LAST)||'null');return(s&&s.day===todayKey())?s:null;}catch{return null;}}
-function saveLastGps(lat,lng,ts){localStorage.setItem(GPS_LAST,JSON.stringify({lat,lng,ts,day:todayKey()}));}
-function haversine(la1,lo1,la2,lo2){const R=6371000,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function setGpsDot(cls){document.getElementById('gpsDot').className='gps-dot '+cls;}
-function setGpsText(t){document.getElementById('gpsStatusText').textContent=t;}
-function startGpsWatch(){
-  if(!navigator.geolocation)return;
-  document.getElementById('gpsBar').style.display='block';
-  setGpsDot('acquiring');setGpsText('Acquiring...');
-  gpsWatchId=navigator.geolocation.watchPosition(pos=>{
-    const acc=Math.round(pos.coords.accuracy);
-    setGpsDot(acc<=GPS.MAX_ACC?'good':'poor');setGpsText('\u00b1'+acc+'m');
-    capturedGps={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:acc,ts:Date.now()};
-    document.getElementById('locLat').textContent=pos.coords.latitude.toFixed(6);
-    document.getElementById('locLng').textContent=pos.coords.longitude.toFixed(6);
-    const ae=document.getElementById('locAcc');ae.textContent='\u00b1'+acc+'m';ae.className='loc-acc '+(acc<=GPS.MAX_ACC?'good':'poor');
-    document.getElementById('locationBox').style.display='block';
-  },()=>{setGpsDot('poor');setGpsText('Unavailable');},{enableHighAccuracy:true,maximumAge:GPS.MAX_AGE,timeout:GPS.TIMEOUT});
+   ══════════════════════════════════════════════════════════════ */
+function toggleCond(name, showVal, fieldId) { const r = document.querySelector('input[name="' + name + '"]:checked'); document.getElementById(fieldId).classList.toggle('vis', r && r.value === showVal); }
+function toggleRuto()     { const r = document.querySelector('input[name="reelectRuto"]:checked'); document.getElementById('rutoCandField').classList.toggle('vis', r && r.value === 'No'); if (r && r.value === 'Yes') document.getElementById('preferredPres').value = ''; }
+function toggleGovOther() { const r = document.querySelector('input[name="governor"]:checked'); document.getElementById('govOtherField').classList.toggle('vis', r && r.value === 'Other'); }
+function selectGov(card, val) { document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); card.querySelector('input[type="radio"]').checked = true; toggleGovOther(); updateNeg(); }
+function updateNeg() {
+  const r = document.querySelector('input[name="governor"]:checked'), sel = r ? r.value : '';
+  [{ name:'Cecily Mbarire', o:'notMbarireOpts', d:'notMbarireDisabled' }, { name:'Lenny Kivuti', o:'notKivutiOpts', d:'notKivutiDisabled' }, { name:'Gitonga Mukunji', o:'notGitongaOpts', d:'notGitongaDisabled' }]
+    .forEach(c => {
+      const isSel = sel === c.name, opts = document.getElementById(c.o), dis = document.getElementById(c.d);
+      if (!opts || !dis) return;
+      opts.style.display = isSel ? 'none' : 'flex';
+      dis.style.display  = isSel ? 'block' : 'none';
+      if (isSel) opts.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    });
 }
 
-/* GPS GUARD */
-let gpsResolve=null;
-function setStep(id,state,detail){const li=document.getElementById('step-'+id);if(!li)return;li.className=state;const d=document.getElementById('step-'+id+'-detail');if(d&&detail)d.textContent=detail;}
-function setGpsProg(p){document.getElementById('gpsProg').style.width=p+'%';}
-function cancelGps(){document.getElementById('gpsGuardModal').classList.add('hidden');if(gpsResolve)gpsResolve({ok:false,reason:'cancelled'});}
-function retryGps(){document.getElementById('gpsRetryBtn').style.display='none';runGpsGuard();}
-async function openGpsGuard(){
-  return new Promise(res=>{
-    gpsResolve=res;
+/* ══════════════════════════════════════════════════════════════
+   GPS — PASSIVE WATCH
+   ══════════════════════════════════════════════════════════════ */
+let capturedGps = null, gpsWatchId = null;
+
+function setGpsDot(cls)    { document.getElementById('gpsDot').className = 'gps-dot ' + cls; }
+function setGpsText(t)     { document.getElementById('gpsStatusText').textContent = t; }
+
+function startGpsWatch() {
+  if (!navigator.geolocation) return;
+  document.getElementById('gpsBar').style.display = 'block';
+  setGpsDot('acquiring'); setGpsText('Acquiring...');
+  gpsWatchId = navigator.geolocation.watchPosition(pos => {
+    const acc = Math.round(pos.coords.accuracy);
+    setGpsDot(acc <= GPS.MAX_ACC ? 'good' : 'poor'); setGpsText('\u00b1' + acc + 'm');
+    capturedGps = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: acc, ts: Date.now() };
+    document.getElementById('locLat').textContent = pos.coords.latitude.toFixed(6);
+    document.getElementById('locLng').textContent = pos.coords.longitude.toFixed(6);
+    const ae = document.getElementById('locAcc'); ae.textContent = '\u00b1' + acc + 'm'; ae.className = 'loc-acc ' + (acc <= GPS.MAX_ACC ? 'good' : 'poor');
+    document.getElementById('locationBox').style.display = 'block';
+  }, () => { setGpsDot('poor'); setGpsText('Unavailable'); }, { enableHighAccuracy:true, maximumAge:GPS.MAX_AGE, timeout:GPS.TIMEOUT });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GPS GUARD MODAL
+   ══════════════════════════════════════════════════════════════ */
+let gpsResolve = null, gpsSkipTimer = null;
+
+function setStep(id, state, detail) { const li = document.getElementById('step-' + id); if (!li) return; li.className = state; const d = document.getElementById('step-' + id + '-detail'); if (d && detail) d.textContent = detail; }
+function setGpsProg(p) { document.getElementById('gpsProg').style.width = p + '%'; }
+function cancelGps()  { clearTimeout(gpsSkipTimer); document.getElementById('gpsGuardModal').classList.add('hidden'); document.getElementById('gpsSkipBtn').style.display = 'none'; if (gpsResolve) gpsResolve({ok:false,reason:'cancelled'}); }
+
+/* Layer 4: skipGps now requires reason + supervisor PIN */
+function skipGps() {
+  const reason = prompt('GPS override requires a reason:\n(e.g. "Respondent indoors — no outdoor access")');
+  if (!reason || reason.trim().length < 10) {
+    alert('Please provide a reason of at least 10 characters.');
+    return;
+  }
+  const pin = prompt('Supervisor PIN required to override GPS:');
+  if (pin !== SUPERVISOR_PIN) {
+    alert('Incorrect PIN. Override not permitted.');
+    return;
+  }
+  clearTimeout(gpsSkipTimer);
+  document.getElementById('gpsGuardModal').classList.add('hidden');
+  document.getElementById('gpsSkipBtn').style.display = 'none';
+  // Store skip metadata for collectData()
+  window._lastGpsSkipReason = reason.trim();
+  window._lastGpsSupervisorOverride = true;
+  if (gpsResolve) gpsResolve({
+    ok: true, skipped: true,
+    lat: null, lng: null, accuracy: null, ts: Date.now(),
+    _gpsSkipReason: reason.trim(),
+    _supervisorPinUsed: true
+  });
+}
+
+function retryGps()   { clearTimeout(gpsSkipTimer); document.getElementById('gpsRetryBtn').style.display = 'none'; document.getElementById('gpsSkipBtn').style.display = 'none'; runGpsGuard(); }
+
+async function openGpsGuard() {
+  return new Promise(res => {
+    gpsResolve = res;
+    // Reset skip metadata
+    window._lastGpsSkipReason = null;
+    window._lastGpsSupervisorOverride = false;
     document.getElementById('gpsGuardModal').classList.remove('hidden');
-    ['acquire','accuracy','distance','time'].forEach(s=>setStep(s,''));
-    setStep('acquire','active','Waiting for location...');setGpsProg(0);
-    document.getElementById('liveGpsCard').style.display='none';
-    document.getElementById('gpsRetryBtn').style.display='none';
-    document.getElementById('gpsCancelBtn').textContent='Cancel';
-    const last=getLastGps();
-    document.getElementById('firstNote').style.display=!last?'block':'none';
-    document.getElementById('gpsGuardSub').textContent=!last?'Recording your starting location for today':'Verifying location before submission';
+    ['acquire','accuracy','distance','time'].forEach(s => setStep(s,''));
+    setStep('acquire','active','Waiting for location...'); setGpsProg(0);
+    document.getElementById('liveGpsCard').style.display = 'none';
+    document.getElementById('gpsRetryBtn').style.display = 'none';
+    document.getElementById('gpsSkipBtn').style.display  = 'none';
+    document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
+    const last = getLastGps();
+    document.getElementById('firstNote').style.display    = !last ? 'block' : 'none';
+    document.getElementById('gpsGuardSub').textContent    = !last ? 'Recording your starting location for today' : 'Verifying location before submission';
     runGpsGuard();
   });
 }
-function runGpsGuard(){
-  if(!navigator.geolocation){setStep('acquire','fail','GPS not available');if(gpsResolve)gpsResolve({ok:false,reason:'no_gps'});return;}
-  setStep('acquire','active','Waiting for location...');setGpsProg(10);
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const{latitude:lat,longitude:lng,accuracy}=pos.coords,ts=Date.now();
-    setStep('acquire','done',lat.toFixed(5)+', '+lng.toFixed(5));setGpsProg(40);
-    document.getElementById('liveGpsCard').style.display='block';
-    document.getElementById('liveCoords').textContent='Lat: '+lat.toFixed(6)+' | Lng: '+lng.toFixed(6);
-    document.getElementById('liveAcc').textContent='Accuracy: \u00b1'+Math.round(accuracy)+' m';
-    setStep('accuracy','active');setGpsProg(55);
-    if(accuracy>GPS.MAX_ACC){setStep('accuracy','fail','\u00b1'+Math.round(accuracy)+'m \u2014 too low');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'accuracy',accuracy});return;}
-    setStep('accuracy','done','\u00b1'+Math.round(accuracy)+'m \u2713');setGpsProg(70);
-    const last=getLastGps();setStep('distance','active');setGpsProg(80);
-    if(last){const dist=haversine(last.lat,last.lng,lat,lng);if(dist<GPS.MIN_DIST){setStep('distance','fail','Only '+Math.round(dist)+'m from last');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'distance',dist});return;}setStep('distance','done',Math.round(dist)+'m \u2713');}else{setStep('distance','skipped','First survey \u2014 skipped');}
-    setGpsProg(90);setStep('time','active');
-    if(last){const gap=ts-last.ts;if(gap<GPS.MIN_TIME){const w=Math.ceil((GPS.MIN_TIME-gap)/60000);setStep('time','fail','Too soon \u2014 wait ~'+w+' min');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'time',gap});return;}setStep('time','done',Math.round(gap/60000)+' min gap \u2713');}else{setStep('time','skipped','First survey \u2014 skipped');}
-    setGpsProg(100);capturedGps={lat,lng,accuracy,ts};saveLastGps(lat,lng,ts);
-    document.getElementById('gpsCancelBtn').textContent='Close';
-    setTimeout(()=>{document.getElementById('gpsGuardModal').classList.add('hidden');if(gpsResolve)gpsResolve({ok:true,lat,lng,accuracy,ts});},800);
-  },err=>{const m={1:'Permission denied',2:'Position unavailable',3:'Timed out'};setStep('acquire','fail',m[err.code]||'GPS error');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'gps_error',code:err.code});},{enableHighAccuracy:true,timeout:GPS.TIMEOUT,maximumAge:0});
+
+function runGpsGuard() {
+  gpsSkipTimer = setTimeout(() => { document.getElementById('gpsSkipBtn').style.display = 'block'; }, GPS.SKIP_DELAY);
+  if (!navigator.geolocation) { clearTimeout(gpsSkipTimer); setStep('acquire','fail','GPS not available on this device'); document.getElementById('gpsSkipBtn').style.display = 'block'; return; }
+  setStep('acquire','active','Waiting for location...'); setGpsProg(10);
+  navigator.geolocation.getCurrentPosition(pos => {
+    clearTimeout(gpsSkipTimer); document.getElementById('gpsSkipBtn').style.display = 'none';
+    const { latitude:lat, longitude:lng, accuracy } = pos.coords, ts = Date.now();
+    setStep('acquire','done', lat.toFixed(5) + ', ' + lng.toFixed(5)); setGpsProg(40);
+    document.getElementById('liveGpsCard').style.display = 'block';
+    document.getElementById('liveCoords').textContent    = 'Lat: ' + lat.toFixed(6) + ' | Lng: ' + lng.toFixed(6);
+    document.getElementById('liveAcc').textContent       = 'Accuracy: \u00b1' + Math.round(accuracy) + ' m';
+
+    // Step 2: Accuracy check
+    setStep('accuracy','active'); setGpsProg(55);
+    if (accuracy > GPS.MAX_ACC) {
+      setStep('accuracy','fail','\u00b1' + Math.round(accuracy) + 'm \u2014 too low');
+      document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+      if (gpsResolve) gpsResolve({ok:false,reason:'accuracy',accuracy}); return;
+    }
+    setStep('accuracy','done','\u00b1' + Math.round(accuracy) + 'm \u2713'); setGpsProg(70);
+
+    // Step 3: Layer 2 — check against ALL prior GPS points
+    const last = getLastGps(); setStep('distance','active'); setGpsProg(80);
+    if (last) {
+      const priorCheck = checkDistanceAllPrior(lat, lng);
+      if (priorCheck.tooClose) {
+        setStep('distance','fail','Only ' + priorCheck.dist + 'm from a prior survey');
+        document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+        if (gpsResolve) gpsResolve({ok:false,reason:'distance',dist:priorCheck.dist}); return;
+      }
+      setStep('distance','done','All prior points OK \u2713');
+    } else {
+      setStep('distance','skipped','First survey \u2014 skipped');
+    }
+
+    // Step 4: Time check (still uses last entry from session log)
+    setGpsProg(90); setStep('time','active');
+    if (last) {
+      const gap = ts - last.ts;
+      if (gap < GPS.MIN_TIME) {
+        const w = Math.ceil((GPS.MIN_TIME-gap)/60000);
+        setStep('time','fail','Too soon \u2014 wait ~' + w + ' min');
+        document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+        if (gpsResolve) gpsResolve({ok:false,reason:'time',gap}); return;
+      }
+      setStep('time','done', Math.round(gap/60000) + ' min gap \u2713');
+    } else {
+      setStep('time','skipped','First survey \u2014 skipped');
+    }
+
+    setGpsProg(100);
+    capturedGps = {lat,lng,accuracy,ts};
+    saveLastGps(lat,lng,ts);  // Layer 2: adds to session log
+    document.getElementById('gpsCancelBtn').textContent = 'Close';
+    setTimeout(() => { document.getElementById('gpsGuardModal').classList.add('hidden'); if (gpsResolve) gpsResolve({ok:true,lat,lng,accuracy,ts}); }, 800);
+  }, err => {
+    clearTimeout(gpsSkipTimer);
+    const m = {1:'Permission denied',2:'Position unavailable',3:'Timed out \u2014 move to open sky'};
+    setStep('acquire','fail', m[err.code] || 'GPS error');
+    document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+    document.getElementById('gpsSkipBtn').style.display  = 'block';
+    if (gpsResolve) gpsResolve({ok:false,reason:'gps_error',code:err.code});
+  }, { enableHighAccuracy:true, timeout:GPS.TIMEOUT, maximumAge:0 });
 }
 
-/* ══════════════════════════════════════════════
-   DRAFT
-══════════════════════════════════════════════ */
-const DRAFT_KEY='ecs26_draft';
-let autosaveTimer=null;
-function snap(){const s={};document.querySelectorAll('input[type="radio"]').forEach(r=>{if(r.checked)s[r.name]=r.value;});document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{s['cb_'+cb.id]=cb.checked;});document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el=>{if(el.id)s[el.id]=el.value;});s._savedAt=new Date().toISOString();return s;}
-function applySnap(s){if(!s)return;document.querySelectorAll('input[type="radio"]').forEach(r=>{if(s[r.name]!==undefined)r.checked=(r.value===s[r.name]);});document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{if(s['cb_'+cb.id]!==undefined)cb.checked=s['cb_'+cb.id];});document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el=>{if(el.id&&s[el.id]!==undefined)el.value=s[el.id];});updateWards(true);const gv=s['governor'];if(gv)document.querySelectorAll('.gov-card').forEach(c=>{const r=c.querySelector('input[type="radio"]');if(r&&r.value===gv)c.classList.add('selected');});updateNeg();toggleRuto();toggleGovOther();if(s['occupation'])setOcc(s['occupation']);}
-function saveDraft(){localStorage.setItem(DRAFT_KEY,JSON.stringify(snap()));showAutosave();}
-function clearDraft(){localStorage.removeItem(DRAFT_KEY);}
-function loadDraft(){try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}catch{return null;}}
-function showAutosave(){const el=document.getElementById('autosave');el.style.display='block';el.style.opacity='1';clearTimeout(el._t);el._t=setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.style.display='none',400);},2200);}
-function checkDraft(){const d=loadDraft();if(!d)return;const dt=new Date(d._savedAt);document.getElementById('draftSub').textContent='Last saved: '+dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.getElementById('draftBar').style.display='block';}
-function restoreDraft(){applySnap(loadDraft());document.getElementById('draftBar').style.display='none';showAutosave();}
-function discardDraft(){if(!confirm('Discard the saved draft and start fresh?'))return;clearDraft();document.getElementById('draftBar').style.display='none';}
-function attachAutosave(){const f=document.getElementById('surveyForm');f.addEventListener('input',()=>{clearTimeout(autosaveTimer);autosaveTimer=setTimeout(saveDraft,1500);});f.addEventListener('change',()=>{clearTimeout(autosaveTimer);autosaveTimer=setTimeout(saveDraft,1500);});}
+/* ══════════════════════════════════════════════════════════════
+   DRAFT / AUTOSAVE
+   ══════════════════════════════════════════════════════════════ */
+const DRAFT_KEY = 'ecs26_draft';
+let autosaveTimer = null;
 
-/* ══════════════════════════════════════════════
+function snap() {
+  const s = {};
+  document.querySelectorAll('input[type="radio"]').forEach(r  => { if (r.checked) s[r.name] = r.value; });
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => { s['cb_' + cb.id] = cb.checked; });
+  document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el => { if (el.id) s[el.id] = el.value; });
+  s._savedAt = new Date().toISOString();
+  return s;
+}
+
+function applySnap(s) {
+  if (!s) return;
+  document.querySelectorAll('input[type="radio"]').forEach(r  => { if (s[r.name] !== undefined) r.checked = (r.value === s[r.name]); });
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => { if (s['cb_' + cb.id] !== undefined) cb.checked = s['cb_' + cb.id]; });
+  document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el => { if (el.id && s[el.id] !== undefined) el.value = s[el.id]; });
+  if (s['constituency']) {
+    const r = document.querySelector('input[name="constituency_pill"][value="' + s['constituency'] + '"]');
+    if (r) { r.checked = true; onConstChange(s['constituency']); }
+    setTimeout(() => {
+      if (s['ward']) {
+        const wr = document.querySelector('input[name="ward_pill"][value="' + s['ward'] + '"]');
+        if (wr) { wr.checked = true; onWardChange(s['ward']); }
+        setTimeout(() => {
+          const ps = s['pollingStation'];
+          if (ps && ps !== '__other__') {
+            document.getElementById('pollingStation').value = ps;
+            document.getElementById('psSearchInput').value  = ps;
+            document.getElementById('psChipName').textContent = ps;
+            document.getElementById('psChip').classList.add('vis');
+            document.getElementById('psClearBtn').style.display = 'block';
+            validatePollingStation();
+          }
+        }, 100);
+      }
+    }, 50);
+  }
+  const gv = s['governor'];
+  if (gv) document.querySelectorAll('.gov-card').forEach(c => { const r = c.querySelector('input[type="radio"]'); if (r && r.value === gv) c.classList.add('selected'); });
+  updateNeg(); toggleRuto(); toggleGovOther();
+  if (s['occupation']) setOcc(s['occupation']);
+  ['Senator','WomenRep','MP','MCA'].forEach(type => {
+    const selEl = document.getElementById('pref' + type + 'Sel');
+    const othEl = document.getElementById('pref' + type + 'Other');
+    if (selEl && selEl.value === '__other__' && othEl) othEl.classList.add('vis');
+  });
+}
+
+function saveDraft()    { localStorage.setItem(DRAFT_KEY, JSON.stringify(snap())); showAutosave(); }
+function clearDraft()   { localStorage.removeItem(DRAFT_KEY); }
+function loadDraft()    { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); } catch { return null; } }
+function showAutosave() { const el = document.getElementById('autosave'); el.style.display = 'block'; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 400); }, 2200); }
+
+function checkDraft() {
+  const d = loadDraft(); if (!d) return;
+  const dt = new Date(d._savedAt);
+  document.getElementById('draftSub').textContent = 'Last saved: ' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('draftBar').style.display = 'block';
+}
+function restoreDraft() { applySnap(loadDraft()); document.getElementById('draftBar').style.display = 'none'; showAutosave(); }
+function discardDraft() { if (!confirm('Discard the saved draft and start fresh?')) return; clearDraft(); document.getElementById('draftBar').style.display = 'none'; }
+function attachAutosave() {
+  const f = document.getElementById('surveyForm');
+  f.addEventListener('input',  () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveDraft, 1500); });
+  f.addEventListener('change', () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveDraft, 1500); });
+}
+
+/* ══════════════════════════════════════════════════════════════
    OFFLINE QUEUE
-══════════════════════════════════════════════ */
-const QUEUE_KEY='ecs26_queue';
-let isOnline=navigator.onLine;
-function getQueue(){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]');}catch{return[];}}
-function saveQueue(q){localStorage.setItem(QUEUE_KEY,JSON.stringify(q));}
-function enqueue(d){d._queuedAt=new Date().toISOString();d._queueId='q_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);const q=getQueue();q.push(d);saveQueue(q);refreshPendUI();}
-function dequeue(id){saveQueue(getQueue().filter(d=>d._queueId!==id));refreshPendUI();}
-function refreshPendUI(){const n=getQueue().length;const pb=document.getElementById('pendBtn'),pbn=document.getElementById('pendBanner');if(pb)pb.style.display=n>0?'inline-block':'none';if(pbn)pbn.style.display=n>0?'block':'none';const ct=document.getElementById('pendCountText'),cb=document.getElementById('pendCount');if(ct)ct.textContent=n;if(cb)cb.textContent=n;}
-function renderQueue(){const l=document.getElementById('queueList'),q=getQueue();if(q.length===0){l.innerHTML='<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">No pending surveys.</div>';return;}l.innerHTML=q.map(d=>{const dt=new Date(d._queuedAt),label=[d.gender,d.ward||d.constituency].filter(Boolean).join(' \u00b7 ')||'Survey';return'<div class="q-item"><div><div style="font-weight:700;">'+label+'</div><div style="font-size:11px;color:#92400e;">'+dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div></div><button class="qi-del" onclick="removeQ(\''+d._queueId+'\')">&#x1F5D1;</button></div>';}).join('');}
-function removeQ(id){if(!confirm('Remove this queued survey?'))return;dequeue(id);renderQueue();}
-function openOfflineModal(){renderQueue();document.getElementById('offlineModal').classList.remove('hidden');}
-function closeOfflineModal(){document.getElementById('offlineModal').classList.add('hidden');}
-async function syncNow(){
-  if(!navigator.onLine){alert('You are offline. Please connect first.');return;}
-  const q=getQueue();if(q.length===0){closeOfflineModal();return;}
-  const btn=document.getElementById('syncNowBtn');btn.disabled=true;
-  const wrap=document.getElementById('syncWrap'),bar=document.getElementById('syncBar'),stat=document.getElementById('syncStat');
-  wrap.style.display='block';let done=0;
-  for(const e of q){stat.textContent='Syncing '+(done+1)+' of '+q.length+'...';bar.style.width=Math.round(done/q.length*100)+'%';
-    try{const{_queueId,_queuedAt,...data}=e;await db.collection('responses').add({...data,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});dequeue(_queueId);done++;}catch(err){console.error(err);}}
-  bar.style.width='100%';stat.textContent=done+' of '+q.length+' synced.';btn.disabled=false;renderQueue();setTimeout(()=>wrap.style.display='none',2000);
+   ══════════════════════════════════════════════════════════════ */
+const QUEUE_KEY = 'ecs26_queue';
+let isOnline = navigator.onLine;
+function getQueue()      { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); } catch { return []; } }
+function saveQueue(q)    { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+function enqueue(d)      { d._queuedAt = new Date().toISOString(); d._queueId = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); const q = getQueue(); q.push(d); saveQueue(q); refreshPendUI(); }
+function dequeue(id)     { saveQueue(getQueue().filter(d => d._queueId !== id)); refreshPendUI(); }
+function refreshPendUI() {
+  const n = getQueue().length;
+  const pb = document.getElementById('pendBtn'), pbn = document.getElementById('pendBanner');
+  if (pb)  pb.style.display  = n > 0 ? 'inline-block' : 'none';
+  if (pbn) pbn.style.display = n > 0 ? 'block' : 'none';
+  const ct = document.getElementById('pendCountText'), cb = document.getElementById('pendCount');
+  if (ct) ct.textContent = n; if (cb) cb.textContent = n;
+}
+function renderQueue() {
+  const l = document.getElementById('queueList'), q = getQueue();
+  if (!q.length) { l.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">No pending surveys.</div>'; return; }
+  l.innerHTML = q.map(d => {
+    const dt    = new Date(d._queuedAt);
+    const label = [d.gender, d.ward || d.constituency].filter(Boolean).join(' \u00b7 ') || 'Survey';
+    return '<div class="q-item"><div><div style="font-weight:700;">' + label + '</div><div style="font-size:11px;color:#92400e;">' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div><button class="qi-del" onclick="removeQ(\'' + d._queueId + '\')">&#x1F5D1;</button></div>';
+  }).join('');
+}
+function removeQ(id)          { if (!confirm('Remove this queued survey?')) return; dequeue(id); renderQueue(); }
+function openOfflineModal()   { renderQueue(); document.getElementById('offlineModal').classList.remove('hidden'); }
+function closeOfflineModal()  { document.getElementById('offlineModal').classList.add('hidden'); }
+
+async function syncNow() {
+  if (!navigator.onLine) { alert('You are offline. Please connect first.'); return; }
+  const q = getQueue(); if (!q.length) { closeOfflineModal(); return; }
+  const btn = document.getElementById('syncNowBtn'); btn.disabled = true;
+  const wrap = document.getElementById('syncWrap'), bar = document.getElementById('syncBar'), stat = document.getElementById('syncStat');
+  wrap.style.display = 'block'; let done = 0;
+  for (const e of q) {
+    stat.textContent = 'Syncing ' + (done+1) + ' of ' + q.length + '...';
+    bar.style.width  = Math.round(done / q.length * 100) + '%';
+    try {
+      const { _queueId, _queuedAt, ...data } = e;
+      await db.collection('responses').add({ ...data, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      dequeue(_queueId); done++;
+    } catch (err) { console.error(err); }
+  }
+  bar.style.width  = '100%';
+  stat.textContent = done + ' of ' + q.length + ' synced.';
+  btn.disabled     = false;
+  renderQueue();
+  setTimeout(() => wrap.style.display = 'none', 2000);
 }
 
-/* ══════════════════════════════════════════════
-   COLLECT & VALIDATE
-══════════════════════════════════════════════ */
-function getChk(ids){return ids.filter(id=>{const e=document.getElementById(id);return e&&e.checked;}).map(id=>document.getElementById(id).value);}
-function gv(name){const e=document.querySelector('input[name="'+name+'"]:checked');return e?e.value:'';}
-function tx(id){const e=document.getElementById(id);return e?e.value.trim():'';}
-function collectData(){
-  return{gender:gv('gender'),constituency:tx('constituency'),ward:tx('ward'),pollingStation:tx('pollingStation'),age:gv('age'),education:gv('education'),employment:gv('employment'),occupation:tx('occupation'),voter:gv('voter'),notDelivered:getChk(['b5a','b5b','b5c','b5d','b5e','b5f']),infoSources:getChk(['c1a','c1b','c1c','c1d','c1e','c1f','c1g']),performance:gv('performance'),projectsAware:gv('projectsAware'),projectsDelivered:tx('projectsDelivered'),missedPromises:gv('missedPromises'),projectsMissing:tx('projectsMissing'),needs:tx('needs'),smeChallenges:getChk(['e1a','e1b','e1c','e1d','e1e','e1f','e1g']),reelectRuto:gv('reelectRuto'),preferredPres:tx('preferredPres'),governor:gv('governor'),governorOther:tx('governorOther'),party:gv('party'),voteReasons:getChk(['g4a','g4b','g4c','g4d','g4e','g4f','g4g','g4h','g4i','g4j','g4k']),notMbarire:getChk(['g5a','g5b','g5c','g5d','g5e','g5f','g5g','g5h','g5i']),adviceMbarire:tx('adviceMbarire'),notKivuti:getChk(['g7a','g7b','g7c','g7d','g7e','g7f','g7g','g7h','g7i']),notGitonga:getChk(['g8a','g8b','g8c','g8d','g8e','g8f','g8g','g8h','g8i']),prefSenator:tx('prefSenator'),prefWomenRep:tx('prefWomenRep'),prefMP:tx('prefMP'),prefMCA:tx('prefMCA'),devOffice:gv('devOffice'),worship:gv('worship'),contactName:tx('contactName'),contactPhone:tx('contactPhone'),followUp:gv('followUp'),enumDecl:gv('enumDecl'),_respondentId:'R_'+Date.now(),_submittedAt:new Date().toISOString(),_researcher:currentResearcher?currentResearcher.name:'Unknown',_researcherLogin:currentResearcher?currentResearcher.login:'Unknown',_researcherEmail:currentResearcher?currentResearcher.email:'',_researcherGoogleUid:currentResearcher?currentResearcher.googleUid:'',_gpsLat:capturedGps?capturedGps.lat:null,_gpsLng:capturedGps?capturedGps.lng:null,_gpsAccuracy:capturedGps?capturedGps.accuracy:null};
+/* ══════════════════════════════════════════════════════════════
+   FORM COLLECT / VALIDATE / SUBMIT
+   ══════════════════════════════════════════════════════════════ */
+function getChk(ids) { return ids.filter(id => { const e = document.getElementById(id); return e && e.checked; }).map(id => document.getElementById(id).value); }
+function gv(name)   { const e = document.querySelector('input[name="' + name + '"]:checked'); return e ? e.value : ''; }
+function tx(id)     { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+
+function validatePollingStationSilent() {
+  const ps   = document.getElementById('pollingStation').value;
+  const ward = document.getElementById('ward').value;
+  if (!ps || ps === '__other__') return 'not_selected';
+  if (!ward) return 'no_ward';
+  return (_PS()[ward] || []).includes(ps) ? 'matched' : 'MISMATCH';
 }
-function validate(){
-  const req=[['gender','A1: Please select gender'],['constituency','A2: Please select constituency'],['ward','A3: Please select ward'],['age','A5: Please select age category'],['education','A6: Please select education level'],['employment','A7: Please select employment status'],['voter','B1: Please indicate if you are a registered voter'],['performance','D1: Please rate county government performance'],['devOffice','H1: Please select which office contributes most to development'],['worship','H2: Please indicate how often you attend worship'],['enumDecl','Declaration: Please confirm enumerator declaration']];
-  for(const[name,msg] of req){let val;if(['constituency','ward'].includes(name)){val=document.getElementById(name)?document.getElementById(name).value:'';}else{val=document.querySelector('input[name="'+name+'"]:checked');}if(!val||(typeof val==='string'&&!val.trim()))return msg;}
+
+function collectData() {
+  return {
+    gender:gv('gender'), constituency:tx('constituency'), ward:tx('ward'), pollingStation:tx('pollingStation'),
+    _psValidation:validatePollingStationSilent(),
+    age:gv('age'), education:gv('education'), employment:gv('employment'), occupation:tx('occupation'),
+    voter:gv('voter'), notDelivered:getChk(['b5a','b5b','b5c','b5d','b5e','b5f']),
+    infoSources:getChk(['c1a','c1b','c1c','c1d','c1e','c1f','c1g']),
+    performance:gv('performance'), projectsAware:gv('projectsAware'), projectsDelivered:tx('projectsDelivered'),
+    missedPromises:gv('missedPromises'), projectsMissing:tx('projectsMissing'), needs:tx('needs'),
+    smeChallenges:getChk(['e1a','e1b','e1c','e1d','e1e','e1f','e1g']),
+    reelectRuto:gv('reelectRuto'), preferredPres:tx('preferredPres'),
+    governor:gv('governor'), governorOther:tx('governorOther'), party:gv('party'),
+    voteReasons:getChk(['g4a','g4b','g4c','g4d','g4e','g4f','g4g','g4h','g4i','g4j','g4k']),
+    notMbarire:getChk(['g5a','g5b','g5c','g5d','g5e','g5f','g5g','g5h','g5i']),
+    adviceMbarire:tx('adviceMbarire'),
+    notKivuti:getChk(['g7a','g7b','g7c','g7d','g7e','g7f','g7g','g7h','g7i']),
+    notGitonga:getChk(['g8a','g8b','g8c','g8d','g8e','g8f','g8g','g8h','g8i']),
+    prefSenator:tx('prefSenator'), prefWomenRep:tx('prefWomenRep'), prefMP:tx('prefMP'), prefMCA:tx('prefMCA'),
+    devOffice:gv('devOffice'), worship:gv('worship'),
+    contactName:tx('contactName'), contactPhone:tx('contactPhone'), followUp:gv('followUp'),
+    enumDecl:gv('enumDecl'),
+    _respondentId:        'R_' + Date.now(),
+    _submittedAt:         new Date().toISOString(),
+    _researcher:          currentResearcher ? currentResearcher.name  : 'Unknown',
+    _researcherLogin:     currentResearcher ? currentResearcher.login : 'Unknown',
+    _researcherEmail:     currentResearcher ? currentResearcher.email : '',
+    _researcherGoogleUid: currentResearcher ? currentResearcher.googleUid : '',
+    _gpsLat:              capturedGps ? capturedGps.lat      : null,
+    _gpsLng:              capturedGps ? capturedGps.lng      : null,
+    _gpsAccuracy:         capturedGps ? capturedGps.accuracy : null,
+    _gpsSkipped:          !capturedGps,
+    // Layer 4 metadata
+    _gpsSkipReason:       window._lastGpsSkipReason || null,
+    _supervisorOverride:  window._lastGpsSupervisorOverride || false,
+    _dailySubmitCount:    getDailyCount() + 1
+  };
+}
+
+function validate() {
+  const req = [
+    ['gender',       'A1: Please select gender'],
+    ['constituency', 'A2: Please select constituency'],
+    ['ward',         'A3: Please select ward'],
+    ['age',          'A5: Please select age category'],
+    ['education',    'A6: Please select education level'],
+    ['employment',   'A7: Please select employment status'],
+    ['voter',        'B1: Please indicate if you are a registered voter'],
+    ['performance',  'D1: Please rate county government performance'],
+    ['devOffice',    'H1: Please select which office contributes most to development'],
+    ['worship',      'H2: Please indicate how often you attend worship'],
+    ['enumDecl',     'Declaration: Please confirm enumerator declaration']
+  ];
+  for (const [name, msg] of req) {
+    let val;
+    if (['constituency','ward'].includes(name)) { val = document.getElementById(name) ? document.getElementById(name).value : ''; }
+    else { val = document.querySelector('input[name="' + name + '"]:checked'); }
+    if (!val || (typeof val === 'string' && !val.trim())) return msg;
+  }
+  if (validatePollingStationSilent() === 'MISMATCH') {
+    const go = confirm('\u26a0\ufe0f Data Check: The selected polling station does not match the selected ward.\n\nDo you want to continue anyway?\n\n(This mismatch will be flagged in the data.)');
+    if (!go) return 'A4: Please verify polling station matches the selected ward.';
+  }
   return null;
 }
-function showStatus(msg,type,dur){const el=document.getElementById('status');el.textContent=msg;el.className='status-msg '+type;el.style.display='block';if(dur)setTimeout(()=>el.style.display='none',dur);}
-function resetForm(){
+
+function showStatus(msg, type, dur) { const el = document.getElementById('status'); el.textContent = msg; el.className = 'status-msg ' + type; el.style.display = 'block'; if (dur) setTimeout(() => el.style.display = 'none', dur); }
+
+function resetForm() {
   document.getElementById('surveyForm').reset();
-  document.querySelectorAll('.gov-card').forEach(c=>c.classList.remove('selected'));
-  document.querySelectorAll('.cond-field').forEach(f=>f.classList.remove('vis'));
-  document.querySelectorAll('.disabled-note').forEach(n=>n.style.display='none');
-  document.querySelectorAll('[id$="Opts"]').forEach(el=>el.style.display='flex');
-  document.getElementById('ward').innerHTML='<option value="">&mdash; Select constituency first &mdash;</option>';
-  clearOcc();capturedGps=null;document.getElementById('locationBox').style.display='none';
-  clearDraft();window.scrollTo({top:0,behavior:'smooth'});
+  document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.cond-field').forEach(f => f.classList.remove('vis'));
+  document.querySelectorAll('.disabled-note').forEach(n => n.style.display = 'none');
+  document.querySelectorAll('[id$="Opts"]').forEach(el => el.style.display = 'flex');
+  document.getElementById('wardPilbox').style.display = 'none';
+  document.getElementById('wardPills').innerHTML = '';
+  document.getElementById('constituency').value  = '';
+  document.getElementById('ward').value          = '';
+  document.getElementById('wardValidMsg').innerHTML = '';
+  resetPollingStation();
+  document.getElementById('pollingStationField').style.display = 'none';
+  ['prefSenatorOther','prefWomenRepOther','prefMPOther','prefMCAOther'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('vis'); });
+  ['prefSenator','prefWomenRep','prefMP','prefMCA'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  clearOcc(); capturedGps = null; document.getElementById('locationBox').style.display = 'none';
+  window._lastGpsSkipReason = null; window._lastGpsSupervisorOverride = false;
+  clearDraft(); window.scrollTo({ top:0, behavior:'smooth' });
 }
 
-/* ══════════════════════════════════════════════
-   SUBMIT
-══════════════════════════════════════════════ */
-document.getElementById('surveyForm').addEventListener('submit',async function(e){
+document.getElementById('surveyForm').addEventListener('submit', async function (e) {
   e.preventDefault();
-  const err=validate();if(err){showStatus('\u26a0\ufe0f '+err,'warning');return;}
-  const btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='\u23f3 Verifying location...';
-  showStatus('Verifying GPS location...','warning');
-  const gpsResult=await openGpsGuard();
-  if(!gpsResult.ok){
-    btn.disabled=false;btn.textContent='\ud83d\udccd Submit Research';
-    const reasons={cancelled:'Submission cancelled.',no_gps:'GPS not available. Submission blocked.',accuracy:'GPS accuracy too low (\u00b1'+Math.round(gpsResult.accuracy||0)+'m). Move to open area and retry.',distance:'Too close to previous survey ('+Math.round(gpsResult.dist||0)+'m). Move at least 500m.',time:'Too soon since last survey. Please wait at least 2 minutes.',gps_error:'GPS error. Ensure location is enabled and retry.'};
-    showStatus('\u274c '+(reasons[gpsResult.reason]||'GPS check failed.'),'error');return;
+
+  // Layer 5: Daily limit check BEFORE anything else
+  if (!checkDailyLimit()) return;
+
+  const err = validate(); if (err) { showStatus('\u26a0\ufe0f ' + err, 'warning'); return; }
+  const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.textContent = '\u23f3 Verifying location...';
+  showStatus('Verifying GPS location...', 'warning');
+
+  const gpsResult = await openGpsGuard();
+  if (!gpsResult.ok) {
+    btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research';
+    const reasons = { cancelled:'Submission cancelled.', accuracy:'GPS accuracy too low. Move to open area and retry.', distance:'Too close to a prior survey location. Move at least 500m.', time:'Too soon since last survey. Please wait at least 2 minutes.', gps_error:'GPS error. Ensure location is enabled and retry.' };
+    showStatus('\u274c ' + (reasons[gpsResult.reason] || 'GPS check failed.'), 'error'); return;
   }
-  btn.textContent='\ud83d\udce4 Submitting...';showStatus('Submitting survey...','warning');
-  const data=collectData();
-  if(!navigator.onLine){enqueue(data);showStatus('\ud83d\udcf6 Offline. Survey saved locally and will sync when reconnected.','offline',6000);btn.disabled=false;btn.textContent='\ud83d\udccd Submit Research';resetForm();return;}
-  try{
-    const{contactName,contactPhone,followUp,...surveyData}=data;
-    await db.collection('responses').add({...surveyData,_serverTimestamp:firebase.firestore.FieldValue.serverTimestamp()});
-    if(contactName||contactPhone){await db.collection('contacts').add({contactName,contactPhone,followUp,_respondentId:surveyData._respondentId,_submittedAt:surveyData._submittedAt,_researcher:surveyData._researcher,_serverTimestamp:firebase.firestore.FieldValue.serverTimestamp()});}
-    showStatus('\u2705 Survey submitted successfully! Thank you.','success',8000);resetForm();
-  }catch(err){console.error(err);enqueue(data);showStatus('\u26a0\ufe0f Submission failed. Survey saved locally and will retry.','warning',7000);}
-  btn.disabled=false;btn.textContent='\ud83d\udccd Submit Research';
+
+  if (gpsResult.skipped) showStatus('\u26a0\ufe0f Submitting without GPS \u2014 supervisor override recorded.', 'warning');
+  btn.textContent = '\ud83d\udce4 Submitting...';
+  const data = collectData();
+
+  if (!navigator.onLine) {
+    enqueue(data);
+    showStatus('\ud83d\udcf6 Offline. Survey saved locally and will sync when reconnected.', 'offline', 6000);
+    btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research';
+    incrementDailyCount(); // count it even offline
+    resetForm(); return;
+  }
+
+  try {
+    const { contactName, contactPhone, followUp, ...surveyData } = data;
+
+    // Layer 3: Cross-enumerator spatial conflict check
+    const conflict = await checkSpatialConflict(surveyData._gpsLat, surveyData._gpsLng);
+    const enriched = {
+      ...surveyData,
+      _spatialConflict: conflict.conflict,
+      _spatialConflictDist: conflict.dist || null,
+      _spatialConflictResearcher: conflict.researcher || null
+    };
+
+    await db.collection('responses').add({ ...enriched, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    if (contactName || contactPhone) await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId: surveyData._respondentId, _submittedAt: surveyData._submittedAt, _researcher: surveyData._researcher, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
+
+    incrementDailyCount(); // Layer 5: only after successful submission
+    showStatus('\u2705 Survey submitted successfully! Thank you.', 'success', 8000);
+    resetForm();
+  } catch (err) {
+    console.error(err);
+    enqueue(data);
+    showStatus('\u26a0\ufe0f Submission failed. Survey saved locally and will retry.', 'warning', 7000);
+  }
+  btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research';
 });
 
-/* ══════════════════════════════════════════════
-   NETWORK & PROXIMITY
-══════════════════════════════════════════════ */
-function updateNet(online){isOnline=online;const b=document.getElementById('netBadge');b.className=online?'online':'offline';b.innerHTML=online?'\u2705 Online':'\ud83d\udcf5 Offline';b.style.display='flex';clearTimeout(b._t);if(online){b._t=setTimeout(()=>b.style.display='none',3000);syncBg();}}
-async function syncBg(){const q=getQueue();if(q.length===0)return;for(const e of[...q]){try{const{_queueId,_queuedAt,contactName,contactPhone,followUp,...data}=e;await db.collection('responses').add({...data,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});if(contactName||contactPhone)await db.collection('contacts').add({contactName,contactPhone,followUp,_respondentId:data._respondentId,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});dequeue(_queueId);}catch{break;}}}
-window.addEventListener('online',()=>updateNet(true));
-window.addEventListener('offline',()=>updateNet(false));
-function checkProx(){const last=getLastGps();if(!last||!capturedGps){document.getElementById('proximityBanner').style.display='none';return;}const dist=haversine(last.lat,last.lng,capturedGps.lat,capturedGps.lng),timeDiff=Date.now()-last.ts,tooClose=dist<GPS.MIN_DIST,tooSoon=timeDiff<GPS.MIN_TIME;const banner=document.getElementById('proximityBanner');if(tooClose||tooSoon){let msg='';if(tooClose)msg+='Move at least '+(GPS.MIN_DIST-Math.round(dist))+'m further. ';if(tooSoon)msg+='Wait '+Math.ceil((GPS.MIN_TIME-timeDiff)/60000)+' more minute(s).';document.getElementById('proxMsg').textContent=msg.trim();banner.style.display='block';}else{banner.style.display='none';}}
-setInterval(checkProx,15000);
+/* ══════════════════════════════════════════════════════════════
+   NETWORK / PROXIMITY / MISC
+   ══════════════════════════════════════════════════════════════ */
+function updateNet(online) {
+  isOnline = online;
+  const b = document.getElementById('netBadge');
+  b.className = online ? 'online' : 'offline';
+  b.innerHTML = online ? '\u2705 Online' : '\ud83d\udcf5 Offline';
+  b.style.display = 'flex';
+  clearTimeout(b._t);
+  if (online) { b._t = setTimeout(() => b.style.display = 'none', 3000); syncBg(); }
+}
+async function syncBg() {
+  const q = getQueue(); if (!q.length) return;
+  for (const e of [...q]) {
+    try {
+      const { _queueId, _queuedAt, contactName, contactPhone, followUp, ...data } = e;
+      await db.collection('responses').add({ ...data, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      if (contactName || contactPhone) await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId: data._respondentId, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      dequeue(_queueId);
+    } catch { break; }
+  }
+}
+window.addEventListener('online',  () => updateNet(true));
+window.addEventListener('offline', () => updateNet(false));
 
-function downloadQuestionnaire(){alert('To save as PDF:\n\n1. Press Ctrl+P (or Cmd+P on Mac)\n2. Choose "Save as PDF" as your printer\n3. Click Save');window.print();}
+function haversine(la1,lo1,la2,lo2) { const R=6371000,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
 
-window.addEventListener('DOMContentLoaded',()=>{
-  if(!navigator.onLine)updateNet(false);
-  // auth state change handles showing login vs survey
-});
+function checkProx() {
+  const last = getLastGps();
+  if (!last || !capturedGps) { document.getElementById('proximityBanner').style.display = 'none'; return; }
+  const dist     = haversine(last.lat, last.lng, capturedGps.lat, capturedGps.lng);
+  const timeDiff = Date.now() - last.ts;
+  const tooClose = dist < GPS.MIN_DIST, tooSoon = timeDiff < GPS.MIN_TIME;
+  const banner   = document.getElementById('proximityBanner');
+  if (tooClose || tooSoon) {
+    let msg = '';
+    if (tooClose) msg += 'Move at least ' + (GPS.MIN_DIST - Math.round(dist)) + 'm further. ';
+    if (tooSoon)  msg += 'Wait ' + Math.ceil((GPS.MIN_TIME - timeDiff) / 60000) + ' more minute(s).';
+    document.getElementById('proxMsg').textContent = msg.trim();
+    banner.style.display = 'block';
+  } else { banner.style.display = 'none'; }
+}
+setInterval(checkProx, 15000);
+
+function downloadQuestionnaire() {
+  alert('To save as PDF:\n\n1. Press Ctrl+P (or Cmd+P on Mac)\n2. Choose "Save as PDF"\n3. Click Save');
+  window.print();
+}
 </script>
 </body>
 </html>
