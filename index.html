@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ECS-2026 · Embu County Social Study</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0c1a0e;--forest:#1a4a2a;--leaf:#2d7a45;--mint:#4caf78;--sage:#a8d5b5;
+  --cream:#f7f4ee;--warm:#ede8df;--gold:#c8963e;--gold-lt:#f0d9a8;
+  --red:#b83232;--sky:#2563a8;--border:#d6cfc2;--muted:#7a6f62;--r:10px;
+  --sh:0 2px 16px rgba(12,26,14,.09);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;font-size:14px;min-height:100vh;}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--forest);position:relative;overflow:hidden;}
+#loginScreen::before{content:'ECS';position:absolute;right:-40px;bottom:-60px;font-family:'Fraunces',serif;font-size:280px;font-weight:700;color:rgba(255,255,255,.04);line-height:1;pointer-events:none;}
+.login-card{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.3);text-align:center;position:relative;z-index:2;}
+.login-logo{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--forest),var(--leaf));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#fff;}
+.login-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--forest);margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+.login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;font-size:12px;color:var(--muted);}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.google-btn{width:100%;padding:13px 20px;border:2px solid var(--border);border-radius:12px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .18s;color:var(--ink);}
+.google-btn:hover{border-color:var(--leaf);background:#f0fdf4;transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,122,69,.15);}
+.google-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.google-icon{width:20px;height:20px;flex-shrink:0;}
+.login-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:24px;}
+.login-pill{background:var(--warm);color:var(--muted);padding:4px 12px;border-radius:20px;font-size:11px;border:1px solid var(--border);}
+.login-err{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:14px;display:none;}
+.login-loading{font-size:13px;color:var(--muted);margin-top:14px;display:none;}
+
+/* ── RESEARCHER MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(8,20,10,.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
+.overlay.hidden{display:none;}
+.mbox{background:#fff;border-radius:18px;width:100%;max-width:640px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.25);animation:mIn .22s ease;}
+@keyframes mIn{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
+.mbox-sm{max-width:460px;}
+.mhead{padding:22px 26px;flex-shrink:0;border-bottom:1px solid var(--border);}
+.mhead.forest{background:var(--forest);color:#fff;}
+.mhead h2{font-family:'Fraunces',serif;font-size:20px;margin-bottom:3px;}
+.mhead p{font-size:12.5px;opacity:.8;font-style:italic;}
+.mscroll{overflow-y:auto;padding:22px 26px;flex:1;}
+.mfoot{padding:16px 26px;border-top:1px solid var(--border);background:var(--warm);flex-shrink:0;}
+.btn-row{display:flex;gap:10px;justify-content:flex-end;}
+.btn-dec{padding:10px 22px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--muted);font-size:14px;cursor:pointer;font-weight:700;font-family:inherit;}
+.btn-dec:hover{background:var(--warm);}
+.btn-proc{padding:10px 28px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff;font-size:14px;cursor:pointer;font-weight:700;font-family:inherit;}
+.btn-proc:disabled{opacity:.35;cursor:not-allowed;}
+.btn-proc:not(:disabled):hover{opacity:.88;}
+.res-field{margin-bottom:16px;}
+.res-field label{display:block;font-weight:600;font-size:13px;color:var(--ink);margin-bottom:5px;}
+.res-field input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;}
+.res-field input:focus{outline:none;border-color:var(--leaf);}
+.res-err{color:var(--red);font-size:12px;margin-top:3px;display:none;}
+.res-note{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:20px;}
+.user-chip{display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:20px;}
+.user-chip img{width:36px;height:36px;border-radius:50%;object-fit:cover;}
+.user-chip-info{font-size:13px;}
+.user-chip-name{font-weight:700;color:var(--forest);}
+.user-chip-email{color:var(--muted);font-size:12px;}
+
+/* ── SURVEY LAYOUT ── */
+.site-header{background:var(--forest);color:#fff;padding:0;position:relative;overflow:hidden;}
+.header-stripe{height:5px;background:linear-gradient(90deg,var(--gold) 0%,var(--mint) 50%,var(--gold) 100%);}
+.header-inner{padding:28px 24px 24px;position:relative;z-index:2;}
+.header-eyebrow{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--sage);font-weight:500;margin-bottom:8px;}
+.header-title{font-family:'Fraunces',serif;font-size:clamp(22px,5vw,32px);font-weight:700;line-height:1.2;color:#fff;margin-bottom:4px;}
+.header-title em{font-style:italic;color:var(--gold-lt);}
+.header-sub{font-size:13px;color:var(--sage);margin-bottom:18px;}
+.header-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.hpill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);padding:4px 13px;border-radius:20px;font-size:11.5px;}
+.header-bg-text{position:absolute;right:-10px;top:-10px;font-family:'Fraunces',serif;font-size:140px;font-weight:700;color:rgba(255,255,255,.04);line-height:1;user-select:none;z-index:1;}
+.hbtn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid;transition:all .18s;}
+.hbtn-primary{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+.hbtn-primary:hover{background:#b07a2a;color:#fff;}
+.hbtn-ghost{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.3);}
+.hbtn-ghost:hover{background:rgba(255,255,255,.2);}
+.gps-bar{background:#fff;border-bottom:1px solid var(--border);padding:7px 20px;display:none;}
+.gps-bar-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;gap:10px;font-size:12.5px;}
+.gps-dot{width:8px;height:8px;border-radius:50%;background:#bbb;flex-shrink:0;transition:background .3s;}
+.gps-dot.acquiring{background:var(--gold);animation:pulse 1.2s infinite;}
+.gps-dot.good{background:var(--leaf);}
+.gps-dot.poor{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#draftBar{display:none;position:sticky;top:0;z-index:200;background:#fffbeb;border-bottom:2px solid var(--gold-lt);padding:8px 16px;}
+.draft-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;}
+.draft-btn{font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;border:1.5px solid;font-family:inherit;}
+.draft-btn.restore{background:var(--sky);color:#fff;border-color:var(--sky);}
+.draft-btn.discard{background:#fff;color:var(--red);border-color:#fca5a5;}
+#proximityBanner{display:none;background:#fff8ee;border-bottom:2px solid var(--gold);padding:9px 20px;position:sticky;top:0;z-index:199;}
+.prox-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;gap:10px;font-size:13px;color:#7a4f0a;font-weight:600;}
+#netBadge{display:none;position:fixed;bottom:20px;right:20px;z-index:999;padding:10px 18px;border-radius:30px;font-size:13px;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.2);pointer-events:none;align-items:center;gap:7px;}
+#netBadge.offline{background:var(--red);color:#fff;display:flex;}
+#netBadge.online{background:var(--leaf);color:#fff;display:flex;}
+#autosave{position:fixed;bottom:70px;right:20px;z-index:998;font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:20px;padding:5px 13px;box-shadow:var(--sh);display:none;transition:opacity .4s;}
+#surveyWrapper{display:none;}
+.container{max-width:800px;margin:0 auto;padding:24px 16px 72px;}
+#resBanner{background:#f0fdf4;border:1px solid #bbf7d0;border-left:5px solid var(--leaf);border-radius:var(--r);padding:12px 16px;margin-bottom:20px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;color:#166534;}
+.res-small-btn{font-size:11px;padding:5px 13px;border:1px solid var(--leaf);background:#fff;color:var(--leaf);border-radius:20px;cursor:pointer;font-weight:700;font-family:inherit;}
+.res-small-btn:hover{background:var(--leaf);color:#fff;}
+.res-small-btn.pend{background:var(--gold);color:#fff;border-color:var(--gold);}
+.res-small-btn.danger{border-color:var(--red);color:var(--red);}
+.res-small-btn.danger:hover{background:var(--red);color:#fff;}
+#pendBanner{display:none;background:#fffbeb;border:1.5px solid var(--gold-lt);border-left:5px solid var(--gold);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;font-size:13px;color:#78350f;}
+.sync-btn{display:inline-block;margin-top:7px;background:var(--gold);color:#fff;border:none;border-radius:20px;padding:5px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+.card{background:#fff;border-radius:14px;box-shadow:var(--sh);margin-bottom:24px;overflow:hidden;border:1px solid var(--border);}
+.card-head{padding:14px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);}
+.card-head.th-forest{background:var(--forest);}
+.card-head.th-leaf{background:var(--leaf);}
+.card-head.th-gold{background:var(--gold);}
+.card-head.th-sky{background:var(--sky);}
+.card-head.th-ink{background:var(--ink);}
+.card-head.th-opt{background:#2d6a4f;}
+.sec-badge{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:15px;color:#fff;flex-shrink:0;}
+.sec-label{font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.9);font-weight:600;}
+.sec-label span{font-size:10px;opacity:.7;display:block;letter-spacing:.3px;font-weight:400;text-transform:none;}
+.card-body{padding:22px;}
+.field{margin-bottom:20px;}
+.field:last-child{margin-bottom:0;}
+.field-label{display:block;font-weight:600;font-size:13.5px;color:var(--ink);margin-bottom:8px;}
+.qnum{color:var(--leaf);margin-right:5px;font-family:'Fraunces',serif;}
+.fnote{font-size:11px;color:var(--muted);font-style:italic;margin-left:4px;font-weight:400;}
+select,input[type="text"],input[type="password"],textarea{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);color:var(--ink);transition:border-color .2s,box-shadow .2s;font-family:inherit;}
+select:focus,input[type="text"]:focus,input[type="password"]:focus,textarea:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
+textarea{min-height:72px;resize:vertical;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:500px){.two-col{grid-template-columns:1fr;}}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.pill{position:relative;}
+.pill input{position:absolute;opacity:0;width:0;height:0;}
+.pill label{display:inline-block;padding:7px 16px;border:1.5px solid var(--border);border-radius:24px;font-size:13px;cursor:pointer;color:var(--muted);background:#fafaf8;transition:all .15s;user-select:none;}
+.pill input:checked + label{background:var(--leaf);color:#fff;border-color:var(--leaf);font-weight:600;}
+.pill input[type="checkbox"]:checked + label{background:var(--forest);border-color:var(--forest);}
+
+/* ── PILL-BOX GRIDS for constituency & ward ── */
+.pilbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.pilbox-item{position:relative;}
+.pilbox-item input[type="radio"]{position:absolute;opacity:0;width:0;height:0;}
+.pilbox-item label{display:inline-block;padding:8px 18px;border:1.5px solid var(--border);border-radius:24px;font-size:13px;cursor:pointer;color:var(--muted);background:#fafaf8;transition:all .15px;user-select:none;}
+.pilbox-item input:checked + label{background:var(--forest);color:#fff;border-color:var(--forest);font-weight:600;}
+#wardPilbox{display:none;margin-top:14px;}
+#wardPilbox .pilbox-item input:checked + label{background:var(--leaf);border-color:var(--leaf);}
+
+/* ── DATA VALIDATION STYLES ── */
+.field-valid{border-color:var(--leaf)!important;background:#f0fdf4!important;}
+.field-invalid{border-color:var(--red)!important;background:#fff1f2!important;box-shadow:0 0 0 3px rgba(184,50,50,.1)!important;}
+.validation-badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:20px;margin-top:6px;}
+.validation-badge.ok{background:#dcfce7;color:#166534;border:1px solid #86efac;}
+.validation-badge.warn{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;}
+.validation-badge.err{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+#wardValidMsg,#psValidMsg{margin-top:7px;}
+.ps-mismatch-alert{background:#fff1f2;border:1.5px solid #fca5a5;border-left:4px solid var(--red);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:12.5px;color:#991b1b;display:none;}
+.ps-mismatch-alert strong{display:block;margin-bottom:2px;}
+.ps-match-ok{background:#f0fdf4;border:1.5px solid #bbf7d0;border-left:4px solid var(--leaf);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:12.5px;color:#166534;display:none;}
+
+/* ── POLLING STATION SEARCH WIDGET ── */
+.ps-search-wrap{position:relative;}
+.ps-search-input{width:100%;padding:10px 38px 10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);color:var(--ink);font-family:inherit;transition:border-color .2s,box-shadow .2s;}
+.ps-search-input:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
+.ps-search-input.field-valid{border-color:var(--leaf)!important;background:#f0fdf4!important;}
+.ps-search-input.field-invalid{border-color:var(--red)!important;background:#fff1f2!important;}
+.ps-clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:4px;display:none;line-height:1;}
+.ps-clear-btn:hover{color:var(--red);}
+.ps-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--leaf);border-radius:10px;box-shadow:0 8px 32px rgba(12,26,14,.14);z-index:500;max-height:220px;overflow-y:auto;display:none;}
+.ps-dropdown.open{display:block;}
+.ps-option{padding:10px 14px;font-size:13.5px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;transition:background .1s;}
+.ps-option:last-child{border-bottom:none;}
+.ps-option:hover,.ps-option.focused{background:#f0fdf4;}
+.ps-option.other{color:var(--muted);font-style:italic;}
+.ps-option mark{background:var(--gold-lt);color:var(--ink);border-radius:3px;padding:0 2px;font-style:normal;}
+.ps-empty{padding:12px 14px;font-size:13px;color:var(--muted);font-style:italic;text-align:center;}
+.ps-count{font-size:11px;color:var(--muted);margin-top:5px;}
+.ps-selected-chip{display:none;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid var(--leaf);border-radius:8px;padding:8px 13px;margin-top:8px;font-size:13px;color:var(--forest);}
+.ps-selected-chip.vis{display:flex;}
+.ps-chip-name{font-weight:700;flex:1;}
+.ps-chip-clear{background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;font-weight:700;padding:0 2px;}
+
+/* ── GOVERNOR CARDS ── */
+.gov-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:6px;max-width:640px;}
+@media(max-width:520px){.gov-row{grid-template-columns:repeat(2,1fr);}}
+.gov-card{border:2px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;transition:all .15s;text-align:center;background:#fafaf8;}
+.gov-card:hover{border-color:var(--mint);background:#f0f8f3;}
+.gov-card.selected{border-color:var(--leaf);background:#ebf7f0;}
+.gov-card input{display:none;}
+.gc-name{font-weight:700;font-size:12.5px;color:var(--forest);line-height:1.2;}
+.gc-tag{font-size:10px;color:var(--muted);margin-top:3px;}
+
+.elec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
+@media(max-width:500px){.elec-grid{grid-template-columns:1fr;}}
+.elec-item label{display:block;font-weight:600;font-size:11.5px;color:var(--forest);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.cond-field{display:none;margin-top:10px;}
+.cond-field.vis{display:block;}
+.disabled-note{background:var(--warm);padding:10px 13px;border-radius:7px;color:var(--muted);font-size:13px;margin-top:6px;display:none;border:1px solid var(--border);}
+.sec-note{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:14px;}
+.opt-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;margin-left:8px;}
+.loc-box{background:var(--warm);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px;margin-top:14px;font-size:13px;display:none;}
+.loc-head{font-weight:700;color:var(--forest);margin-bottom:7px;}
+.loc-row{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);}
+.loc-val{font-weight:600;color:var(--ink);}
+.loc-acc{font-weight:700;}
+.loc-acc.good{color:var(--leaf);}
+.loc-acc.poor{color:var(--red);}
+.submit-wrap{margin-top:8px;}
+#submitBtn{width:100%;padding:16px;background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.4px;transition:opacity .2s;font-family:'Fraunces',serif;}
+#submitBtn:disabled{opacity:.4;cursor:not-allowed;}
+#submitBtn:not(:disabled):hover{opacity:.88;}
+.status-msg{text-align:center;margin-top:14px;font-size:14px;font-weight:600;padding:12px 16px;border-radius:8px;}
+.status-msg.success{color:#166534;background:#dcfce7;border:1px solid #86efac;}
+.status-msg.error{color:#991b1b;background:#fee2e2;border:1px solid #fca5a5;}
+.status-msg.warning{color:#92400e;background:#fef3c7;border:1px solid #fcd34d;}
+.status-msg.offline{color:#1e40af;background:#dbeafe;border:1px solid #93c5fd;}
+
+/* GPS GUARD MODAL */
+.gps-steps{list-style:none;margin:14px 0;}
+.gps-steps li{display:flex;align-items:flex-start;gap:13px;padding:11px 13px;border-radius:8px;margin-bottom:8px;font-size:13px;background:var(--warm);border:1px solid var(--border);}
+.gps-steps li.done{background:#f0fdf4;border-color:#bbf7d0;}
+.gps-steps li.active{background:#fffbeb;border-color:var(--gold-lt);}
+.gps-steps li.fail{background:#fff1f2;border-color:#fecdd3;}
+.gps-steps li.skipped{background:#f0fdf4;border-color:#bbf7d0;opacity:.6;}
+.step-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.step-text strong{display:block;font-size:13px;font-weight:600;margin-bottom:1px;}
+.step-text span{font-size:12px;color:var(--muted);}
+.gps-prog{height:5px;background:var(--border);border-radius:5px;overflow:hidden;margin:14px 0 0;}
+.gps-prog-bar{height:100%;background:linear-gradient(90deg,var(--leaf),var(--mint));border-radius:5px;transition:width .4s;width:0;}
+.live-gps-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-top:14px;font-size:12.5px;}
+.live-gps-card strong{color:var(--forest);display:block;margin-bottom:6px;font-size:13px;}
+.gps-coords{font-family:monospace;font-size:12px;color:#166534;margin:2px 0;}
+.first-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 14px;margin-bottom:14px;font-size:13px;color:#1e40af;display:none;}
+.first-note strong{display:block;margin-bottom:3px;}
+.q-list{max-height:230px;overflow-y:auto;margin:12px 0;}
+.q-item{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:8px;margin-bottom:8px;background:var(--gold-lt);border:1px solid var(--gold);font-size:13px;}
+.qi-del{font-size:18px;cursor:pointer;color:var(--red);padding:0 4px;border:none;background:none;}
+.sync-prog-wrap{margin:12px 0;display:none;}
+.sync-prog-outer{height:6px;background:var(--border);border-radius:6px;overflow:hidden;}
+.sync-prog-inner{height:100%;background:linear-gradient(90deg,var(--leaf),var(--mint));border-radius:6px;transition:width .4s;width:0;}
+.sync-status{font-size:12px;color:var(--muted);margin-top:6px;text-align:center;}
+#gpsSkipBtn{display:none;width:100%;margin-top:10px;padding:9px;border:1.5px dashed var(--gold);border-radius:8px;background:#fffbeb;color:#92400e;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;}
+#gpsSkipBtn:hover{background:#fef3c7;}
+
+/* OCCUPATION GRID */
+.occ-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+@media(max-width:520px){.occ-grid{grid-template-columns:1fr;}}
+.occ-wrap{position:relative;}
+.occ-wrap select{padding-left:38px;appearance:auto;}
+.occ-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;z-index:1;}
+.occ-selected{display:none;background:var(--warm);border:1.5px solid var(--leaf);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--forest);margin-top:8px;}
+.occ-clear{margin-left:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:700;}
+
+/* ── G9 CANDIDATE DROPDOWNS ── */
+.cand-block{margin-bottom:18px;}
+.cand-block:last-child{margin-bottom:0;}
+.cand-block .elec-label{display:block;font-weight:700;font-size:12px;color:var(--forest);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px;}
+.cand-select-wrap{position:relative;}
+.cand-select-wrap select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;}
+.cand-select-wrap select:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
+.cand-other-row{display:none;margin-top:8px;}
+.cand-other-row.vis{display:block;}
+.cand-other-row input{border-color:var(--gold)!important;background:#fffbeb!important;}
+.cand-other-row input:focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px rgba(200,150,62,.15)!important;}
+.cand-hint{font-size:11.5px;color:var(--muted);margin-top:4px;font-style:italic;}
+.g9-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px;}
+@media(max-width:520px){.g9-grid{grid-template-columns:1fr;}}
+/* ── SEARCH WIDGET (reusable live-search dropdown) ── */
+.sw-wrap{position:relative;}
+.sw-input{width:100%;padding:10px 36px 10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);color:var(--ink);font-family:inherit;transition:border-color .2s,box-shadow .2s;}
+.sw-input:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
+.sw-input.sw-valid{border-color:var(--leaf)!important;background:#f0fdf4!important;}
+.sw-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--muted);padding:4px;display:none;line-height:1;}
+.sw-clear:hover{color:var(--red);}
+.sw-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--leaf);border-radius:10px;box-shadow:0 8px 32px rgba(12,26,14,.14);z-index:500;max-height:210px;overflow-y:auto;display:none;}
+.sw-dropdown.open{display:block;}
+.sw-option{padding:10px 14px;font-size:13.5px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;}
+.sw-option:last-child{border-bottom:none;}
+.sw-option:hover,.sw-option.sw-focused{background:#f0fdf4;}
+.sw-option mark{background:var(--gold-lt);color:var(--ink);border-radius:3px;padding:0 2px;font-style:normal;}
+.sw-empty{padding:12px 14px;font-size:13px;color:var(--muted);font-style:italic;text-align:center;}
+.sw-chip{display:none;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid var(--leaf);border-radius:8px;padding:8px 13px;margin-top:8px;font-size:13px;color:var(--forest);}
+.sw-chip.vis{display:flex;}
+.sw-chip-label{font-weight:700;flex:1;}
+.sw-chip-edit{background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;font-weight:700;padding:0 2px;}
+.sw-chip-edit:hover{color:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">ECS</div>
+    <div class="login-title">ECS-2026 Research</div>
+    <div class="login-sub">Embu County Social Study &middot; Researcher Portal<br>Sign in with your Google account to continue.</div>
+    <button class="google-btn" id="googleSignInBtn" onclick="signInWithGoogle()">
+      <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-loading" id="loginLoading">&#x23F3; Signing in...</div>
+    <div class="login-pills">
+      <span class="login-pill">&#x1F512; Anonymised Data</span>
+      <span class="login-pill">&#x23F1; 15&ndash;20 min</span>
+      <span class="login-pill">&#x1F4CB; Authorised Researchers Only</span>
+    </div>
+  </div>
+
+<div class="login-divider">or</div>
+
+<!-- Email/Password Form -->
+<div id="emailAuthSection">
+  <!-- Toggle between Login and Sign Up -->
+  <div style="display:flex;gap:0;margin-bottom:16px;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;">
+    <button type="button" id="tabLogin" onclick="switchTab('login')"
+      style="flex:1;padding:9px;border:none;background:var(--forest);color:#fff;font-weight:700;font-family:inherit;font-size:13px;cursor:pointer;">
+      Sign In
+    </button>
+    <button type="button" id="tabSignup" onclick="switchTab('signup')"
+      style="flex:1;padding:9px;border:none;background:#fff;color:var(--muted);font-weight:600;font-family:inherit;font-size:13px;cursor:pointer;">
+      Sign Up
+    </button>
+  </div>
+
+  <input type="email" id="emailInput" placeholder="Email address"
+    style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;margin-bottom:10px;">
+
+  <input type="password" id="passwordInput" placeholder="Password (min 6 characters)"
+    style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;margin-bottom:10px;">
+
+  <!-- Name field — only shown during Sign Up -->
+  <input type="text" id="nameInput" placeholder="Full name"
+    style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;margin-bottom:10px;display:none;">
+
+  <button type="button" id="emailAuthBtn" onclick="emailAuth()"
+    style="width:100%;padding:12px;background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">
+    Sign In
+  </button>
+
+  <div style="margin-top:10px;text-align:right;">
+    <button type="button" onclick="forgotPassword()"
+      style="background:none;border:none;color:var(--leaf);font-size:12.5px;cursor:pointer;font-family:inherit;text-decoration:underline;">
+      Forgot password?
+    </button>
+  </div>
+</div>
+</div>
+
+<!-- RESEARCHER WELCOME MODAL -->
+<div class="overlay hidden" id="researcherModal">
+  <div class="mbox mbox-sm">
+    <div class="mhead forest">
+      <h2>&#x1F44B; Welcome, Researcher</h2>
+      <p>Your account has been verified &mdash; your ID is auto-generated</p>
+    </div>
+    <div class="mscroll">
+      <div class="user-chip" id="userChip">
+        <img id="userAvatar" src="" alt="avatar" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">
+        <div class="user-chip-info">
+          <div class="user-chip-name" id="userDisplayName"></div>
+          <div class="user-chip-email" id="userEmail"></div>
+        </div>
+      </div>
+      <div style="background:var(--warm);border:2px solid var(--leaf);border-radius:12px;padding:18px 20px;text-align:center;margin:14px 0;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:6px;">Your Researcher ID</div>
+        <div id="generatedIdDisplay" style="font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--forest);letter-spacing:2px;"></div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Auto-generated from your Google account &mdash; unique &amp; permanent</div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;">This ID is automatically assigned and recorded with every submission you make.</p>
+    </div>
+    <div class="mfoot">
+      <div class="btn-row">
+        <button class="btn-dec" onclick="signOutGoogle()">&#x2190; Sign Out</button>
+        <button class="btn-proc" onclick="confirmResearcher()">&#x1F680; Start Survey</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GPS GUARD MODAL -->
+<div class="overlay hidden" id="gpsGuardModal">
+  <div class="mbox mbox-sm">
+    <div class="mhead forest">
+      <h2>&#x1F4CD; Location Verification</h2>
+      <p id="gpsGuardSub">Capturing GPS location &mdash; please wait</p>
+    </div>
+    <div class="mscroll">
+      <div class="first-note" id="firstNote">
+        <strong>&#x1F4CC; First survey of the day</strong>
+        Your starting location is being recorded.
+      </div>
+      <ul class="gps-steps">
+        <li id="step-acquire" class="active"><span class="step-icon">&#x1F6F0;</span><div class="step-text"><strong>Acquiring GPS Signal</strong><span id="step-acquire-detail">Waiting for location...</span></div></li>
+        <li id="step-accuracy"><span class="step-icon">&#x1F3AF;</span><div class="step-text"><strong>Accuracy Check</strong><span id="step-accuracy-detail">Requires &le; 80 m accuracy</span></div></li>
+        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be 500 m from last survey</span></div></li>
+        <li id="step-time"><span class="step-icon">&#x23F1;</span><div class="step-text"><strong>Time Gap Check</strong><span id="step-time-detail">Checking time since last survey</span></div></li>
+      </ul>
+      <div class="gps-prog"><div class="gps-prog-bar" id="gpsProg"></div></div>
+      <div class="live-gps-card" id="liveGpsCard" style="display:none;">
+        <strong>&#x1F4E1; GPS Fix Acquired</strong>
+        <div class="gps-coords" id="liveCoords"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="liveAcc"></div>
+      </div>
+      <button id="gpsSkipBtn" onclick="skipGps()">&#x26A0; GPS taking too long &mdash; proceed without location (supervisor override)</button>
+    </div>
+    <div class="mfoot">
+      <div class="btn-row">
+        <button class="btn-dec" id="gpsCancelBtn" onclick="cancelGps()">Cancel</button>
+        <button class="btn-proc" id="gpsRetryBtn" style="display:none;" onclick="retryGps()">&#x1F504; Retry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OFFLINE QUEUE MODAL -->
+<div class="overlay hidden" id="offlineModal">
+  <div class="mbox mbox-sm">
+    <div class="mhead forest">
+      <h2>&#x1F4E4; Pending Submissions</h2>
+      <p>Surveys saved locally while offline</p>
+    </div>
+    <div class="mscroll">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">These surveys were completed while offline. Connect to the internet and tap <strong>Sync Now</strong> to upload them.</p>
+      <div class="q-list" id="queueList"></div>
+      <div class="sync-prog-wrap" id="syncWrap">
+        <div class="sync-prog-outer"><div class="sync-prog-inner" id="syncBar"></div></div>
+        <div class="sync-status" id="syncStat">Syncing...</div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <div class="btn-row">
+        <button class="btn-dec" onclick="closeOfflineModal()">Close</button>
+        <button class="btn-proc" id="syncNowBtn" onclick="syncNow()">&#x1F4E1; Sync Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SITE HEADER -->
+<div class="site-header" id="siteHeader" style="display:none;">
+  <div class="header-stripe"></div>
+  <div class="header-inner">
+    <div class="header-bg-text">ECS</div>
+    <div class="header-eyebrow">Embu County &middot; Social Study &middot; ECS-2026</div>
+    <h1 class="header-title">Embu County <em>Research</em><br>Questionnaire</h1>
+    <p class="header-sub">Research Questionnaire &middot; Confidential</p>
+    <div class="header-pills">
+      <span class="hpill">&#x1F4CB; Socio-Economic Research</span>
+      <span class="hpill">&#x1F512; Anonymised Data</span>
+      <span class="hpill">&#x23F1; 15&ndash;20 minutes</span>
+    </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+  <button class="hbtn hbtn-ghost" onclick="signOutGoogle()">&#x1F6AA; Sign Out</button>
+</div>
+  </div>
+</div>
+
+<div class="gps-bar" id="gpsBar">
+  <div class="gps-bar-inner">
+    <div class="gps-dot" id="gpsDot"></div>
+    <span style="font-weight:600;">GPS:</span>
+    <span id="gpsStatusText" style="color:var(--muted);">Inactive</span>
+  </div>
+</div>
+
+<div id="proximityBanner">
+  <div class="prox-inner">
+    <span style="font-size:18px;">&#x1F512;</span>
+    <span id="proxMsg">Please move to a different location before your next respondent.</span>
+  </div>
+</div>
+
+<div id="draftBar">
+  <div class="draft-inner">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:17px;">&#x1F4DD;</span>
+      <div>
+        <div style="font-weight:700;color:#78350f;">Unsaved draft found</div>
+        <div style="font-size:11.5px;color:#92400e;" id="draftSub">Saved on ...</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="draft-btn restore" onclick="restoreDraft()">&#x21A9; Restore</button>
+      <button class="draft-btn discard" onclick="discardDraft()">&#x2715; Discard</button>
+    </div>
+  </div>
+</div>
+
+<div id="netBadge"></div>
+<div id="autosave">&#x1F4BE; Draft saved</div>
+
+<!-- SURVEY WRAPPER -->
+<div id="surveyWrapper" style="display:none;">
+<div class="container">
+
+  <div id="resBanner">
+    <div>
+      <img id="bannerAvatar" src="" alt="" style="width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:6px;">
+      <strong>&#x1F52C; <span id="bannerName"></span></strong> &nbsp;&middot;&nbsp; ID: <span id="bannerId"></span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <button class="res-small-btn pend" id="pendBtn" onclick="openOfflineModal()" style="display:none;">&#x1F4E4; Pending <span id="pendCount">0</span></button>
+      <button class="res-small-btn danger" onclick="signOutGoogle()">Sign Out</button>
+    </div>
+  </div>
+
+  <div id="pendBanner">
+    <strong>&#x1F4E4; You have <span id="pendCountText">0</span> survey(s) queued for upload.</strong>
+    <div style="font-size:12px;margin-top:3px;">Saved while offline. Connect to sync.</div>
+    <button class="sync-btn" onclick="openOfflineModal()">View &amp; Sync &rarr;</button>
+  </div>
+
+  <form id="surveyForm" autocomplete="off">
+
+  <!-- SECTION A -->
+  <div class="card">
+    <div class="card-head th-forest">
+      <div class="sec-badge">A</div>
+      <div class="sec-label">Section A &mdash; Respondent Demographics<span>Personal background information</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">A1.</span> Gender</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="gender" id="gm" value="Male" required><label for="gm">Male</label></div>
+          <div class="pill"><input type="radio" name="gender" id="gf" value="Female"><label for="gf">Female</label></div>
+          <div class="pill"><input type="radio" name="gender" id="gp" value="Prefer not to say"><label for="gp">Prefer not to say</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label"><span class="qnum">A2.</span> Constituency</label>
+        <div class="pilbox" id="constPilbox">
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_man" value="Manyatta" onchange="onConstChange('Manyatta')"><label for="c_man">Manyatta</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_run" value="Runyenjes" onchange="onConstChange('Runyenjes')"><label for="c_run">Runyenjes</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_mbn" value="Mbeere North" onchange="onConstChange('Mbeere North')"><label for="c_mbn">Mbeere North</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_mbs" value="Mbeere South" onchange="onConstChange('Mbeere South')"><label for="c_mbs">Mbeere South</label></div>
+        </div>
+        <input type="hidden" id="constituency">
+      </div>
+
+      <div class="field" id="wardPilbox" style="display:none;">
+        <label class="field-label"><span class="qnum">A3.</span> Ward</label>
+        <div class="pilbox" id="wardPills"></div>
+        <input type="hidden" id="ward">
+        <div id="wardValidMsg"></div>
+      </div>
+
+      <!-- A4: Polling Station live-search widget -->
+      <div class="field" id="pollingStationField" style="display:none;">
+        <label class="field-label"><span class="qnum">A4.</span> Polling Station
+          <span class="fnote" id="psConstLabel"></span>
+        </label>
+        <div class="ps-search-wrap" id="psSearchWrap">
+          <input type="text" class="ps-search-input" id="psSearchInput"
+            placeholder="Type to search polling stations..."
+            autocomplete="off" spellcheck="false"
+            oninput="psOnInput()" onfocus="psOnFocus()" onkeydown="psOnKey(event)">
+          <button type="button" class="ps-clear-btn" id="psClearBtn" onclick="psClear()" title="Clear">&#x2715;</button>
+          <div class="ps-dropdown" id="psDropdown"></div>
+        </div>
+        <div class="ps-selected-chip" id="psChip">
+          <span>&#x1F3EB;</span>
+          <span class="ps-chip-name" id="psChipName"></span>
+          <button type="button" class="ps-chip-clear" onclick="psClear()" title="Change">&#x270F; Change</button>
+        </div>
+        <input type="hidden" id="pollingStation">
+        <div id="psValidMsg"></div>
+        <div class="ps-mismatch-alert" id="psMismatchAlert">
+          <strong>&#x26A0; Polling station / ward mismatch</strong>
+          This station is not listed under the selected ward. Please verify.
+        </div>
+        <div class="ps-match-ok" id="psMatchOk">
+          &#x2705; Confirmed in <strong id="psMatchWard"></strong> ward, <strong id="psMatchConst"></strong> constituency.
+        </div>
+      </div>
+
+      <div class="loc-box" id="locationBox">
+        <div class="loc-head">&#x1F4CD; Interview Location (GPS)</div>
+        <div class="loc-row">
+          <span>Latitude: <span class="loc-val" id="locLat">-</span></span>
+          <span>Longitude: <span class="loc-val" id="locLng">-</span></span>
+          <span>Accuracy: <span class="loc-acc" id="locAcc">-</span></span>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Location captured automatically &mdash; not linked to your identity.</div>
+      </div>
+
+      <div class="field" style="margin-top:18px;">
+        <label class="field-label"><span class="qnum">A5.</span> Age Category</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="age" id="a1" value="18-34" required><label for="a1">18&ndash;34</label></div>
+          <div class="pill"><input type="radio" name="age" id="a2" value="35-44"><label for="a2">35&ndash;44</label></div>
+          <div class="pill"><input type="radio" name="age" id="a3" value="45-60"><label for="a3">45&ndash;60</label></div>
+          <div class="pill"><input type="radio" name="age" id="a4" value="61+"><label for="a4">61+</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A6.</span> Highest Education Level</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="education" id="enon" value="None" required><label for="enon">None</label></div>
+          <div class="pill"><input type="radio" name="education" id="epri" value="Primary"><label for="epri">Primary</label></div>
+          <div class="pill"><input type="radio" name="education" id="esec" value="Secondary"><label for="esec">Secondary</label></div>
+          <div class="pill"><input type="radio" name="education" id="ecol" value="College"><label for="ecol">College</label></div>
+          <div class="pill"><input type="radio" name="education" id="euni" value="University"><label for="euni">University</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A7.</span> Employment Status</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="employment" id="ee" value="Employed" required><label for="ee">Employed</label></div>
+          <div class="pill"><input type="radio" name="employment" id="ese" value="Self-Employed"><label for="ese">Self-Employed</label></div>
+          <div class="pill"><input type="radio" name="employment" id="eu" value="Unemployed"><label for="eu">Unemployed</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A8.</span> Occupation <span class="fnote">Select the category that best describes your work &mdash; or type below if not listed</span></label>
+        <div class="occ-grid">
+         <div class="sw-wrap" style="margin-top:4px;">
+  <input type="text" class="sw-input" id="swOccInput" placeholder="Type occupation (e.g. farmer, teacher, nurse)..." autocomplete="off" spellcheck="false">
+  <button type="button" class="sw-clear" id="swOccClear" title="Clear">✕</button>
+  <div class="sw-dropdown" id="swOccDD"></div>
+</div>
+<div class="sw-chip" id="swOccChip">
+  <span>💼</span>
+  <span class="sw-chip-label" id="swOccLabel"></span>
+  <button type="button" class="sw-chip-edit" id="swOccEdit">✎ Change</button>
+</div>
+<input type="hidden" id="occupation">
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION B -->
+  <div class="card">
+    <div class="card-head th-leaf">
+      <div class="sec-badge">B</div>
+      <div class="sec-label">Section B &mdash; Political Participation &amp; Governance<span>Civic engagement and opinions</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">B1.</span> Are you a registered voter?</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="voter" id="vy" value="Yes" required><label for="vy">Yes</label></div>
+          <div class="pill"><input type="radio" name="voter" id="vn" value="No"><label for="vn">No</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B2.</span> Areas where the county government has <strong>NOT</strong> delivered: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="checkbox" id="b5a" value="Agriculture"><label for="b5a">Agriculture</label></div>
+          <div class="pill"><input type="checkbox" id="b5b" value="Infrastructure"><label for="b5b">Infrastructure</label></div>
+          <div class="pill"><input type="checkbox" id="b5c" value="Water"><label for="b5c">Water</label></div>
+          <div class="pill"><input type="checkbox" id="b5d" value="SMEs"><label for="b5d">SMEs</label></div>
+          <div class="pill"><input type="checkbox" id="b5e" value="Health"><label for="b5e">Health</label></div>
+          <div class="pill"><input type="checkbox" id="b5f" value="Education"><label for="b5f">Education</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION C -->
+  <div class="card">
+    <div class="card-head th-gold">
+      <div class="sec-badge">C</div>
+      <div class="sec-label">Section C &mdash; Political Information &amp; Transparency<span>How you access information</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">C1.</span> How do you usually get political information? <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="checkbox" id="c1a" value="Radio"><label for="c1a">Radio</label></div>
+          <div class="pill"><input type="checkbox" id="c1b" value="TV"><label for="c1b">TV</label></div>
+          <div class="pill"><input type="checkbox" id="c1c" value="Newspapers"><label for="c1c">Newspapers</label></div>
+          <div class="pill"><input type="checkbox" id="c1d" value="Social Media"><label for="c1d">Social Media</label></div>
+          <div class="pill"><input type="checkbox" id="c1e" value="Word of Mouth"><label for="c1e">Word of Mouth</label></div>
+          <div class="pill"><input type="checkbox" id="c1f" value="Barazas"><label for="c1f">Barazas</label></div>
+          <div class="pill"><input type="checkbox" id="c1g" value="Other"><label for="c1g">Other</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION D -->
+  <div class="card">
+    <div class="card-head th-forest">
+      <div class="sec-badge">D</div>
+      <div class="sec-label">Section D &mdash; Project Delivery Assessment<span>County government performance</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">D1.</span> Rate the performance of the current county government:</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="performance" id="pex" value="Excellent" required><label for="pex">Excellent</label></div>
+          <div class="pill"><input type="radio" name="performance" id="pgd" value="Good"><label for="pgd">Good</label></div>
+          <div class="pill"><input type="radio" name="performance" id="pfa" value="Fair"><label for="pfa">Fair</label></div>
+          <div class="pill"><input type="radio" name="performance" id="ppo" value="Poor"><label for="ppo">Poor</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">D2.</span> Are you aware of any projects delivered by the county government in your area?</label>
+        <div class="pill-row" style="margin-bottom:8px;">
+          <div class="pill"><input type="radio" name="projectsAware" id="paw_y" value="Yes" onchange="toggleCond('projectsAware','Yes','projectsDeliveredField')"><label for="paw_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="projectsAware" id="paw_n" value="No" onchange="toggleCond('projectsAware','Yes','projectsDeliveredField')"><label for="paw_n">No</label></div>
+        </div>
+        <div class="cond-field" id="projectsDeliveredField">
+          <label class="field-label" style="font-size:12.5px;">If Yes &mdash; name any 2 projects:</label>
+          <textarea id="projectsDelivered" placeholder="1. &#10;2. "></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">D3.</span> Are there any projects promised but not delivered?</label>
+        <div class="pill-row" style="margin-bottom:8px;">
+          <div class="pill"><input type="radio" name="missedPromises" id="mp_y" value="Yes" onchange="toggleCond('missedPromises','Yes','projectsMissingField')"><label for="mp_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="missedPromises" id="mp_n" value="No" onchange="toggleCond('missedPromises','Yes','projectsMissingField')"><label for="mp_n">No</label></div>
+        </div>
+        <div class="cond-field" id="projectsMissingField">
+          <label class="field-label" style="font-size:12.5px;">If Yes &mdash; name any 2 projects:</label>
+          <textarea id="projectsMissing" placeholder="1. &#10;2. "></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">D4.</span> List your top 2 priority needs in your ward (in order of priority):</label>
+        <textarea id="needs" placeholder="1. &#10;2. "></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION E -->
+  <div class="card">
+    <div class="card-head th-leaf">
+      <div class="sec-badge">E</div>
+      <div class="sec-label">Section E &mdash; Business &amp; Economic Issues<span>SME challenges in Embu County</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">E1.</span> Main challenges faced by business people / SMEs in Embu County: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="checkbox" id="e1a" value="Finance / Capital"><label for="e1a">Finance / Capital</label></div>
+          <div class="pill"><input type="checkbox" id="e1b" value="High Taxes"><label for="e1b">High Taxes</label></div>
+          <div class="pill"><input type="checkbox" id="e1c" value="Limited Market"><label for="e1c">Limited Market</label></div>
+          <div class="pill"><input type="checkbox" id="e1d" value="Lack of Government Support"><label for="e1d">Lack of Gov&apos;t Support</label></div>
+          <div class="pill"><input type="checkbox" id="e1e" value="Competition"><label for="e1e">Competition</label></div>
+          <div class="pill"><input type="checkbox" id="e1f" value="Poor Infrastructure"><label for="e1f">Poor Infrastructure</label></div>
+          <div class="pill"><input type="checkbox" id="e1g" value="Other"><label for="e1g">Other</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION G -->
+  <div class="card">
+    <div class="card-head th-ink">
+      <div class="sec-badge">G</div>
+      <div class="sec-label">Section G &mdash; Political Sentiment &amp; Inclination<span>Candidate preferences and party affiliation</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">G1.</span> If elections were held today, would you re-elect President William Ruto?</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="reelectRuto" id="ruto_y" value="Yes" required onchange="toggleRuto()"><label for="ruto_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="reelectRuto" id="ruto_n" value="No" onchange="toggleRuto()"><label for="ruto_n">No</label></div>
+        </div>
+        <div class="cond-field" id="rutoCandField">
+          <label class="field-label" style="margin-top:8px;font-size:12.5px;"><span class="qnum">G1.1.</span> If No &mdash; who would be your most preferred presidential candidate?</label>
+          <input type="text" id="preferredPres" placeholder="Enter preferred candidate's name...">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G2.</span> If elections were held today, who would you elect as Governor of Embu County?</label>
+        <div class="gov-row" id="govGrid">
+          <div class="gov-card" onclick="selectGov(this,'Cecily Mbarire')"><input type="radio" name="governor" value="Cecily Mbarire" onchange="updateNeg()"><div class="gc-name">Cecily Mbarire</div><div class="gc-tag">Incumbent</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Lenny Kivuti')"><input type="radio" name="governor" value="Lenny Kivuti" onchange="updateNeg()"><div class="gc-name">Lenny Kivuti</div><div class="gc-tag">Challenger</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Gitonga Mukunji')"><input type="radio" name="governor" value="Gitonga Mukunji" onchange="updateNeg()"><div class="gc-name">Gitonga Mukunji</div><div class="gc-tag">Challenger</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Other')"><input type="radio" name="governor" value="Other" onchange="updateNeg()"><div class="gc-name">Other</div><div class="gc-tag">Specify below</div></div>
+        </div>
+        <div class="cond-field" id="govOtherField" style="margin-top:10px;"><input type="text" id="governorOther" placeholder="Please specify the candidate's name..."></div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G3.</span> Most preferred political party in Embu County:</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="party" id="p_bus" value="BUS"><label for="p_bus">BUS</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_uda" value="UDA"><label for="p_uda">UDA</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_odm" value="ODM"><label for="p_odm">ODM</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_jub" value="Jubilee"><label for="p_jub">Jubilee</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_dp" value="DP"><label for="p_dp">DP</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_dcp" value="DCP"><label for="p_dcp">DCP</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_wip" value="Wiper"><label for="p_wip">Wiper</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_oth" value="Other"><label for="p_oth">Other</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G4.</span> Why would you vote for your preferred governor? <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="checkbox" id="g4a" value="Track record"><label for="g4a">Track record</label></div>
+          <div class="pill"><input type="checkbox" id="g4b" value="Development agenda"><label for="g4b">Development agenda</label></div>
+          <div class="pill"><input type="checkbox" id="g4c" value="Trustworthy"><label for="g4c">Trustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g4d" value="Leadership qualities"><label for="g4d">Leadership qualities</label></div>
+          <div class="pill"><input type="checkbox" id="g4e" value="Community connection"><label for="g4e">Community connection</label></div>
+          <div class="pill"><input type="checkbox" id="g4f" value="Communication"><label for="g4f">Communication</label></div>
+          <div class="pill"><input type="checkbox" id="g4g" value="Proven delivery"><label for="g4g">Proven delivery</label></div>
+          <div class="pill"><input type="checkbox" id="g4h" value="Party affiliation"><label for="g4h">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g4i" value="New ideas"><label for="g4i">New ideas</label></div>
+          <div class="pill"><input type="checkbox" id="g4j" value="Personal help"><label for="g4j">Personal help</label></div>
+          <div class="pill"><input type="checkbox" id="g4k" value="Other"><label for="g4k">Other</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G5.</span> Reasons for NOT voting for Cecily Mbarire: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notMbarireOpts">
+          <div class="pill"><input type="checkbox" id="g5a" value="Poor performance"><label for="g5a">Poor performance</label></div>
+          <div class="pill"><input type="checkbox" id="g5b" value="Corruption"><label for="g5b">Corruption</label></div>
+          <div class="pill"><input type="checkbox" id="g5c" value="Untrustworthy"><label for="g5c">Untrustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g5d" value="Tribal favoritism"><label for="g5d">Tribal favoritism</label></div>
+          <div class="pill"><input type="checkbox" id="g5e" value="Party affiliation"><label for="g5e">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g5f" value="Weak leadership"><label for="g5f">Weak leadership</label></div>
+          <div class="pill"><input type="checkbox" id="g5g" value="No vision"><label for="g5g">No vision</label></div>
+          <div class="pill"><input type="checkbox" id="g5h" value="Land issues"><label for="g5h">Land issues</label></div>
+          <div class="pill"><input type="checkbox" id="g5i" value="Other"><label for="g5i">Other</label></div>
+        </div>
+        <div id="notMbarireDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Cecily Mbarire as your preferred candidate.</div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G6.</span> Advice to Cecily Mbarire:</label>
+        <textarea id="adviceMbarire" placeholder="Your advice or message to Cecily Mbarire..."></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G7.</span> Reasons for NOT voting for Lenny Kivuti: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notKivutiOpts">
+          <div class="pill"><input type="checkbox" id="g7a" value="Poor performance"><label for="g7a">Poor performance</label></div>
+          <div class="pill"><input type="checkbox" id="g7b" value="Corruption"><label for="g7b">Corruption</label></div>
+          <div class="pill"><input type="checkbox" id="g7c" value="Untrustworthy"><label for="g7c">Untrustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g7d" value="Tribal favoritism"><label for="g7d">Tribal favoritism</label></div>
+          <div class="pill"><input type="checkbox" id="g7e" value="Party affiliation"><label for="g7e">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g7f" value="Weak leadership"><label for="g7f">Weak leadership</label></div>
+          <div class="pill"><input type="checkbox" id="g7g" value="No vision"><label for="g7g">No vision</label></div>
+          <div class="pill"><input type="checkbox" id="g7h" value="Land issues"><label for="g7h">Land issues</label></div>
+          <div class="pill"><input type="checkbox" id="g7i" value="Other"><label for="g7i">Other</label></div>
+        </div>
+        <div id="notKivutiDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Lenny Kivuti as your preferred candidate.</div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G8.</span> Reasons for NOT voting for Gitonga Mukunji: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notGitongaOpts">
+          <div class="pill"><input type="checkbox" id="g8a" value="Poor performance"><label for="g8a">Poor performance</label></div>
+          <div class="pill"><input type="checkbox" id="g8b" value="Corruption"><label for="g8b">Corruption</label></div>
+          <div class="pill"><input type="checkbox" id="g8c" value="Untrustworthy"><label for="g8c">Untrustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g8d" value="Tribal favoritism"><label for="g8d">Tribal favoritism</label></div>
+          <div class="pill"><input type="checkbox" id="g8e" value="Party affiliation"><label for="g8e">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g8f" value="Weak leadership"><label for="g8f">Weak leadership</label></div>
+          <div class="pill"><input type="checkbox" id="g8g" value="No vision"><label for="g8g">No vision</label></div>
+          <div class="pill"><input type="checkbox" id="g8h" value="Land issues"><label for="g8h">Land issues</label></div>
+          <div class="pill"><input type="checkbox" id="g8i" value="Other"><label for="g8i">Other</label></div>
+        </div>
+        <div id="notGitongaDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Gitonga Mukunji as your preferred candidate.</div>
+      </div>
+
+      <!-- G9 -->
+      <div class="field">
+        <label class="field-label"><span class="qnum">G9.</span> Preferred candidates for the following positions:</label>
+        <p class="sec-note">Select from known candidates or choose <em>"Other (specify)"</em> to type a name. Candidate lists update based on the selected constituency/ward.</p>
+       <div class="g9-grid">
+
+  <!-- Senator -->
+  <div class="cand-block">
+    <span class="elec-item"><label>🏛 Senator</label></span>
+    <div class="sw-wrap">
+      <input type="text" class="sw-input" id="swSenatorInput" placeholder="Type to search senator..." autocomplete="off" spellcheck="false">
+      <button type="button" class="sw-clear" id="swSenatorClear" title="Clear">✕</button>
+      <div class="sw-dropdown" id="swSenatorDD"></div>
+    </div>
+    <div class="sw-chip" id="swSenatorChip">
+      <span>🏛</span>
+      <span class="sw-chip-label" id="swSenatorLabel"></span>
+      <button type="button" class="sw-chip-edit" id="swSenatorEdit">✎ Change</button>
+    </div>
+    <input type="hidden" id="prefSenator">
+  </div>
+
+  <!-- Women Rep -->
+  <div class="cand-block">
+    <span class="elec-item"><label>👩 Women Representative</label></span>
+    <div class="sw-wrap">
+      <input type="text" class="sw-input" id="swWomenRepInput" placeholder="Type to search Women Rep..." autocomplete="off" spellcheck="false">
+      <button type="button" class="sw-clear" id="swWomenRepClear" title="Clear">✕</button>
+      <div class="sw-dropdown" id="swWomenRepDD"></div>
+    </div>
+    <div class="sw-chip" id="swWomenRepChip">
+      <span>👩</span>
+      <span class="sw-chip-label" id="swWomenRepLabel"></span>
+      <button type="button" class="sw-chip-edit" id="swWomenRepEdit">✎ Change</button>
+    </div>
+    <input type="hidden" id="prefWomenRep">
+  </div>
+
+  <!-- MP -->
+  <div class="cand-block">
+    <span class="elec-item"><label>🗳 Member of Parliament (MP)</label></span>
+    <div class="sw-wrap">
+      <input type="text" class="sw-input" id="swMPInput" placeholder="Select constituency first (A2)..." autocomplete="off" spellcheck="false">
+      <button type="button" class="sw-clear" id="swMPClear" title="Clear">✕</button>
+      <div class="sw-dropdown" id="swMPDD"></div>
+    </div>
+    <div class="sw-chip" id="swMPChip">
+      <span>🗳</span>
+      <span class="sw-chip-label" id="swMPLabel"></span>
+      <button type="button" class="sw-chip-edit" id="swMPEdit">✎ Change</button>
+    </div>
+    <input type="hidden" id="prefMP">
+  </div>
+
+  <!-- MCA -->
+  <div class="cand-block">
+    <span class="elec-item"><label>📍 Member of County Assembly (MCA)</label></span>
+    <div class="sw-wrap">
+      <input type="text" class="sw-input" id="swMCAInput" placeholder="Select ward first (A3)..." autocomplete="off" spellcheck="false">
+      <button type="button" class="sw-clear" id="swMCAClear" title="Clear">✕</button>
+      <div class="sw-dropdown" id="swMCADD"></div>
+    </div>
+    <div class="sw-chip" id="swMCAChip">
+      <span>📍</span>
+      <span class="sw-chip-label" id="swMCALabel"></span>
+      <button type="button" class="sw-chip-edit" id="swMCAEdit">✎ Change</button>
+    </div>
+    <input type="hidden" id="prefMCA">
+  </div>
+
+</div>
+
+  <!-- SECTION H -->
+  <div class="card">
+    <div class="card-head th-sky">
+      <div class="sec-badge">H</div>
+      <div class="sec-label">Section H &mdash; Civic &amp; Community Perspectives<span>Development and community views</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">H1.</span> Which office has contributed most to development in your area?</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="devOffice" id="do_pres" value="President" required><label for="do_pres">President</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_gov" value="Governor"><label for="do_gov">Governor</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_mp" value="MP"><label for="do_mp">MP</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_mca" value="MCA"><label for="do_mca">MCA</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_sen" value="Senator"><label for="do_sen">Senator</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_wr" value="Women Rep"><label for="do_wr">Women Rep</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">H2.</span> How often do you attend places of worship (church / mosque)?</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="worship" id="ws_reg" value="Regularly" required><label for="ws_reg">Regularly</label></div>
+          <div class="pill"><input type="radio" name="worship" id="ws_rar" value="Rarely"><label for="ws_rar">Rarely</label></div>
+          <div class="pill"><input type="radio" name="worship" id="ws_nev" value="Never"><label for="ws_nev">Never</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION I -->
+  <div class="card">
+    <div class="card-head th-opt">
+      <div class="sec-badge">I</div>
+      <div class="sec-label">Section I &mdash; Optional Contact Details<span>Strictly optional &mdash; stored separately from responses</span></div>
+    </div>
+    <div class="card-body">
+      <p class="sec-note">Contact details are stored separately from your survey responses and used only for research follow-up &mdash; never shared with third parties.</p>
+      <div class="two-col">
+        <div class="field"><label class="field-label">Full Name <span class="opt-badge">optional</span></label><input type="text" id="contactName" placeholder="Your full name"></div>
+        <div class="field"><label class="field-label">Phone Number <span class="opt-badge">optional</span></label><input type="text" id="contactPhone" placeholder="e.g. 07XX XXX XXX"></div>
+      </div>
+      <div class="field">
+        <label class="field-label">Consent to be contacted for follow-up? <span class="opt-badge">optional</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="followUp" id="fuy" value="Yes"><label for="fuy">Yes</label></div>
+          <div class="pill"><input type="radio" name="followUp" id="fun" value="No"><label for="fun">No</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DECLARATION -->
+  <div class="card">
+    <div class="card-head th-forest">
+      <div class="sec-badge">&#x2713;</div>
+      <div class="sec-label">Enumerator Declaration<span>Confirm this interview was conducted properly</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label">I confirm this interview was conducted in accordance with the survey guidelines and the respondent gave informed consent.</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="enumDecl" id="decl_y" value="Confirmed" required><label for="decl_y">&#x2713; Confirm</label></div>
+          <div class="pill"><input type="radio" name="enumDecl" id="decl_n" value="Declined"><label for="decl_n">&#x2715; Decline</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="submit-wrap">
+    <button type="submit" id="submitBtn">&#x1F4CD; Submit Research</button>
+    <div id="status" class="status-msg" style="display:none;"></div>
+  </div>
+
+  </form>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     EXTERNAL DATA FILE — must load BEFORE the main script block
+     so window.ECS_POLLING_STATIONS is available immediately.
+     This file is a pure data file; it exposes NO DOM functions.
+     ══════════════════════════════════════════════════════════════ -->
+<script src="ecs_polling_stations.js"></script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   FIREBASE CONFIG
+   ══════════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey:            "AIzaSyAXeNgPLKFgfxBKNta7UlGzHW-bjWzghas",
+  authDomain:        "survey-842bd.firebaseapp.com",
+  projectId:         "survey-842bd",
+  storageBucket:     "survey-842bd.firebasestorage.app",
+  messagingSenderId: "916255795370",
+  appId:             "1:916255795370:web:3f186720bf9e2b163dc8d3"
+};
+firebase.initializeApp(firebaseConfig);
+const db   = firebase.firestore();
+const auth = firebase.auth();
+
+/* ══════════════════════════════════════════════════════════════
+   GPS SETTINGS
+   ══════════════════════════════════════════════════════════════ */
+const GPS = { MAX_ACC:80, MIN_DIST:500, MIN_TIME:120000, TIMEOUT:45000, MAX_AGE:15000, SKIP_DELAY:20000 };
+
+/* ══════════════════════════════════════════════════════════════
+   DATA ACCESSORS  — read from ecs_polling_stations.js globals
+   ══════════════════════════════════════════════════════════════ */
+function _PS()  { return window.ECS_POLLING_STATIONS  || {}; }
+function _MP()  { return window.ECS_MP_CANDIDATES     || {}; }
+function _MCA() { return window.ECS_MCA_CANDIDATES    || {}; }
+function _WC()  { return window.ECS_WARD_CONSTITUENCY || {}; }
+
+/* ══════════════════════════════════════════════════════════════
+   POLLING STATION LIVE-SEARCH WIDGET
+   All DOM logic lives here; ecs_polling_stations.js is data-only.
+   ══════════════════════════════════════════════════════════════ */
+
+let _psStations = [];   // stations for the currently selected ward
+let _psFocused  = -1;   // keyboard arrow-key index
+
+/**
+ * loadPollingStations(ward)
+ * Called by onWardChange() whenever the user picks a ward.
+ * Reads from window.ECS_POLLING_STATIONS (provided by the data file).
+ */
+window.loadPollingStations = function (ward) {
+  _psStations = (_PS()[ward]) || [];
+  const field = document.getElementById('pollingStationField');
+  const lbl   = document.getElementById('psConstLabel');
+  if (field) field.style.display = _psStations.length ? 'block' : 'none';
+  if (lbl)   lbl.textContent     = _psStations.length
+    ? '(' + _psStations.length + ' stations in ' + ward + ' — type to search)'
+    : '(no stations found for this ward)';
+  resetPollingStation();
+};
+
+function resetPollingStation() {
+  _psFocused = -1;
+  const inp  = document.getElementById('psSearchInput');
+  const hid  = document.getElementById('pollingStation');
+  const chip = document.getElementById('psChip');
+  const dd   = document.getElementById('psDropdown');
+  const clr  = document.getElementById('psClearBtn');
+  if (inp)  { inp.value = ''; inp.classList.remove('field-valid','field-invalid'); }
+  if (hid)  hid.value = '';
+  if (chip) chip.classList.remove('vis');
+  if (dd)   { dd.innerHTML = ''; dd.classList.remove('open'); }
+  if (clr)  clr.style.display = 'none';
+  const alert = document.getElementById('psMismatchAlert');
+  const ok    = document.getElementById('psMatchOk');
+  const msg   = document.getElementById('psValidMsg');
+  if (alert) alert.style.display = 'none';
+  if (ok)    ok.style.display    = 'none';
+  if (msg)   msg.innerHTML       = '';
+}
+
+function psOnInput() {
+  const q = document.getElementById('psSearchInput').value.trim();
+  document.getElementById('psClearBtn').style.display = q ? 'block' : 'none';
+  _psFocused = -1;
+  if (!q) { psCloseDropdown(); return; }
+  psRenderDropdown(q);
+}
+
+function psOnFocus() {
+  const q = document.getElementById('psSearchInput').value.trim();
+  if (q) psRenderDropdown(q);
+  else if (_psStations.length) psRenderDropdown('');
+}
+
+function psOnKey(e) {
+  const dd    = document.getElementById('psDropdown');
+  const items = dd.querySelectorAll('.ps-option');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault(); _psFocused = Math.min(_psFocused + 1, items.length - 1); psHighlight(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault(); _psFocused = Math.max(_psFocused - 1, 0); psHighlight(items);
+  } else if (e.key === 'Enter') {
+    e.preventDefault(); if (_psFocused >= 0 && items[_psFocused]) items[_psFocused].click();
+  } else if (e.key === 'Escape') {
+    psCloseDropdown();
+  }
+}
+
+function psHighlight(items) {
+  items.forEach((el, i) => el.classList.toggle('focused', i === _psFocused));
+  if (_psFocused >= 0) items[_psFocused].scrollIntoView({ block: 'nearest' });
+}
+
+function psRenderDropdown(q) {
+  const dd   = document.getElementById('psDropdown');
+  const norm = q.toLowerCase();
+  let matches;
+  if (!q) {
+    matches = _psStations.slice(0, 8);
+  } else {
+    const sw = _psStations.filter(s => s.toLowerCase().startsWith(norm));
+    const ct = _psStations.filter(s => !s.toLowerCase().startsWith(norm) && s.toLowerCase().includes(norm));
+    matches  = [...sw, ...ct].slice(0, 12);
+  }
+  if (!matches.length && q) {
+    dd.innerHTML = '<div class="ps-empty">No station matches &ldquo;' + escHtml(q) + '&rdquo;<br><small>Try fewer letters or choose &ldquo;Other&rdquo; below</small></div>';
+  } else {
+    dd.innerHTML = matches.map(s => {
+      const hl = q ? s.replace(new RegExp('(' + escReg(q) + ')','gi'), '<mark>$1</mark>') : escHtml(s);
+      return '<div class="ps-option" onclick="psSelect(\'' + escHtml(s).replace(/'/g,"&#39;") + '\')">&#x1F3EB; ' + hl + '</div>';
+    }).join('');
+  }
+  dd.innerHTML += '<div class="ps-option other" onclick="psSelect(\'__other__\')">&#x270F; Other / Not listed</div>';
+  dd.classList.add('open');
+  _psFocused = -1;
+}
+
+function psSelect(val) {
+  psCloseDropdown();
+  const inp  = document.getElementById('psSearchInput');
+  const hid  = document.getElementById('pollingStation');
+  const chip = document.getElementById('psChip');
+  const name = document.getElementById('psChipName');
+  const clr  = document.getElementById('psClearBtn');
+  if (val === '__other__') {
+    inp.value = '';
+    inp.placeholder = 'Type station name manually...';
+    hid.value = '__other__';
+    if (chip) chip.classList.remove('vis');
+    clr.style.display = 'none';
+    inp.classList.remove('field-valid','field-invalid');
+    const msg = document.getElementById('psValidMsg');
+    if (msg) msg.innerHTML = '<span class="validation-badge warn">&#x270F; Manual entry — type the exact station name above</span>';
+    inp.focus();
+    return;
+  }
+  inp.value = val;
+  hid.value = val;
+  clr.style.display = 'block';
+  if (name) name.textContent = val;
+  if (chip) chip.classList.add('vis');
+  validatePollingStation();
+}
+
+function psClear() {
+  resetPollingStation();
+  document.getElementById('pollingStationField').style.display = _psStations.length ? 'block' : 'none';
+  document.getElementById('psSearchInput').focus();
+}
+
+function psCloseDropdown() {
+  const dd = document.getElementById('psDropdown');
+  if (dd) dd.classList.remove('open');
+}
+
+// Close dropdown when clicking outside the widget
+document.addEventListener('click', function (e) {
+  const wrap = document.getElementById('psSearchWrap');
+  if (wrap && !wrap.contains(e.target)) psCloseDropdown();
+});
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escReg(s)  { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+function validatePollingStation() {
+  const ps    = document.getElementById('pollingStation').value;
+  const ward  = document.getElementById('ward').value;
+  const con   = document.getElementById('constituency').value;
+  const alert = document.getElementById('psMismatchAlert');
+  const ok    = document.getElementById('psMatchOk');
+  const msg   = document.getElementById('psValidMsg');
+  const inp   = document.getElementById('psSearchInput');
+  if (alert) alert.style.display = 'none';
+  if (ok)    ok.style.display    = 'none';
+  if (msg)   msg.innerHTML       = '';
+  if (!ps || ps === '__other__') return;
+  if (!ward) { if (msg) msg.innerHTML = '<span class="validation-badge warn">&#x26A0; Please select a ward first (A3)</span>'; return; }
+  const valid = (_PS()[ward] || []).includes(ps);
+  if (valid) {
+    if (inp) { inp.classList.add('field-valid'); inp.classList.remove('field-invalid'); }
+    if (ok)  { ok.style.display = 'block'; document.getElementById('psMatchWard').textContent = ward; document.getElementById('psMatchConst').textContent = con; }
+  } else {
+    if (inp)  { inp.classList.add('field-invalid'); inp.classList.remove('field-valid'); }
+    if (alert) alert.style.display = 'block';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GOOGLE AUTH
+   ══════════════════════════════════════════════════════════════ */
+let currentUser = null, currentResearcher = null;
+const RES_KEY = 'ecs26_researcher';
+
+async function signInWithGoogle() {
+  const btn = document.getElementById('googleSignInBtn');
+  const err = document.getElementById('loginErr');
+  const loading = document.getElementById('loginLoading');
+  btn.disabled = true; err.style.display = 'none'; loading.style.display = 'block';
+  try {
+    const p = new firebase.auth.GoogleAuthProvider();
+    p.setCustomParameters({ prompt: 'select_account' });
+    await auth.signInWithPopup(p);
+  } catch (e) {
+    btn.disabled = false; loading.style.display = 'none';
+    err.textContent = e.code === 'auth/popup-closed-by-user' ? 'Sign-in cancelled. Please try again.' : 'Sign-in failed: ' + e.message;
+    err.style.display = 'block';
+  }
+}
+
+async function signOutGoogle() {
+  if (!confirm('Sign out of ECS-2026?')) return;
+  await auth.signOut(); location.reload();
+}
+
+auth.onAuthStateChanged(user => {
+  if (user) { currentUser = user; onUserSignedIn(user); }
+  else {
+    currentUser = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('siteHeader').style.display = 'none';
+    document.getElementById('surveyWrapper').style.display = 'none';
+    document.getElementById('googleSignInBtn').disabled = false;
+    document.getElementById('loginLoading').style.display = 'none';
+  }
+});
+
+function generateResearcherId(user) {
+  const name = user.displayName || user.email || 'XX';
+  const initials = name.trim().split(/\s+/).map(w => w[0] && w[0].toUpperCase() || '').join('').slice(0,3).padEnd(2,'X');
+  let hash = 0;
+  for (let i = 0; i < user.uid.length; i++) hash = (hash * 31 + user.uid.charCodeAt(i)) & 0xffffffff;
+  return 'ECS-' + initials + '-' + String(Math.abs(hash) % 9000 + 1000);
+}
+
+function onUserSignedIn(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  const id = generateResearcherId(user);
+  document.getElementById('userDisplayName').textContent = user.displayName || user.email || '';
+  document.getElementById('userEmail').textContent = user.email || '';
+  document.getElementById('generatedIdDisplay').textContent = id;
+  const av = document.getElementById('userAvatar');
+  if (user.photoURL) av.src = user.photoURL; else av.style.display = 'none';
+  const saved = localStorage.getItem(RES_KEY);
+  if (saved) {
+    currentResearcher = JSON.parse(saved);
+    if (currentResearcher.googleUid === user.uid) { showSurvey(); return; }
+    else { localStorage.removeItem(RES_KEY); }
+  }
+  document.getElementById('researcherModal').classList.remove('hidden');
+}
+
+function confirmResearcher() {
+  const user = currentUser, id = generateResearcherId(user);
+  currentResearcher = { name: user.displayName || user.email, login: id, email: user.email, googleUid: user.uid, photoURL: user.photoURL || '' };
+  localStorage.setItem(RES_KEY, JSON.stringify(currentResearcher));
+  document.getElementById('researcherModal').classList.add('hidden');
+  showSurvey();
+}
+
+function showSurvey() {
+  document.getElementById('siteHeader').style.display = 'block';
+  document.getElementById('surveyWrapper').style.display = 'block';
+  const banner = document.getElementById('resBanner'); banner.style.display = 'flex';
+  document.getElementById('bannerName').textContent = currentResearcher.name;
+  document.getElementById('bannerId').textContent   = currentResearcher.login;
+  const av = document.getElementById('bannerAvatar');
+  if (currentResearcher.photoURL) av.src = currentResearcher.photoURL; else av.style.display = 'none';
+  checkDraft(); refreshPendUI(); startGpsWatch(); attachAutosave();
+   initSearchWidgets();
+}
+/* ══════════════════════════════════════════════════════════════
+   SEARCH WIDGET INSTANCES
+   ══════════════════════════════════════════════════════════════ */
+
+// Fixed candidate lists
+const SW_SENATORS   = ['Njeru Ndwiga','Clive Imanyara','Lenny Kivuti','Njeru Githae','Cecily Mbarire'];
+const SW_WOMENREP   = ['Millicent Omanga','Wanjiru Githae','Tabitha Mutinda','Mary Njue','Grace Kamau'];
+
+// Dynamic lists (updated when constituency/ward changes)
+let _swMPOptions  = [];
+let _swMCAOptions = [];
+
+// Occupation master list
+const SW_OCCUPATIONS = [
+  'Subsistence Farmer','Commercial Farmer','Livestock Farmer','Horticulture Farmer','Agro-dealer',
+  'Retail Shop Owner','Wholesale Trader','Hawker / Street Vendor','Market Trader',
+  'Restaurant / Food Business','Online Business',
+  'ECDE / Nursery Teacher','Primary School Teacher','Secondary School Teacher',
+  'College Lecturer','University Lecturer','VTC Instructor','Private Tutor',
+  'Doctor / Clinical Officer','Nurse / Midwife','Engineer','Accountant / Auditor',
+  'Lawyer / Advocate','ICT / Technology','Banker / Finance',
+  'Government Officer','NGO / Non-profit Worker',
+  'Matatu Driver','Matatu Conductor','Boda Boda Rider','Truck / Lorry Driver','Taxi / Cab Driver',
+  'Mason / Fundi','Carpenter','Electrician','Plumber','Mechanic',
+  'Tailor / Seamstress','Welder / Metal Worker','Hairdresser / Barber',
+  'Police Officer','Kenya Defence Forces','Prison Warden',
+  'Pastor / Clergy','Social Worker','Community Health Worker',
+  'Casual Labourer','Domestic Worker','Student','Retired'
+];
+
+function initSearchWidgets() {
+  // Senator
+  window._swSenator = new SearchWidget({
+    inputId:'swSenatorInput', hiddenId:'prefSenator',
+    chipId:'swSenatorChip', chipLabelId:'swSenatorLabel', clearId:'swSenatorClear',
+    dropdownId:'swSenatorDD', icon:'🏛', placeholder:'Type to search senator...',
+    getOptions: () => SW_SENATORS
+  });
+  document.getElementById('swSenatorEdit').addEventListener('click', () => window._swSenator.clear());
+
+  // Women Rep
+  window._swWomenRep = new SearchWidget({
+    inputId:'swWomenRepInput', hiddenId:'prefWomenRep',
+    chipId:'swWomenRepChip', chipLabelId:'swWomenRepLabel', clearId:'swWomenRepClear',
+    dropdownId:'swWomenRepDD', icon:'👩', placeholder:'Type to search Women Rep...',
+    getOptions: () => SW_WOMENREP
+  });
+  document.getElementById('swWomenRepEdit').addEventListener('click', () => window._swWomenRep.clear());
+
+  // MP — options set dynamically by constituency
+  window._swMP = new SearchWidget({
+    inputId:'swMPInput', hiddenId:'prefMP',
+    chipId:'swMPChip', chipLabelId:'swMPLabel', clearId:'swMPClear',
+    dropdownId:'swMPDD', icon:'🗳', placeholder:'Select constituency first (A2)...',
+    getOptions: () => _swMPOptions
+  });
+  document.getElementById('swMPEdit').addEventListener('click', () => window._swMP.clear());
+
+  // MCA — options set dynamically by ward
+  window._swMCA = new SearchWidget({
+    inputId:'swMCAInput', hiddenId:'prefMCA',
+    chipId:'swMCAChip', chipLabelId:'swMCALabel', clearId:'swMCAClear',
+    dropdownId:'swMCADD', icon:'📍', placeholder:'Select ward first (A3)...',
+    getOptions: () => _swMCAOptions
+  });
+  document.getElementById('swMCAEdit').addEventListener('click', () => window._swMCA.clear());
+
+  // Occupation
+  window._swOcc = new SearchWidget({
+    inputId:'swOccInput', hiddenId:'occupation',
+    chipId:'swOccChip', chipLabelId:'swOccLabel', clearId:'swOccClear',
+    dropdownId:'swOccDD', icon:'💼', placeholder:'Type occupation...',
+    getOptions: () => SW_OCCUPATIONS
+  });
+  document.getElementById('swOccEdit').addEventListener('click', () => window._swOcc.clear());
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONSTITUENCY / WARD
+   ══════════════════════════════════════════════════════════════ */
+const WARDS = {
+  'Manyatta':    ['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],
+  'Runyenjes':   ['Gaturi North','Kagaari South','Kagaari North','Central Ward','Kyeni North','Kyeni South'],
+  'Mbeere South':['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],
+  'Mbeere North':['Nthawa','Muminji','Evurore']
+};
+
+function onConstChange(val) {
+  document.getElementById('constituency').value = val;
+  document.getElementById('ward').value = '';
+  document.getElementById('wardValidMsg').innerHTML = '';
+  const wbox   = document.getElementById('wardPilbox');
+  const wpills = document.getElementById('wardPills');
+  const wards  = WARDS[val] || [];
+  wpills.innerHTML = '';
+  wards.forEach((w, i) => {
+    const id = 'w_' + i;
+    wpills.innerHTML += '<div class="pilbox-item"><input type="radio" name="ward_pill" id="' + id + '" value="' + w + '" onchange="onWardChange(\'' + w + '\')"><label for="' + id + '">' + w + '</label></div>';
+  });
+  wbox.style.display = wards.length ? 'block' : 'none';
+  resetPollingStation();
+  document.getElementById('pollingStationField').style.display = 'none';
+  updateMPCandidates(val);
+}
+
+function onWardChange(val) {
+  document.getElementById('ward').value = val;
+  // Cross-validate ward ↔ constituency
+  const constVal = document.getElementById('constituency').value;
+  const expected = _WC()[val];
+  const msgEl    = document.getElementById('wardValidMsg');
+  if (constVal && expected && expected !== constVal) {
+    msgEl.innerHTML = '<span class="validation-badge err">&#x26A0; Ward "' + val + '" belongs to ' + expected + ', not ' + constVal + '. Please check.</span>';
+  } else {
+    msgEl.innerHTML = '<span class="validation-badge ok">&#x2713; Ward confirmed in ' + constVal + '</span>';
+  }
+  // Load polling stations via the live-search widget
+  window.loadPollingStations(val);
+  // Update G9 MCA candidates
+  updateMCACandidates(val);
+}
+/* ══════════════════════════════════════════════
+   EMAIL / PASSWORD AUTH
+   ══════════════════════════════════════════════ */
+
+let _authTab = 'login'; // 'login' or 'signup'
+
+function switchTab(tab) {
+  _authTab = tab;
+  const isSignup = tab === 'signup';
+
+  // Toggle tab button styles
+  document.getElementById('tabLogin').style.background  = isSignup ? '#fff' : 'var(--forest)';
+  document.getElementById('tabLogin').style.color       = isSignup ? 'var(--muted)' : '#fff';
+  document.getElementById('tabSignup').style.background = isSignup ? 'var(--forest)' : '#fff';
+  document.getElementById('tabSignup').style.color      = isSignup ? '#fff' : 'var(--muted)';
+
+  // Show/hide name field
+  document.getElementById('nameInput').style.display = isSignup ? 'block' : 'none';
+
+  // Update button label
+  document.getElementById('emailAuthBtn').textContent = isSignup ? 'Create Account' : 'Sign In';
+
+  // Update password placeholder
+  document.getElementById('passwordInput').placeholder = isSignup
+    ? 'Password (min 6 characters)'
+    : 'Password';
+
+  // Clear errors
+  document.getElementById('loginErr').style.display = 'none';
+}
+
+async function emailAuth() {
+  const email    = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const name     = document.getElementById('nameInput').value.trim();
+  const err      = document.getElementById('loginErr');
+  const loading  = document.getElementById('loginLoading');
+  const btn      = document.getElementById('emailAuthBtn');
+
+  // Basic validation
+  if (!email || !password) {
+    err.textContent = 'Please enter your email and password.';
+    err.style.display = 'block'; return;
+  }
+  if (_authTab === 'signup' && !name) {
+    err.textContent = 'Please enter your full name.';
+    err.style.display = 'block'; return;
+  }
+  if (_authTab === 'signup' && password.length < 6) {
+    err.textContent = 'Password must be at least 6 characters.';
+    err.style.display = 'block'; return;
+  }
+
+  btn.disabled = true;
+  err.style.display = 'none';
+  loading.style.display = 'block';
+
+  try {
+    if (_authTab === 'signup') {
+      // Create account then set display name
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      // Force refresh so onAuthStateChanged sees the updated displayName
+      await auth.currentUser.reload();
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+    }
+    // onAuthStateChanged will fire and take over from here
+  } catch (e) {
+    btn.disabled = false;
+    loading.style.display = 'none';
+    err.textContent = friendlyAuthError(e.code);
+    err.style.display = 'block';
+  }
+}
+
+async function forgotPassword() {
+  const email = document.getElementById('emailInput').value.trim();
+  const err   = document.getElementById('loginErr');
+  if (!email) {
+    err.textContent = 'Enter your email address above first.';
+    err.style.display = 'block'; return;
+  }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    err.style.cssText = 'display:block;background:#dcfce7;border-color:#86efac;color:#166534;';
+    err.textContent   = '✅ Password reset email sent. Check your inbox.';
+  } catch (e) {
+    err.textContent   = friendlyAuthError(e.code);
+    err.style.display = 'block';
+  }
+}
+
+function friendlyAuthError(code) {
+  const map = {
+    'auth/invalid-email':            'Invalid email address.',
+    'auth/user-not-found':           'No account found with this email.',
+    'auth/wrong-password':           'Incorrect password. Try again.',
+    'auth/email-already-in-use':     'This email is already registered. Sign in instead.',
+    'auth/weak-password':            'Password is too weak. Use at least 6 characters.',
+    'auth/too-many-requests':        'Too many attempts. Please wait and try again.',
+    'auth/network-request-failed':   'Network error. Check your connection.',
+    'auth/popup-closed-by-user':     'Sign-in cancelled.',
+    'auth/invalid-credential':       'Invalid email or password.',
+  };
+  return map[code] || 'Authentication error: ' + code;
+}
+/* ══════════════════════════════════════════════════════════════
+   G9 CANDIDATE DROPDOWN LOGIC
+   ══════════════════════════════════════════════════════════════ */
+function buildCandOptions(selectId, candidates, placeholder) {
+  const sel = document.getElementById(selectId);
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">' + placeholder + '</option>';
+  candidates.forEach(name => {
+    const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o);
+  });
+  const other = document.createElement('option'); other.value = '__other__'; other.textContent = 'Other (specify below)'; sel.appendChild(other);
+  if (cur) sel.value = cur;
+}
+
+function handleCandSelect(type, selId, otherRowId, hiddenId) {
+  const val      = document.getElementById(selId).value;
+  const otherRow = document.getElementById(otherRowId);
+  const hidden   = document.getElementById(hiddenId);
+  if (val === '__other__') { otherRow.classList.add('vis'); hidden.value = ''; }
+  else { otherRow.classList.remove('vis'); hidden.value = val; const t = document.getElementById(hiddenId + 'Text'); if (t) t.value = ''; }
+}
+
+function syncCandOther(textId, hiddenId) {
+  document.getElementById(hiddenId).value = document.getElementById(textId).value.trim();
+}
+
+function updateMPCandidates(constituency) {
+  _swMPOptions = _MP()[constituency] || [];
+  if (window._swMP) {
+    window._swMP.clear();
+    window._swMP.cfg.placeholder = _swMPOptions.length
+      ? 'Type to search MP candidates...'
+      : 'No candidates listed — type a name...';
+    document.getElementById('swMPInput').placeholder = window._swMP.cfg.placeholder;
+  }
+}
+
+function updateMCACandidates(ward) {
+  _swMCAOptions = _MCA()[ward] || [];
+  if (window._swMCA) {
+    window._swMCA.clear();
+    window._swMCA.cfg.placeholder = _swMCAOptions.length
+      ? 'Type to search MCA candidates...'
+      : 'No candidates listed — type a name...';
+    document.getElementById('swMCAInput').placeholder = window._swMCA.cfg.placeholder;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   OCCUPATION
+   ══════════════════════════════════════════════════════════════ */
+const OCC_IDS = ['occ_farmer','occ_business','occ_teacher','occ_professional','occ_transport','occ_artisan'];
+function handleOccSelect(id) { const v = document.getElementById(id).value; if (!v) return; OCC_IDS.forEach(o => { if (o !== id) document.getElementById(o).selectedIndex = 0; }); document.getElementById('occ_other').value = ''; setOcc(v); }
+function handleOccOther()    { const v = document.getElementById('occ_other').value.trim(); if (!v) { clearOcc(); return; } OCC_IDS.forEach(id => document.getElementById(id).selectedIndex = 0); setOcc(v); }
+function setOcc(val)         { document.getElementById('occupation').value = val; document.getElementById('occText').textContent = val; document.getElementById('occDisplay').style.display = val ? 'block' : 'none'; }
+function clearOcc()          { OCC_IDS.forEach(id => document.getElementById(id).selectedIndex = 0); document.getElementById('occ_other').value = ''; document.getElementById('occupation').value = ''; document.getElementById('occDisplay').style.display = 'none'; }
+
+/* ══════════════════════════════════════════════════════════════
+   CONDITIONAL FIELDS
+   ══════════════════════════════════════════════════════════════ */
+function toggleCond(name, showVal, fieldId) { const r = document.querySelector('input[name="' + name + '"]:checked'); document.getElementById(fieldId).classList.toggle('vis', r && r.value === showVal); }
+function toggleRuto()     { const r = document.querySelector('input[name="reelectRuto"]:checked'); document.getElementById('rutoCandField').classList.toggle('vis', r && r.value === 'No'); if (r && r.value === 'Yes') document.getElementById('preferredPres').value = ''; }
+function toggleGovOther() { const r = document.querySelector('input[name="governor"]:checked'); document.getElementById('govOtherField').classList.toggle('vis', r && r.value === 'Other'); }
+function selectGov(card, val) { document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); card.querySelector('input[type="radio"]').checked = true; toggleGovOther(); updateNeg(); }
+function updateNeg() {
+  const r = document.querySelector('input[name="governor"]:checked'), sel = r ? r.value : '';
+  [{ name:'Cecily Mbarire', o:'notMbarireOpts', d:'notMbarireDisabled' }, { name:'Lenny Kivuti', o:'notKivutiOpts', d:'notKivutiDisabled' }, { name:'Gitonga Mukunji', o:'notGitongaOpts', d:'notGitongaDisabled' }]
+    .forEach(c => {
+      const isSel = sel === c.name, opts = document.getElementById(c.o), dis = document.getElementById(c.d);
+      if (!opts || !dis) return;
+      opts.style.display = isSel ? 'none' : 'flex';
+      dis.style.display  = isSel ? 'block' : 'none';
+      if (isSel) opts.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GPS
+   ══════════════════════════════════════════════════════════════ */
+let capturedGps = null, gpsWatchId = null;
+const GPS_LAST = 'ecs26_gps_last';
+function todayKey()        { return new Date().toISOString().slice(0,10); }
+function getLastGps()      { try { const s = JSON.parse(localStorage.getItem(GPS_LAST)||'null'); return (s && s.day === todayKey()) ? s : null; } catch { return null; } }
+function saveLastGps(la,lo,ts) { localStorage.setItem(GPS_LAST, JSON.stringify({lat:la,lng:lo,ts,day:todayKey()})); }
+function haversine(la1,lo1,la2,lo2) { const R=6371000,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+function setGpsDot(cls)    { document.getElementById('gpsDot').className = 'gps-dot ' + cls; }
+function setGpsText(t)     { document.getElementById('gpsStatusText').textContent = t; }
+
+function startGpsWatch() {
+  if (!navigator.geolocation) return;
+  document.getElementById('gpsBar').style.display = 'block';
+  setGpsDot('acquiring'); setGpsText('Acquiring...');
+  gpsWatchId = navigator.geolocation.watchPosition(pos => {
+    const acc = Math.round(pos.coords.accuracy);
+    setGpsDot(acc <= GPS.MAX_ACC ? 'good' : 'poor'); setGpsText('\u00b1' + acc + 'm');
+    capturedGps = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: acc, ts: Date.now() };
+    document.getElementById('locLat').textContent = pos.coords.latitude.toFixed(6);
+    document.getElementById('locLng').textContent = pos.coords.longitude.toFixed(6);
+    const ae = document.getElementById('locAcc'); ae.textContent = '\u00b1' + acc + 'm'; ae.className = 'loc-acc ' + (acc <= GPS.MAX_ACC ? 'good' : 'poor');
+    document.getElementById('locationBox').style.display = 'block';
+  }, () => { setGpsDot('poor'); setGpsText('Unavailable'); }, { enableHighAccuracy:true, maximumAge:GPS.MAX_AGE, timeout:GPS.TIMEOUT });
+}
+
+/* GPS GUARD */
+let gpsResolve = null, gpsSkipTimer = null;
+function setStep(id, state, detail) { const li = document.getElementById('step-' + id); if (!li) return; li.className = state; const d = document.getElementById('step-' + id + '-detail'); if (d && detail) d.textContent = detail; }
+function setGpsProg(p) { document.getElementById('gpsProg').style.width = p + '%'; }
+function cancelGps()  { clearTimeout(gpsSkipTimer); document.getElementById('gpsGuardModal').classList.add('hidden'); document.getElementById('gpsSkipBtn').style.display = 'none'; if (gpsResolve) gpsResolve({ok:false,reason:'cancelled'}); }
+function skipGps()    { clearTimeout(gpsSkipTimer); document.getElementById('gpsGuardModal').classList.add('hidden'); document.getElementById('gpsSkipBtn').style.display = 'none'; if (gpsResolve) gpsResolve({ok:true,skipped:true,lat:null,lng:null,accuracy:null,ts:Date.now()}); }
+function retryGps()   { clearTimeout(gpsSkipTimer); document.getElementById('gpsRetryBtn').style.display = 'none'; document.getElementById('gpsSkipBtn').style.display = 'none'; runGpsGuard(); }
+
+async function openGpsGuard() {
+  return new Promise(res => {
+    gpsResolve = res;
+    document.getElementById('gpsGuardModal').classList.remove('hidden');
+    ['acquire','accuracy','distance','time'].forEach(s => setStep(s,''));
+    setStep('acquire','active','Waiting for location...'); setGpsProg(0);
+    document.getElementById('liveGpsCard').style.display = 'none';
+    document.getElementById('gpsRetryBtn').style.display = 'none';
+    document.getElementById('gpsSkipBtn').style.display  = 'none';
+    document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
+    const last = getLastGps();
+    document.getElementById('firstNote').style.display    = !last ? 'block' : 'none';
+    document.getElementById('gpsGuardSub').textContent    = !last ? 'Recording your starting location for today' : 'Verifying location before submission';
+    runGpsGuard();
+  });
+}
+
+function runGpsGuard() {
+  gpsSkipTimer = setTimeout(() => { document.getElementById('gpsSkipBtn').style.display = 'block'; }, GPS.SKIP_DELAY);
+  if (!navigator.geolocation) { clearTimeout(gpsSkipTimer); setStep('acquire','fail','GPS not available on this device'); document.getElementById('gpsSkipBtn').style.display = 'block'; return; }
+  setStep('acquire','active','Waiting for location...'); setGpsProg(10);
+  navigator.geolocation.getCurrentPosition(pos => {
+    clearTimeout(gpsSkipTimer); document.getElementById('gpsSkipBtn').style.display = 'none';
+    const { latitude:lat, longitude:lng, accuracy } = pos.coords, ts = Date.now();
+    setStep('acquire','done', lat.toFixed(5) + ', ' + lng.toFixed(5)); setGpsProg(40);
+    document.getElementById('liveGpsCard').style.display = 'block';
+    document.getElementById('liveCoords').textContent    = 'Lat: ' + lat.toFixed(6) + ' | Lng: ' + lng.toFixed(6);
+    document.getElementById('liveAcc').textContent       = 'Accuracy: \u00b1' + Math.round(accuracy) + ' m';
+    setStep('accuracy','active'); setGpsProg(55);
+    if (accuracy > GPS.MAX_ACC) { setStep('accuracy','fail','\u00b1' + Math.round(accuracy) + 'm \u2014 too low'); document.getElementById('gpsRetryBtn').style.display = 'inline-block'; if (gpsResolve) gpsResolve({ok:false,reason:'accuracy',accuracy}); return; }
+    setStep('accuracy','done','\u00b1' + Math.round(accuracy) + 'm \u2713'); setGpsProg(70);
+    const last = getLastGps(); setStep('distance','active'); setGpsProg(80);
+    if (last) { const dist = haversine(last.lat,last.lng,lat,lng); if (dist < GPS.MIN_DIST) { setStep('distance','fail','Only ' + Math.round(dist) + 'm from last'); document.getElementById('gpsRetryBtn').style.display = 'inline-block'; if (gpsResolve) gpsResolve({ok:false,reason:'distance',dist}); return; } setStep('distance','done', Math.round(dist) + 'm \u2713'); } else { setStep('distance','skipped','First survey \u2014 skipped'); }
+    setGpsProg(90); setStep('time','active');
+    if (last) { const gap = ts - last.ts; if (gap < GPS.MIN_TIME) { const w = Math.ceil((GPS.MIN_TIME-gap)/60000); setStep('time','fail','Too soon \u2014 wait ~' + w + ' min'); document.getElementById('gpsRetryBtn').style.display = 'inline-block'; if (gpsResolve) gpsResolve({ok:false,reason:'time',gap}); return; } setStep('time','done', Math.round(gap/60000) + ' min gap \u2713'); } else { setStep('time','skipped','First survey \u2014 skipped'); }
+    setGpsProg(100); capturedGps = {lat,lng,accuracy,ts}; saveLastGps(lat,lng,ts);
+    document.getElementById('gpsCancelBtn').textContent = 'Close';
+    setTimeout(() => { document.getElementById('gpsGuardModal').classList.add('hidden'); if (gpsResolve) gpsResolve({ok:true,lat,lng,accuracy,ts}); }, 800);
+  }, err => {
+    clearTimeout(gpsSkipTimer);
+    const m = {1:'Permission denied',2:'Position unavailable',3:'Timed out \u2014 move to open sky'};
+    setStep('acquire','fail', m[err.code] || 'GPS error');
+    document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+    document.getElementById('gpsSkipBtn').style.display  = 'block';
+    if (gpsResolve) gpsResolve({ok:false,reason:'gps_error',code:err.code});
+  }, { enableHighAccuracy:true, timeout:GPS.TIMEOUT, maximumAge:0 });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DRAFT / AUTOSAVE
+   ══════════════════════════════════════════════════════════════ */
+const DRAFT_KEY = 'ecs26_draft';
+let autosaveTimer = null;
+
+function snap() {
+  const s = {};
+  document.querySelectorAll('input[type="radio"]').forEach(r  => { if (r.checked) s[r.name] = r.value; });
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => { s['cb_' + cb.id] = cb.checked; });
+  document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el => { if (el.id) s[el.id] = el.value; });
+  s._savedAt = new Date().toISOString();
+  return s;
+}
+
+function applySnap(s) {
+  if (!s) return;
+  document.querySelectorAll('input[type="radio"]').forEach(r  => { if (s[r.name] !== undefined) r.checked = (r.value === s[r.name]); });
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => { if (s['cb_' + cb.id] !== undefined) cb.checked = s['cb_' + cb.id]; });
+  document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el => { if (el.id && s[el.id] !== undefined) el.value = s[el.id]; });
+  if (s['constituency']) {
+    const r = document.querySelector('input[name="constituency_pill"][value="' + s['constituency'] + '"]');
+    if (r) { r.checked = true; onConstChange(s['constituency']); }
+    setTimeout(() => {
+      if (s['ward']) {
+        const wr = document.querySelector('input[name="ward_pill"][value="' + s['ward'] + '"]');
+        if (wr) { wr.checked = true; onWardChange(s['ward']); }
+        // Restore polling station chip after ward loads
+        setTimeout(() => {
+          const ps = s['pollingStation'];
+          if (ps && ps !== '__other__') {
+            document.getElementById('pollingStation').value = ps;
+            document.getElementById('psSearchInput').value  = ps;
+            document.getElementById('psChipName').textContent = ps;
+            document.getElementById('psChip').classList.add('vis');
+            document.getElementById('psClearBtn').style.display = 'block';
+            validatePollingStation();
+          }
+        }, 100);
+      }
+    }, 50);
+  }
+  const gv = s['governor'];
+  if (gv) document.querySelectorAll('.gov-card').forEach(c => { const r = c.querySelector('input[type="radio"]'); if (r && r.value === gv) c.classList.add('selected'); });
+  updateNeg(); toggleRuto(); toggleGovOther();
+  if (s['occupation']) setOcc(s['occupation']);
+  ['Senator','WomenRep','MP','MCA'].forEach(type => {
+    const selEl = document.getElementById('pref' + type + 'Sel');
+    const othEl = document.getElementById('pref' + type + 'Other');
+    if (selEl && selEl.value === '__other__' && othEl) othEl.classList.add('vis');
+  });
+}
+
+function saveDraft()    { localStorage.setItem(DRAFT_KEY, JSON.stringify(snap())); showAutosave(); }
+function clearDraft()   { localStorage.removeItem(DRAFT_KEY); }
+function loadDraft()    { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); } catch { return null; } }
+function showAutosave() { const el = document.getElementById('autosave'); el.style.display = 'block'; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 400); }, 2200); }
+
+function checkDraft() {
+  const d = loadDraft(); if (!d) return;
+  const dt = new Date(d._savedAt);
+  document.getElementById('draftSub').textContent = 'Last saved: ' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('draftBar').style.display = 'block';
+}
+function restoreDraft() { applySnap(loadDraft()); document.getElementById('draftBar').style.display = 'none'; showAutosave(); }
+function discardDraft() { if (!confirm('Discard the saved draft and start fresh?')) return; clearDraft(); document.getElementById('draftBar').style.display = 'none'; }
+function attachAutosave() {
+  const f = document.getElementById('surveyForm');
+  f.addEventListener('input',  () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveDraft, 1500); });
+  f.addEventListener('change', () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveDraft, 1500); });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   OFFLINE QUEUE
+   ══════════════════════════════════════════════════════════════ */
+const QUEUE_KEY = 'ecs26_queue';
+let isOnline = navigator.onLine;
+function getQueue()      { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); } catch { return []; } }
+function saveQueue(q)    { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+function enqueue(d)      { d._queuedAt = new Date().toISOString(); d._queueId = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); const q = getQueue(); q.push(d); saveQueue(q); refreshPendUI(); }
+function dequeue(id)     { saveQueue(getQueue().filter(d => d._queueId !== id)); refreshPendUI(); }
+function refreshPendUI() {
+  const n = getQueue().length;
+  const pb = document.getElementById('pendBtn'), pbn = document.getElementById('pendBanner');
+  if (pb)  pb.style.display  = n > 0 ? 'inline-block' : 'none';
+  if (pbn) pbn.style.display = n > 0 ? 'block' : 'none';
+  const ct = document.getElementById('pendCountText'), cb = document.getElementById('pendCount');
+  if (ct) ct.textContent = n; if (cb) cb.textContent = n;
+}
+function renderQueue() {
+  const l = document.getElementById('queueList'), q = getQueue();
+  if (!q.length) { l.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">No pending surveys.</div>'; return; }
+  l.innerHTML = q.map(d => {
+    const dt    = new Date(d._queuedAt);
+    const label = [d.gender, d.ward || d.constituency].filter(Boolean).join(' \u00b7 ') || 'Survey';
+    return '<div class="q-item"><div><div style="font-weight:700;">' + label + '</div><div style="font-size:11px;color:#92400e;">' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div><button class="qi-del" onclick="removeQ(\'' + d._queueId + '\')">&#x1F5D1;</button></div>';
+  }).join('');
+}
+function removeQ(id)          { if (!confirm('Remove this queued survey?')) return; dequeue(id); renderQueue(); }
+function openOfflineModal()   { renderQueue(); document.getElementById('offlineModal').classList.remove('hidden'); }
+function closeOfflineModal()  { document.getElementById('offlineModal').classList.add('hidden'); }
+
+async function syncNow() {
+  if (!navigator.onLine) { alert('You are offline. Please connect first.'); return; }
+  const q = getQueue(); if (!q.length) { closeOfflineModal(); return; }
+  const btn = document.getElementById('syncNowBtn'); btn.disabled = true;
+  const wrap = document.getElementById('syncWrap'), bar = document.getElementById('syncBar'), stat = document.getElementById('syncStat');
+  wrap.style.display = 'block'; let done = 0;
+  for (const e of q) {
+    stat.textContent = 'Syncing ' + (done+1) + ' of ' + q.length + '...';
+    bar.style.width  = Math.round(done / q.length * 100) + '%';
+    try {
+      const { _queueId, _queuedAt, ...data } = e;
+      await db.collection('responses').add({ ...data, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      dequeue(_queueId); done++;
+    } catch (err) { console.error(err); }
+  }
+  bar.style.width  = '100%';
+  stat.textContent = done + ' of ' + q.length + ' synced.';
+  btn.disabled     = false;
+  renderQueue();
+  setTimeout(() => wrap.style.display = 'none', 2000);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORM COLLECT / VALIDATE / SUBMIT
+   ══════════════════════════════════════════════════════════════ */
+function getChk(ids) { return ids.filter(id => { const e = document.getElementById(id); return e && e.checked; }).map(id => document.getElementById(id).value); }
+function gv(name)   { const e = document.querySelector('input[name="' + name + '"]:checked'); return e ? e.value : ''; }
+function tx(id)     { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+
+function validatePollingStationSilent() {
+  const ps   = document.getElementById('pollingStation').value;
+  const ward = document.getElementById('ward').value;
+  if (!ps || ps === '__other__') return 'not_selected';
+  if (!ward) return 'no_ward';
+  return (_PS()[ward] || []).includes(ps) ? 'matched' : 'MISMATCH';
+}
+
+function collectData() {
+  return {
+    gender:gv('gender'), constituency:tx('constituency'), ward:tx('ward'), pollingStation:tx('pollingStation'),
+    _psValidation:validatePollingStationSilent(),
+    age:gv('age'), education:gv('education'), employment:gv('employment'), occupation:tx('occupation'),
+    voter:gv('voter'), notDelivered:getChk(['b5a','b5b','b5c','b5d','b5e','b5f']),
+    infoSources:getChk(['c1a','c1b','c1c','c1d','c1e','c1f','c1g']),
+    performance:gv('performance'), projectsAware:gv('projectsAware'), projectsDelivered:tx('projectsDelivered'),
+    missedPromises:gv('missedPromises'), projectsMissing:tx('projectsMissing'), needs:tx('needs'),
+    smeChallenges:getChk(['e1a','e1b','e1c','e1d','e1e','e1f','e1g']),
+    reelectRuto:gv('reelectRuto'), preferredPres:tx('preferredPres'),
+    governor:gv('governor'), governorOther:tx('governorOther'), party:gv('party'),
+    voteReasons:getChk(['g4a','g4b','g4c','g4d','g4e','g4f','g4g','g4h','g4i','g4j','g4k']),
+    notMbarire:getChk(['g5a','g5b','g5c','g5d','g5e','g5f','g5g','g5h','g5i']),
+    adviceMbarire:tx('adviceMbarire'),
+    notKivuti:getChk(['g7a','g7b','g7c','g7d','g7e','g7f','g7g','g7h','g7i']),
+    notGitonga:getChk(['g8a','g8b','g8c','g8d','g8e','g8f','g8g','g8h','g8i']),
+    prefSenator:tx('prefSenator'), prefWomenRep:tx('prefWomenRep'), prefMP:tx('prefMP'), prefMCA:tx('prefMCA'),
+    devOffice:gv('devOffice'), worship:gv('worship'),
+    contactName:tx('contactName'), contactPhone:tx('contactPhone'), followUp:gv('followUp'),
+    enumDecl:gv('enumDecl'),
+    _respondentId:    'R_' + Date.now(),
+    _submittedAt:     new Date().toISOString(),
+    _researcher:      currentResearcher ? currentResearcher.name  : 'Unknown',
+    _researcherLogin: currentResearcher ? currentResearcher.login : 'Unknown',
+    _researcherEmail: currentResearcher ? currentResearcher.email : '',
+    _researcherGoogleUid: currentResearcher ? currentResearcher.googleUid : '',
+    _gpsLat:      capturedGps ? capturedGps.lat      : null,
+    _gpsLng:      capturedGps ? capturedGps.lng      : null,
+    _gpsAccuracy: capturedGps ? capturedGps.accuracy : null,
+    _gpsSkipped:  !capturedGps
+  };
+}
+
+function validate() {
+  const req = [
+    ['gender',       'A1: Please select gender'],
+    ['constituency', 'A2: Please select constituency'],
+    ['ward',         'A3: Please select ward'],
+    ['age',          'A5: Please select age category'],
+    ['education',    'A6: Please select education level'],
+    ['employment',   'A7: Please select employment status'],
+    ['voter',        'B1: Please indicate if you are a registered voter'],
+    ['performance',  'D1: Please rate county government performance'],
+    ['devOffice',    'H1: Please select which office contributes most to development'],
+    ['worship',      'H2: Please indicate how often you attend worship'],
+    ['enumDecl',     'Declaration: Please confirm enumerator declaration']
+  ];
+  for (const [name, msg] of req) {
+    let val;
+    if (['constituency','ward'].includes(name)) { val = document.getElementById(name) ? document.getElementById(name).value : ''; }
+    else { val = document.querySelector('input[name="' + name + '"]:checked'); }
+    if (!val || (typeof val === 'string' && !val.trim())) return msg;
+  }
+  if (validatePollingStationSilent() === 'MISMATCH') {
+    const go = confirm('\u26a0\ufe0f Data Check: The selected polling station does not match the selected ward.\n\nDo you want to continue anyway?\n\n(This mismatch will be flagged in the data.)');
+    if (!go) return 'A4: Please verify polling station matches the selected ward.';
+  }
+  return null;
+}
+
+function showStatus(msg, type, dur) { const el = document.getElementById('status'); el.textContent = msg; el.className = 'status-msg ' + type; el.style.display = 'block'; if (dur) setTimeout(() => el.style.display = 'none', dur); }
+
+function resetForm() {
+  document.getElementById('surveyForm').reset();
+  document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.cond-field').forEach(f => f.classList.remove('vis'));
+  document.querySelectorAll('.disabled-note').forEach(n => n.style.display = 'none');
+  document.querySelectorAll('[id$="Opts"]').forEach(el => el.style.display = 'flex');
+  document.getElementById('wardPilbox').style.display = 'none';
+  document.getElementById('wardPills').innerHTML = '';
+  document.getElementById('constituency').value  = '';
+  document.getElementById('ward').value          = '';
+  document.getElementById('wardValidMsg').innerHTML = '';
+  resetPollingStation();
+  document.getElementById('pollingStationField').style.display = 'none';
+  // Add these instead in resetForm():
+if (window._swSenator)  window._swSenator.clear();
+if (window._swWomenRep) window._swWomenRep.clear();
+if (window._swMP)       window._swMP.clear();
+if (window._swMCA)      window._swMCA.clear();
+if (window._swOcc)      window._swOcc.clear(); capturedGps = null; document.getElementById('locationBox').style.display = 'none';
+  clearDraft(); window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+document.getElementById('surveyForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const err = validate(); if (err) { showStatus('\u26a0\ufe0f ' + err, 'warning'); return; }
+  const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.textContent = '\u23f3 Verifying location...';
+  showStatus('Verifying GPS location...', 'warning');
+  const gpsResult = await openGpsGuard();
+  if (!gpsResult.ok) {
+    btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research';
+    const reasons = { cancelled:'Submission cancelled.', accuracy:'GPS accuracy too low. Move to open area and retry.', distance:'Too close to previous survey. Move at least 500m.', time:'Too soon since last survey. Please wait at least 2 minutes.', gps_error:'GPS error. Ensure location is enabled and retry.' };
+    showStatus('\u274c ' + (reasons[gpsResult.reason] || 'GPS check failed.'), 'error'); return;
+  }
+  if (gpsResult.skipped) showStatus('\u26a0\ufe0f Submitting without GPS \u2014 location not recorded.', 'warning');
+  btn.textContent = '\ud83d\udce4 Submitting...';
+  const data = collectData();
+  if (!navigator.onLine) { enqueue(data); showStatus('\ud83d\udcf6 Offline. Survey saved locally and will sync when reconnected.', 'offline', 6000); btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research'; resetForm(); return; }
+  try {
+    const { contactName, contactPhone, followUp, ...surveyData } = data;
+    await db.collection('responses').add({ ...surveyData, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    if (contactName || contactPhone) await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId: surveyData._respondentId, _submittedAt: surveyData._submittedAt, _researcher: surveyData._researcher, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    showStatus('\u2705 Survey submitted successfully! Thank you.', 'success', 8000);
+    resetForm();
+  } catch (err) {
+    console.error(err); enqueue(data); showStatus('\u26a0\ufe0f Submission failed. Survey saved locally and will retry.', 'warning', 7000);
+  }
+  btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research';
+});
+
+/* ══════════════════════════════════════════════════════════════
+   NETWORK / PROXIMITY / MISC
+   ══════════════════════════════════════════════════════════════ */
+function updateNet(online) {
+  isOnline = online;
+  const b = document.getElementById('netBadge');
+  b.className = online ? 'online' : 'offline';
+  b.innerHTML = online ? '\u2705 Online' : '\ud83d\udcf5 Offline';
+  b.style.display = 'flex';
+  clearTimeout(b._t);
+  if (online) { b._t = setTimeout(() => b.style.display = 'none', 3000); syncBg(); }
+}
+async function syncBg() {
+  const q = getQueue(); if (!q.length) return;
+  for (const e of [...q]) {
+    try {
+      const { _queueId, _queuedAt, contactName, contactPhone, followUp, ...data } = e;
+      await db.collection('responses').add({ ...data, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      if (contactName || contactPhone) await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId: data._respondentId, _syncedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      dequeue(_queueId);
+    } catch { break; }
+  }
+}
+window.addEventListener('online',  () => updateNet(true));
+window.addEventListener('offline', () => updateNet(false));
+
+function checkProx() {
+  const last = getLastGps();
+  if (!last || !capturedGps) { document.getElementById('proximityBanner').style.display = 'none'; return; }
+  const dist     = haversine(last.lat, last.lng, capturedGps.lat, capturedGps.lng);
+  const timeDiff = Date.now() - last.ts;
+  const tooClose = dist < GPS.MIN_DIST, tooSoon = timeDiff < GPS.MIN_TIME;
+  const banner   = document.getElementById('proximityBanner');
+  if (tooClose || tooSoon) {
+    let msg = '';
+    if (tooClose) msg += 'Move at least ' + (GPS.MIN_DIST - Math.round(dist)) + 'm further. ';
+    if (tooSoon)  msg += 'Wait ' + Math.ceil((GPS.MIN_TIME - timeDiff) / 60000) + ' more minute(s).';
+    document.getElementById('proxMsg').textContent = msg.trim();
+    banner.style.display = 'block';
+  } else { banner.style.display = 'none'; }
+}
+setInterval(checkProx, 15000);
+/* ══════════════════════════════════════════════════════════════
+   SEARCH WIDGET — reusable live-search dropdown
+   Usage:
+     new SearchWidget({
+       inputId:    'myInput',       // text input element id
+       hiddenId:   'myHidden',      // hidden input to store value
+       chipId:     'myChip',        // chip display element id
+       chipLabelId:'myChipLabel',   // span inside chip for selected text
+       dropdownId: 'myDropdown',    // dropdown div id
+       clearId:    'myClear',       // clear button id
+       icon:       '🏷',            // emoji shown in each option
+       getOptions: () => ['A','B'], // function returning current option list
+       placeholder:'Search...',    // input placeholder
+       onSelect:   (val) => {}      // optional callback after selection
+     })
+   ══════════════════════════════════════════════════════════════ */
+class SearchWidget {
+  constructor(cfg) {
+    this.cfg      = cfg;
+    this.focused  = -1;
+    this._inp     = () => document.getElementById(cfg.inputId);
+    this._hid     = () => document.getElementById(cfg.hiddenId);
+    this._chip    = () => document.getElementById(cfg.chipId);
+    this._clabel  = () => document.getElementById(cfg.chipLabelId);
+    this._dd      = () => document.getElementById(cfg.dropdownId);
+    this._clr     = () => document.getElementById(cfg.clearId);
+    this._bind();
+  }
+  _bind() {
+    const inp = this._inp();
+    if (!inp) return;
+    inp.addEventListener('input',   () => this._onInput());
+    inp.addEventListener('focus',   () => this._onFocus());
+    inp.addEventListener('keydown', (e) => this._onKey(e));
+    const clr = this._clr();
+    if (clr) clr.addEventListener('click', () => this.clear());
+    document.addEventListener('click', (e) => {
+      const wrap = inp.closest('.sw-wrap');
+      if (wrap && !wrap.contains(e.target)) this._closeDD();
+    });
+  }
+  _onInput() {
+    const q = this._inp().value.trim();
+    const clr = this._clr();
+    if (clr) clr.style.display = q ? 'block' : 'none';
+    this.focused = -1;
+    if (!q) { this._closeDD(); return; }
+    this._render(q);
+  }
+  _onFocus() {
+    const q = this._inp().value.trim();
+    const opts = this.cfg.getOptions();
+    if (q) this._render(q);
+    else if (opts.length) this._render('');
+  }
+  _onKey(e) {
+    const dd    = this._dd();
+    const items = dd ? dd.querySelectorAll('.sw-option') : [];
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); this.focused = Math.min(this.focused + 1, items.length - 1); this._highlight(items); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); this.focused = Math.max(this.focused - 1, 0); this._highlight(items); }
+    else if (e.key === 'Enter')  { e.preventDefault(); if (this.focused >= 0 && items[this.focused]) items[this.focused].click(); }
+    else if (e.key === 'Escape') { this._closeDD(); }
+  }
+  _highlight(items) {
+    items.forEach((el, i) => el.classList.toggle('sw-focused', i === this.focused));
+    if (this.focused >= 0) items[this.focused].scrollIntoView({ block: 'nearest' });
+  }
+  _render(q) {
+    const dd   = this._dd(); if (!dd) return;
+    const opts = this.cfg.getOptions();
+    const norm = q.toLowerCase();
+    let matches;
+    if (!q) {
+      matches = opts.slice(0, 10);
+    } else {
+      const sw = opts.filter(o => o.toLowerCase().startsWith(norm));
+      const ct = opts.filter(o => !o.toLowerCase().startsWith(norm) && o.toLowerCase().includes(norm));
+      matches  = [...sw, ...ct].slice(0, 14);
+    }
+    if (!matches.length && q) {
+      dd.innerHTML = '<div class="sw-empty">No match for &ldquo;' + this._esc(q) + '&rdquo;</div>';
+    } else {
+      const icon = this.cfg.icon || '▸';
+      dd.innerHTML = matches.map(o => {
+        const hl = q
+          ? o.replace(new RegExp('(' + this._escReg(q) + ')','gi'), '<mark>$1</mark>')
+          : this._esc(o);
+        return '<div class="sw-option" data-val="' + this._esc(o) + '">' + icon + ' ' + hl + '</div>';
+      }).join('');
+    }
+    dd.querySelectorAll('.sw-option').forEach(el => {
+      el.addEventListener('click', () => this.select(el.dataset.val));
+    });
+    dd.classList.add('open');
+    this.focused = -1;
+  }
+  select(val) {
+    this._closeDD();
+    const inp = this._inp(), hid = this._hid(), chip = this._chip(), cl = this._clabel(), clr = this._clr();
+    if (inp)  { inp.value = val; inp.classList.add('sw-valid'); }
+    if (hid)  hid.value = val;
+    if (cl)   cl.textContent = val;
+    if (chip) chip.classList.add('vis');
+    if (clr)  clr.style.display = 'block';
+    if (this.cfg.onSelect) this.cfg.onSelect(val);
+  }
+  clear() {
+    const inp = this._inp(), hid = this._hid(), chip = this._chip(), clr = this._clr();
+    if (inp)  { inp.value = ''; inp.classList.remove('sw-valid'); inp.placeholder = this.cfg.placeholder || 'Search...'; inp.focus(); }
+    if (hid)  hid.value = '';
+    if (chip) chip.classList.remove('vis');
+    if (clr)  clr.style.display = 'none';
+    this._closeDD();
+    if (this.cfg.onSelect) this.cfg.onSelect('');
+  }
+  _closeDD() { const dd = this._dd(); if (dd) dd.classList.remove('open'); }
+  _esc(s)    { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  _escReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+}
+
+
+</script>
+</body>
+</html>
