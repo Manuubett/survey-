@@ -147,7 +147,6 @@ textarea{min-height:72px;resize:vertical;}
 .pilbox-item input[type="radio"]{position:absolute;opacity:0;width:0;height:0;}
 .pilbox-item label{display:inline-block;padding:8px 18px;border:1.5px solid var(--border);border-radius:24px;font-size:13px;cursor:pointer;color:var(--muted);background:#fafaf8;transition:all .15px;user-select:none;}
 .pilbox-item input:checked + label{background:var(--forest);color:#fff;border-color:var(--forest);font-weight:600;}
-#wardPilbox{display:none;margin-top:14px;}
 #wardPilbox .pilbox-item input:checked + label{background:var(--leaf);border-color:var(--leaf);}
 
 /* ── DATA VALIDATION STYLES ── */
@@ -208,6 +207,7 @@ textarea{min-height:72px;resize:vertical;}
 .loc-val{font-weight:600;color:var(--ink);}
 .loc-acc{font-weight:700;}
 .loc-acc.good{color:var(--leaf);}
+.loc-acc.ok{color:var(--gold);}
 .loc-acc.poor{color:var(--red);}
 .submit-wrap{margin-top:8px;}
 #submitBtn{width:100%;padding:16px;background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.4px;transition:opacity .2s;font-family:'Fraunces',serif;}
@@ -219,7 +219,7 @@ textarea{min-height:72px;resize:vertical;}
 .status-msg.warning{color:#92400e;background:#fef3c7;border:1px solid #fcd34d;}
 .status-msg.offline{color:#1e40af;background:#dbeafe;border:1px solid #93c5fd;}
 
-/* GPS GUARD MODAL */
+/* ── GPS GUARD MODAL ── */
 .gps-steps{list-style:none;margin:14px 0;}
 .gps-steps li{display:flex;align-items:flex-start;gap:13px;padding:11px 13px;border-radius:8px;margin-bottom:8px;font-size:13px;background:var(--warm);border:1px solid var(--border);}
 .gps-steps li.done{background:#f0fdf4;border-color:#bbf7d0;}
@@ -234,8 +234,16 @@ textarea{min-height:72px;resize:vertical;}
 .live-gps-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-top:14px;font-size:12.5px;}
 .live-gps-card strong{color:var(--forest);display:block;margin-bottom:6px;font-size:13px;}
 .gps-coords{font-family:monospace;font-size:12px;color:#166534;margin:2px 0;}
-.first-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 14px;margin-bottom:14px;font-size:13px;color:#1e40af;display:none;}
-.first-note strong{display:block;margin-bottom:3px;}
+
+/* GPS accuracy tier badge */
+.acc-tier{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:20px;margin-top:6px;}
+.acc-tier.tier-good{background:#dcfce7;color:#166534;border:1px solid #86efac;}
+.acc-tier.tier-ok{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;}
+.acc-tier.tier-poor{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+
+.gps-wait-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 14px;margin-top:12px;font-size:12.5px;color:#1e40af;}
+.gps-wait-note strong{display:block;margin-bottom:3px;}
+
 .q-list{max-height:230px;overflow-y:auto;margin:12px 0;}
 .q-item{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:8px;margin-bottom:8px;background:var(--gold-lt);border:1px solid var(--gold);font-size:13px;}
 .qi-del{font-size:18px;cursor:pointer;color:var(--red);padding:0 4px;border:none;background:none;}
@@ -243,8 +251,6 @@ textarea{min-height:72px;resize:vertical;}
 .sync-prog-outer{height:6px;background:var(--border);border-radius:6px;overflow:hidden;}
 .sync-prog-inner{height:100%;background:linear-gradient(90deg,var(--leaf),var(--mint));border-radius:6px;transition:width .4s;width:0;}
 .sync-status{font-size:12px;color:var(--muted);margin-top:6px;text-align:center;}
-#gpsSkipBtn{display:none;width:100%;margin-top:10px;padding:9px;border:1.5px dashed var(--gold);border-radius:8px;background:#fffbeb;color:#92400e;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;}
-#gpsSkipBtn:hover{background:#fef3c7;}
 
 /* OCCUPATION GRID */
 .occ-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
@@ -269,7 +275,8 @@ textarea{min-height:72px;resize:vertical;}
 .cand-hint{font-size:11.5px;color:var(--muted);margin-top:4px;font-style:italic;}
 .g9-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px;}
 @media(max-width:520px){.g9-grid{grid-template-columns:1fr;}}
-/* ── SEARCH WIDGET (reusable live-search dropdown) ── */
+
+/* ── SEARCH WIDGET ── */
 .sw-wrap{position:relative;}
 .sw-input{width:100%;padding:10px 36px 10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);color:var(--ink);font-family:inherit;transition:border-color .2s,box-shadow .2s;}
 .sw-input:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
@@ -320,38 +327,23 @@ textarea{min-height:72px;resize:vertical;}
 
 <!-- Email/Password Form -->
 <div id="emailAuthSection">
-  <!-- Toggle between Login and Sign Up -->
   <div style="display:flex;gap:0;margin-bottom:16px;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;">
     <button type="button" id="tabLogin" onclick="switchTab('login')"
-      style="flex:1;padding:9px;border:none;background:var(--forest);color:#fff;font-weight:700;font-family:inherit;font-size:13px;cursor:pointer;">
-      Sign In
-    </button>
+      style="flex:1;padding:9px;border:none;background:var(--forest);color:#fff;font-weight:700;font-family:inherit;font-size:13px;cursor:pointer;">Sign In</button>
     <button type="button" id="tabSignup" onclick="switchTab('signup')"
-      style="flex:1;padding:9px;border:none;background:#fff;color:var(--muted);font-weight:600;font-family:inherit;font-size:13px;cursor:pointer;">
-      Sign Up
-    </button>
+      style="flex:1;padding:9px;border:none;background:#fff;color:var(--muted);font-weight:600;font-family:inherit;font-size:13px;cursor:pointer;">Sign Up</button>
   </div>
-
   <input type="email" id="emailInput" placeholder="Email address"
     style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;margin-bottom:10px;">
-
   <input type="password" id="passwordInput" placeholder="Password (min 6 characters)"
     style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;margin-bottom:10px;">
-
-  <!-- Name field — only shown during Sign Up -->
   <input type="text" id="nameInput" placeholder="Full name"
     style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--cream);font-family:inherit;margin-bottom:10px;display:none;">
-
   <button type="button" id="emailAuthBtn" onclick="emailAuth()"
-    style="width:100%;padding:12px;background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">
-    Sign In
-  </button>
-
+    style="width:100%;padding:12px;background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Sign In</button>
   <div style="margin-top:10px;text-align:right;">
     <button type="button" onclick="forgotPassword()"
-      style="background:none;border:none;color:var(--leaf);font-size:12.5px;cursor:pointer;font-family:inherit;text-decoration:underline;">
-      Forgot password?
-    </button>
+      style="background:none;border:none;color:var(--leaf);font-size:12.5px;cursor:pointer;font-family:inherit;text-decoration:underline;">Forgot password?</button>
   </div>
 </div>
 </div>
@@ -387,31 +379,58 @@ textarea{min-height:72px;resize:vertical;}
   </div>
 </div>
 
-<!-- GPS GUARD MODAL -->
+<!-- ═══════════════════════════════════════════════════════
+     GPS GUARD MODAL  — hardened, no skip button
+     ═══════════════════════════════════════════════════════ -->
 <div class="overlay hidden" id="gpsGuardModal">
   <div class="mbox mbox-sm">
     <div class="mhead forest">
       <h2>&#x1F4CD; Location Verification</h2>
-      <p id="gpsGuardSub">Capturing GPS location &mdash; please wait</p>
+      <p id="gpsGuardSub">Acquiring GPS fix &mdash; please hold the device still</p>
     </div>
     <div class="mscroll">
-      <div class="first-note" id="firstNote">
-        <strong>&#x1F4CC; First survey of the day</strong>
-        Your starting location is being recorded.
-      </div>
+
+      <!-- Step list — 3 steps only (time-gap check removed) -->
       <ul class="gps-steps">
-        <li id="step-acquire" class="active"><span class="step-icon">&#x1F6F0;</span><div class="step-text"><strong>Acquiring GPS Signal</strong><span id="step-acquire-detail">Waiting for location...</span></div></li>
-        <li id="step-accuracy"><span class="step-icon">&#x1F3AF;</span><div class="step-text"><strong>Accuracy Check</strong><span id="step-accuracy-detail">Requires &le; 80 m accuracy</span></div></li>
-        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be 500 m from last survey</span></div></li>
-        <li id="step-time"><span class="step-icon">&#x23F1;</span><div class="step-text"><strong>Time Gap Check</strong><span id="step-time-detail">Checking time since last survey</span></div></li>
+        <li id="step-acquire">
+          <span class="step-icon">&#x1F6F0;</span>
+          <div class="step-text">
+            <strong>Acquiring GPS Signal</strong>
+            <span id="step-acquire-detail">Waiting for location fix&hellip;</span>
+          </div>
+        </li>
+        <li id="step-accuracy">
+          <span class="step-icon">&#x1F3AF;</span>
+          <div class="step-text">
+            <strong>Accuracy Check</strong>
+            <span id="step-accuracy-detail">Improving&hellip; (target &le; 200 m)</span>
+          </div>
+        </li>
+        <li id="step-distance">
+          <span class="step-icon">&#x1F4CF;</span>
+          <div class="step-text">
+            <strong>Distance Check</strong>
+            <span id="step-distance-detail">Must be &ge; 500 m from last survey</span>
+          </div>
+        </li>
       </ul>
+
       <div class="gps-prog"><div class="gps-prog-bar" id="gpsProg"></div></div>
+
+      <!-- Live fix card — shown once a reading arrives -->
       <div class="live-gps-card" id="liveGpsCard" style="display:none;">
-        <strong>&#x1F4E1; GPS Fix Acquired</strong>
+        <strong>&#x1F4E1; Live GPS Reading</strong>
         <div class="gps-coords" id="liveCoords"></div>
         <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="liveAcc"></div>
+        <div id="accTierBadge" style="margin-top:6px;"></div>
       </div>
-      <button id="gpsSkipBtn" onclick="skipGps()">&#x26A0; GPS taking too long &mdash; proceed without location (supervisor override)</button>
+
+      <!-- Waiting / improving note -->
+      <div class="gps-wait-note" id="gpsWaitNote" style="display:none;">
+        <strong>&#x23F3; Improving accuracy&hellip;</strong>
+        Hold the device still, preferably near an open window or outdoors. The GPS will keep improving automatically.
+      </div>
+
     </div>
     <div class="mfoot">
       <div class="btn-row">
@@ -459,9 +478,9 @@ textarea{min-height:72px;resize:vertical;}
       <span class="hpill">&#x1F512; Anonymised Data</span>
       <span class="hpill">&#x23F1; 15&ndash;20 minutes</span>
     </div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-  <button class="hbtn hbtn-ghost" onclick="signOutGoogle()">&#x1F6AA; Sign Out</button>
-</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="hbtn hbtn-ghost" onclick="signOutGoogle()">&#x1F6AA; Sign Out</button>
+    </div>
   </div>
 </div>
 
@@ -625,17 +644,18 @@ textarea{min-height:72px;resize:vertical;}
       <div class="field">
         <label class="field-label"><span class="qnum">A8.</span> Occupation <span class="fnote">Select the category that best describes your work &mdash; or type below if not listed</span></label>
         <div class="occ-grid">
-         <div class="sw-wrap" style="margin-top:4px;">
-  <input type="text" class="sw-input" id="swOccInput" placeholder="Type occupation (e.g. farmer, teacher, nurse)..." autocomplete="off" spellcheck="false">
-  <button type="button" class="sw-clear" id="swOccClear" title="Clear">✕</button>
-  <div class="sw-dropdown" id="swOccDD"></div>
-</div>
-<div class="sw-chip" id="swOccChip">
-  <span>💼</span>
-  <span class="sw-chip-label" id="swOccLabel"></span>
-  <button type="button" class="sw-chip-edit" id="swOccEdit">✎ Change</button>
-</div>
-<input type="hidden" id="occupation">
+          <div class="sw-wrap" style="margin-top:4px;">
+            <input type="text" class="sw-input" id="swOccInput" placeholder="Type occupation (e.g. farmer, teacher, nurse)..." autocomplete="off" spellcheck="false">
+            <button type="button" class="sw-clear" id="swOccClear" title="Clear">&#x2715;</button>
+            <div class="sw-dropdown" id="swOccDD"></div>
+          </div>
+          <div class="sw-chip" id="swOccChip">
+            <span>&#x1F4BC;</span>
+            <span class="sw-chip-label" id="swOccLabel"></span>
+            <button type="button" class="sw-chip-edit" id="swOccEdit">&#x270E; Change</button>
+          </div>
+          <input type="hidden" id="occupation">
+        </div>
       </div>
     </div>
   </div>
@@ -867,74 +887,72 @@ textarea{min-height:72px;resize:vertical;}
       <!-- G9 -->
       <div class="field">
         <label class="field-label"><span class="qnum">G9.</span> Preferred candidates for the following positions:</label>
-        <p class="sec-note">Select from known candidates or choose <em>"Other (specify)"</em> to type a name. Candidate lists update based on the selected constituency/ward.</p>
-       <div class="g9-grid">
-
-  <!-- Senator -->
-  <div class="cand-block">
-    <span class="elec-item"><label>🏛 Senator</label></span>
-    <div class="sw-wrap">
-      <input type="text" class="sw-input" id="swSenatorInput" placeholder="Type to search senator..." autocomplete="off" spellcheck="false">
-      <button type="button" class="sw-clear" id="swSenatorClear" title="Clear">✕</button>
-      <div class="sw-dropdown" id="swSenatorDD"></div>
+        <p class="sec-note">Select from known candidates or type a name. Candidate lists update based on the selected constituency/ward.</p>
+        <div class="g9-grid">
+          <!-- Senator -->
+          <div class="cand-block">
+            <span class="elec-item"><label>&#x1F3DB; Senator</label></span>
+            <div class="sw-wrap">
+              <input type="text" class="sw-input" id="swSenatorInput" placeholder="Type to search senator..." autocomplete="off" spellcheck="false">
+              <button type="button" class="sw-clear" id="swSenatorClear" title="Clear">&#x2715;</button>
+              <div class="sw-dropdown" id="swSenatorDD"></div>
+            </div>
+            <div class="sw-chip" id="swSenatorChip">
+              <span>&#x1F3DB;</span>
+              <span class="sw-chip-label" id="swSenatorLabel"></span>
+              <button type="button" class="sw-chip-edit" id="swSenatorEdit">&#x270E; Change</button>
+            </div>
+            <input type="hidden" id="prefSenator">
+          </div>
+          <!-- Women Rep -->
+          <div class="cand-block">
+            <span class="elec-item"><label>&#x1F469; Women Representative</label></span>
+            <div class="sw-wrap">
+              <input type="text" class="sw-input" id="swWomenRepInput" placeholder="Type to search Women Rep..." autocomplete="off" spellcheck="false">
+              <button type="button" class="sw-clear" id="swWomenRepClear" title="Clear">&#x2715;</button>
+              <div class="sw-dropdown" id="swWomenRepDD"></div>
+            </div>
+            <div class="sw-chip" id="swWomenRepChip">
+              <span>&#x1F469;</span>
+              <span class="sw-chip-label" id="swWomenRepLabel"></span>
+              <button type="button" class="sw-chip-edit" id="swWomenRepEdit">&#x270E; Change</button>
+            </div>
+            <input type="hidden" id="prefWomenRep">
+          </div>
+          <!-- MP -->
+          <div class="cand-block">
+            <span class="elec-item"><label>&#x1F5F3; Member of Parliament (MP)</label></span>
+            <div class="sw-wrap">
+              <input type="text" class="sw-input" id="swMPInput" placeholder="Select constituency first (A2)..." autocomplete="off" spellcheck="false">
+              <button type="button" class="sw-clear" id="swMPClear" title="Clear">&#x2715;</button>
+              <div class="sw-dropdown" id="swMPDD"></div>
+            </div>
+            <div class="sw-chip" id="swMPChip">
+              <span>&#x1F5F3;</span>
+              <span class="sw-chip-label" id="swMPLabel"></span>
+              <button type="button" class="sw-chip-edit" id="swMPEdit">&#x270E; Change</button>
+            </div>
+            <input type="hidden" id="prefMP">
+          </div>
+          <!-- MCA -->
+          <div class="cand-block">
+            <span class="elec-item"><label>&#x1F4CD; Member of County Assembly (MCA)</label></span>
+            <div class="sw-wrap">
+              <input type="text" class="sw-input" id="swMCAInput" placeholder="Select ward first (A3)..." autocomplete="off" spellcheck="false">
+              <button type="button" class="sw-clear" id="swMCAClear" title="Clear">&#x2715;</button>
+              <div class="sw-dropdown" id="swMCADD"></div>
+            </div>
+            <div class="sw-chip" id="swMCAChip">
+              <span>&#x1F4CD;</span>
+              <span class="sw-chip-label" id="swMCALabel"></span>
+              <button type="button" class="sw-chip-edit" id="swMCAEdit">&#x270E; Change</button>
+            </div>
+            <input type="hidden" id="prefMCA">
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="sw-chip" id="swSenatorChip">
-      <span>🏛</span>
-      <span class="sw-chip-label" id="swSenatorLabel"></span>
-      <button type="button" class="sw-chip-edit" id="swSenatorEdit">✎ Change</button>
-    </div>
-    <input type="hidden" id="prefSenator">
   </div>
-
-  <!-- Women Rep -->
-  <div class="cand-block">
-    <span class="elec-item"><label>👩 Women Representative</label></span>
-    <div class="sw-wrap">
-      <input type="text" class="sw-input" id="swWomenRepInput" placeholder="Type to search Women Rep..." autocomplete="off" spellcheck="false">
-      <button type="button" class="sw-clear" id="swWomenRepClear" title="Clear">✕</button>
-      <div class="sw-dropdown" id="swWomenRepDD"></div>
-    </div>
-    <div class="sw-chip" id="swWomenRepChip">
-      <span>👩</span>
-      <span class="sw-chip-label" id="swWomenRepLabel"></span>
-      <button type="button" class="sw-chip-edit" id="swWomenRepEdit">✎ Change</button>
-    </div>
-    <input type="hidden" id="prefWomenRep">
-  </div>
-
-  <!-- MP -->
-  <div class="cand-block">
-    <span class="elec-item"><label>🗳 Member of Parliament (MP)</label></span>
-    <div class="sw-wrap">
-      <input type="text" class="sw-input" id="swMPInput" placeholder="Select constituency first (A2)..." autocomplete="off" spellcheck="false">
-      <button type="button" class="sw-clear" id="swMPClear" title="Clear">✕</button>
-      <div class="sw-dropdown" id="swMPDD"></div>
-    </div>
-    <div class="sw-chip" id="swMPChip">
-      <span>🗳</span>
-      <span class="sw-chip-label" id="swMPLabel"></span>
-      <button type="button" class="sw-chip-edit" id="swMPEdit">✎ Change</button>
-    </div>
-    <input type="hidden" id="prefMP">
-  </div>
-
-  <!-- MCA -->
-  <div class="cand-block">
-    <span class="elec-item"><label>📍 Member of County Assembly (MCA)</label></span>
-    <div class="sw-wrap">
-      <input type="text" class="sw-input" id="swMCAInput" placeholder="Select ward first (A3)..." autocomplete="off" spellcheck="false">
-      <button type="button" class="sw-clear" id="swMCAClear" title="Clear">✕</button>
-      <div class="sw-dropdown" id="swMCADD"></div>
-    </div>
-    <div class="sw-chip" id="swMCAChip">
-      <span>📍</span>
-      <span class="sw-chip-label" id="swMCALabel"></span>
-      <button type="button" class="sw-chip-edit" id="swMCAEdit">✎ Change</button>
-    </div>
-    <input type="hidden" id="prefMCA">
-  </div>
-
-</div>
 
   <!-- SECTION H -->
   <div class="card">
@@ -1013,11 +1031,6 @@ textarea{min-height:72px;resize:vertical;}
 </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════════
-     EXTERNAL DATA FILE — must load BEFORE the main script block
-     so window.ECS_POLLING_STATIONS is available immediately.
-     This file is a pure data file; it exposes NO DOM functions.
-     ══════════════════════════════════════════════════════════════ -->
 <script src="ecs_polling_stations.js"></script>
 
 <script>
@@ -1037,12 +1050,30 @@ const db   = firebase.firestore();
 const auth = firebase.auth();
 
 /* ══════════════════════════════════════════════════════════════
-   GPS SETTINGS
+   GPS SETTINGS  (hardened for Kenya field conditions)
+   ══════════════════════════════════════════════════════════════
+   MAX_ACC_ACCEPT : hard ceiling — reading above this is refused
+   MAX_ACC_GOOD   : reading at or below this is "good" (green)
+   MAX_ACC_OK     : reading at or below this is "acceptable" (amber)
+   MIN_DIST       : minimum metres from last survey location
+   POLL_INTERVAL  : how often (ms) we re-query GPS during wait loop
+   POLL_TIMEOUT   : total wait time before giving up (ms)
+   MAX_AGE        : allow cached fixes up to this age (ms) — speeds
+                    up first reading while fresh fix improves in bg
    ══════════════════════════════════════════════════════════════ */
-const GPS = { MAX_ACC:80, MIN_DIST:500, MIN_TIME:120000, TIMEOUT:45000, MAX_AGE:15000, SKIP_DELAY:20000 };
+const GPS = {
+  MAX_ACC_ACCEPT : 200,   // reject above 200 m
+  MAX_ACC_GOOD   : 60,    // ≤ 60 m  → green
+  MAX_ACC_OK     : 120,   // ≤ 120 m → amber
+  MIN_DIST       : 500,
+  POLL_INTERVAL  : 3000,  // re-query every 3 s
+  POLL_TIMEOUT   : 90000, // give up after 90 s
+  GEO_TIMEOUT    : 20000, // per getCurrentPosition call
+  MAX_AGE        : 30000  // accept fixes up to 30 s old
+};
 
 /* ══════════════════════════════════════════════════════════════
-   DATA ACCESSORS  — read from ecs_polling_stations.js globals
+   DATA ACCESSORS
    ══════════════════════════════════════════════════════════════ */
 function _PS()  { return window.ECS_POLLING_STATIONS  || {}; }
 function _MP()  { return window.ECS_MP_CANDIDATES     || {}; }
@@ -1051,23 +1082,16 @@ function _WC()  { return window.ECS_WARD_CONSTITUENCY || {}; }
 
 /* ══════════════════════════════════════════════════════════════
    POLLING STATION LIVE-SEARCH WIDGET
-   All DOM logic lives here; ecs_polling_stations.js is data-only.
    ══════════════════════════════════════════════════════════════ */
+let _psStations = [];
+let _psFocused  = -1;
 
-let _psStations = [];   // stations for the currently selected ward
-let _psFocused  = -1;   // keyboard arrow-key index
-
-/**
- * loadPollingStations(ward)
- * Called by onWardChange() whenever the user picks a ward.
- * Reads from window.ECS_POLLING_STATIONS (provided by the data file).
- */
 window.loadPollingStations = function (ward) {
   _psStations = (_PS()[ward]) || [];
   const field = document.getElementById('pollingStationField');
   const lbl   = document.getElementById('psConstLabel');
   if (field) field.style.display = _psStations.length ? 'block' : 'none';
-  if (lbl)   lbl.textContent     = _psStations.length
+  if (lbl)   lbl.textContent = _psStations.length
     ? '(' + _psStations.length + ' stations in ' + ward + ' — type to search)'
     : '(no stations found for this ward)';
   resetPollingStation();
@@ -1100,40 +1124,30 @@ function psOnInput() {
   if (!q) { psCloseDropdown(); return; }
   psRenderDropdown(q);
 }
-
 function psOnFocus() {
   const q = document.getElementById('psSearchInput').value.trim();
   if (q) psRenderDropdown(q);
   else if (_psStations.length) psRenderDropdown('');
 }
-
 function psOnKey(e) {
   const dd    = document.getElementById('psDropdown');
   const items = dd.querySelectorAll('.ps-option');
   if (!items.length) return;
-  if (e.key === 'ArrowDown') {
-    e.preventDefault(); _psFocused = Math.min(_psFocused + 1, items.length - 1); psHighlight(items);
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault(); _psFocused = Math.max(_psFocused - 1, 0); psHighlight(items);
-  } else if (e.key === 'Enter') {
-    e.preventDefault(); if (_psFocused >= 0 && items[_psFocused]) items[_psFocused].click();
-  } else if (e.key === 'Escape') {
-    psCloseDropdown();
-  }
+  if (e.key === 'ArrowDown') { e.preventDefault(); _psFocused = Math.min(_psFocused + 1, items.length - 1); psHighlight(items); }
+  else if (e.key === 'ArrowUp')  { e.preventDefault(); _psFocused = Math.max(_psFocused - 1, 0); psHighlight(items); }
+  else if (e.key === 'Enter')    { e.preventDefault(); if (_psFocused >= 0 && items[_psFocused]) items[_psFocused].click(); }
+  else if (e.key === 'Escape')   { psCloseDropdown(); }
 }
-
 function psHighlight(items) {
   items.forEach((el, i) => el.classList.toggle('focused', i === _psFocused));
   if (_psFocused >= 0) items[_psFocused].scrollIntoView({ block: 'nearest' });
 }
-
 function psRenderDropdown(q) {
   const dd   = document.getElementById('psDropdown');
   const norm = q.toLowerCase();
   let matches;
-  if (!q) {
-    matches = _psStations.slice(0, 8);
-  } else {
+  if (!q) { matches = _psStations.slice(0, 8); }
+  else {
     const sw = _psStations.filter(s => s.toLowerCase().startsWith(norm));
     const ct = _psStations.filter(s => !s.toLowerCase().startsWith(norm) && s.toLowerCase().includes(norm));
     matches  = [...sw, ...ct].slice(0, 12);
@@ -1150,7 +1164,6 @@ function psRenderDropdown(q) {
   dd.classList.add('open');
   _psFocused = -1;
 }
-
 function psSelect(val) {
   psCloseDropdown();
   const inp  = document.getElementById('psSearchInput');
@@ -1177,27 +1190,21 @@ function psSelect(val) {
   if (chip) chip.classList.add('vis');
   validatePollingStation();
 }
-
 function psClear() {
   resetPollingStation();
   document.getElementById('pollingStationField').style.display = _psStations.length ? 'block' : 'none';
   document.getElementById('psSearchInput').focus();
 }
-
 function psCloseDropdown() {
   const dd = document.getElementById('psDropdown');
   if (dd) dd.classList.remove('open');
 }
-
-// Close dropdown when clicking outside the widget
 document.addEventListener('click', function (e) {
   const wrap = document.getElementById('psSearchWrap');
   if (wrap && !wrap.contains(e.target)) psCloseDropdown();
 });
-
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escReg(s)  { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
-
 function validatePollingStation() {
   const ps    = document.getElementById('pollingStation').value;
   const ward  = document.getElementById('ward').value;
@@ -1242,12 +1249,10 @@ async function signInWithGoogle() {
     err.style.display = 'block';
   }
 }
-
 async function signOutGoogle() {
   if (!confirm('Sign out of ECS-2026?')) return;
   await auth.signOut(); location.reload();
 }
-
 auth.onAuthStateChanged(user => {
   if (user) { currentUser = user; onUserSignedIn(user); }
   else {
@@ -1259,7 +1264,6 @@ auth.onAuthStateChanged(user => {
     document.getElementById('loginLoading').style.display = 'none';
   }
 });
-
 function generateResearcherId(user) {
   const name = user.displayName || user.email || 'XX';
   const initials = name.trim().split(/\s+/).map(w => w[0] && w[0].toUpperCase() || '').join('').slice(0,3).padEnd(2,'X');
@@ -1267,7 +1271,6 @@ function generateResearcherId(user) {
   for (let i = 0; i < user.uid.length; i++) hash = (hash * 31 + user.uid.charCodeAt(i)) & 0xffffffff;
   return 'ECS-' + initials + '-' + String(Math.abs(hash) % 9000 + 1000);
 }
-
 function onUserSignedIn(user) {
   document.getElementById('loginScreen').style.display = 'none';
   const id = generateResearcherId(user);
@@ -1284,7 +1287,6 @@ function onUserSignedIn(user) {
   }
   document.getElementById('researcherModal').classList.remove('hidden');
 }
-
 function confirmResearcher() {
   const user = currentUser, id = generateResearcherId(user);
   currentResearcher = { name: user.displayName || user.email, login: id, email: user.email, googleUid: user.uid, photoURL: user.photoURL || '' };
@@ -1292,7 +1294,6 @@ function confirmResearcher() {
   document.getElementById('researcherModal').classList.add('hidden');
   showSurvey();
 }
-
 function showSurvey() {
   document.getElementById('siteHeader').style.display = 'block';
   document.getElementById('surveyWrapper').style.display = 'block';
@@ -1301,22 +1302,81 @@ function showSurvey() {
   document.getElementById('bannerId').textContent   = currentResearcher.login;
   const av = document.getElementById('bannerAvatar');
   if (currentResearcher.photoURL) av.src = currentResearcher.photoURL; else av.style.display = 'none';
-  checkDraft(); refreshPendUI(); startGpsWatch(); attachAutosave();
-   initSearchWidgets();
+  checkDraft(); refreshPendUI(); startGpsWatch(); attachAutosave(); initSearchWidgets();
 }
+
+/* ══════════════════════════════════════════════════════════════
+   EMAIL / PASSWORD AUTH
+   ══════════════════════════════════════════════════════════════ */
+let _authTab = 'login';
+function switchTab(tab) {
+  _authTab = tab;
+  const isSignup = tab === 'signup';
+  document.getElementById('tabLogin').style.background  = isSignup ? '#fff' : 'var(--forest)';
+  document.getElementById('tabLogin').style.color       = isSignup ? 'var(--muted)' : '#fff';
+  document.getElementById('tabSignup').style.background = isSignup ? 'var(--forest)' : '#fff';
+  document.getElementById('tabSignup').style.color      = isSignup ? '#fff' : 'var(--muted)';
+  document.getElementById('nameInput').style.display    = isSignup ? 'block' : 'none';
+  document.getElementById('emailAuthBtn').textContent   = isSignup ? 'Create Account' : 'Sign In';
+  document.getElementById('passwordInput').placeholder  = isSignup ? 'Password (min 6 characters)' : 'Password';
+  document.getElementById('loginErr').style.display     = 'none';
+}
+async function emailAuth() {
+  const email    = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const name     = document.getElementById('nameInput').value.trim();
+  const err      = document.getElementById('loginErr');
+  const loading  = document.getElementById('loginLoading');
+  const btn      = document.getElementById('emailAuthBtn');
+  if (!email || !password) { err.textContent = 'Please enter your email and password.'; err.style.display = 'block'; return; }
+  if (_authTab === 'signup' && !name)          { err.textContent = 'Please enter your full name.'; err.style.display = 'block'; return; }
+  if (_authTab === 'signup' && password.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
+  btn.disabled = true; err.style.display = 'none'; loading.style.display = 'block';
+  try {
+    if (_authTab === 'signup') {
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      await auth.currentUser.reload();
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+    }
+  } catch (e) {
+    btn.disabled = false; loading.style.display = 'none';
+    err.textContent = friendlyAuthError(e.code); err.style.display = 'block';
+  }
+}
+async function forgotPassword() {
+  const email = document.getElementById('emailInput').value.trim();
+  const err   = document.getElementById('loginErr');
+  if (!email) { err.textContent = 'Enter your email address above first.'; err.style.display = 'block'; return; }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    err.style.cssText = 'display:block;background:#dcfce7;border-color:#86efac;color:#166534;';
+    err.textContent   = '✅ Password reset email sent. Check your inbox.';
+  } catch (e) { err.textContent = friendlyAuthError(e.code); err.style.display = 'block'; }
+}
+function friendlyAuthError(code) {
+  const map = {
+    'auth/invalid-email':'Invalid email address.',
+    'auth/user-not-found':'No account found with this email.',
+    'auth/wrong-password':'Incorrect password. Try again.',
+    'auth/email-already-in-use':'This email is already registered. Sign in instead.',
+    'auth/weak-password':'Password is too weak. Use at least 6 characters.',
+    'auth/too-many-requests':'Too many attempts. Please wait and try again.',
+    'auth/network-request-failed':'Network error. Check your connection.',
+    'auth/popup-closed-by-user':'Sign-in cancelled.',
+    'auth/invalid-credential':'Invalid email or password.',
+  };
+  return map[code] || 'Authentication error: ' + code;
+}
+
 /* ══════════════════════════════════════════════════════════════
    SEARCH WIDGET INSTANCES
    ══════════════════════════════════════════════════════════════ */
-
-// Fixed candidate lists
-const SW_SENATORS   = ['Njeru Ndwiga','Clive Imanyara','Lenny Kivuti','Njeru Githae','Cecily Mbarire'];
-const SW_WOMENREP   = ['Millicent Omanga','Wanjiru Githae','Tabitha Mutinda','Mary Njue','Grace Kamau'];
-
-// Dynamic lists (updated when constituency/ward changes)
-let _swMPOptions  = [];
-let _swMCAOptions = [];
-
-// Occupation master list
+const SW_SENATORS  = ['Njeru Ndwiga','Clive Imanyara','Lenny Kivuti','Njeru Githae','Cecily Mbarire'];
+const SW_WOMENREP  = ['Millicent Omanga','Wanjiru Githae','Tabitha Mutinda','Mary Njue','Grace Kamau'];
+let _swMPOptions   = [];
+let _swMCAOptions  = [];
 const SW_OCCUPATIONS = [
   'Subsistence Farmer','Commercial Farmer','Livestock Farmer','Horticulture Farmer','Agro-dealer',
   'Retail Shop Owner','Wholesale Trader','Hawker / Street Vendor','Market Trader',
@@ -1333,51 +1393,16 @@ const SW_OCCUPATIONS = [
   'Pastor / Clergy','Social Worker','Community Health Worker',
   'Casual Labourer','Domestic Worker','Student','Retired'
 ];
-
 function initSearchWidgets() {
-  // Senator
-  window._swSenator = new SearchWidget({
-    inputId:'swSenatorInput', hiddenId:'prefSenator',
-    chipId:'swSenatorChip', chipLabelId:'swSenatorLabel', clearId:'swSenatorClear',
-    dropdownId:'swSenatorDD', icon:'🏛', placeholder:'Type to search senator...',
-    getOptions: () => SW_SENATORS
-  });
+  window._swSenator = new SearchWidget({ inputId:'swSenatorInput', hiddenId:'prefSenator', chipId:'swSenatorChip', chipLabelId:'swSenatorLabel', clearId:'swSenatorClear', dropdownId:'swSenatorDD', icon:'🏛', placeholder:'Type to search senator...', getOptions: () => SW_SENATORS });
   document.getElementById('swSenatorEdit').addEventListener('click', () => window._swSenator.clear());
-
-  // Women Rep
-  window._swWomenRep = new SearchWidget({
-    inputId:'swWomenRepInput', hiddenId:'prefWomenRep',
-    chipId:'swWomenRepChip', chipLabelId:'swWomenRepLabel', clearId:'swWomenRepClear',
-    dropdownId:'swWomenRepDD', icon:'👩', placeholder:'Type to search Women Rep...',
-    getOptions: () => SW_WOMENREP
-  });
+  window._swWomenRep = new SearchWidget({ inputId:'swWomenRepInput', hiddenId:'prefWomenRep', chipId:'swWomenRepChip', chipLabelId:'swWomenRepLabel', clearId:'swWomenRepClear', dropdownId:'swWomenRepDD', icon:'👩', placeholder:'Type to search Women Rep...', getOptions: () => SW_WOMENREP });
   document.getElementById('swWomenRepEdit').addEventListener('click', () => window._swWomenRep.clear());
-
-  // MP — options set dynamically by constituency
-  window._swMP = new SearchWidget({
-    inputId:'swMPInput', hiddenId:'prefMP',
-    chipId:'swMPChip', chipLabelId:'swMPLabel', clearId:'swMPClear',
-    dropdownId:'swMPDD', icon:'🗳', placeholder:'Select constituency first (A2)...',
-    getOptions: () => _swMPOptions
-  });
+  window._swMP = new SearchWidget({ inputId:'swMPInput', hiddenId:'prefMP', chipId:'swMPChip', chipLabelId:'swMPLabel', clearId:'swMPClear', dropdownId:'swMPDD', icon:'🗳', placeholder:'Select constituency first (A2)...', getOptions: () => _swMPOptions });
   document.getElementById('swMPEdit').addEventListener('click', () => window._swMP.clear());
-
-  // MCA — options set dynamically by ward
-  window._swMCA = new SearchWidget({
-    inputId:'swMCAInput', hiddenId:'prefMCA',
-    chipId:'swMCAChip', chipLabelId:'swMCALabel', clearId:'swMCAClear',
-    dropdownId:'swMCADD', icon:'📍', placeholder:'Select ward first (A3)...',
-    getOptions: () => _swMCAOptions
-  });
+  window._swMCA = new SearchWidget({ inputId:'swMCAInput', hiddenId:'prefMCA', chipId:'swMCAChip', chipLabelId:'swMCALabel', clearId:'swMCAClear', dropdownId:'swMCADD', icon:'📍', placeholder:'Select ward first (A3)...', getOptions: () => _swMCAOptions });
   document.getElementById('swMCAEdit').addEventListener('click', () => window._swMCA.clear());
-
-  // Occupation
-  window._swOcc = new SearchWidget({
-    inputId:'swOccInput', hiddenId:'occupation',
-    chipId:'swOccChip', chipLabelId:'swOccLabel', clearId:'swOccClear',
-    dropdownId:'swOccDD', icon:'💼', placeholder:'Type occupation...',
-    getOptions: () => SW_OCCUPATIONS
-  });
+  window._swOcc = new SearchWidget({ inputId:'swOccInput', hiddenId:'occupation', chipId:'swOccChip', chipLabelId:'swOccLabel', clearId:'swOccClear', dropdownId:'swOccDD', icon:'💼', placeholder:'Type occupation...', getOptions: () => SW_OCCUPATIONS });
   document.getElementById('swOccEdit').addEventListener('click', () => window._swOcc.clear());
 }
 
@@ -1390,7 +1415,6 @@ const WARDS = {
   'Mbeere South':['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],
   'Mbeere North':['Nthawa','Muminji','Evurore']
 };
-
 function onConstChange(val) {
   document.getElementById('constituency').value = val;
   document.getElementById('ward').value = '';
@@ -1408,10 +1432,8 @@ function onConstChange(val) {
   document.getElementById('pollingStationField').style.display = 'none';
   updateMPCandidates(val);
 }
-
 function onWardChange(val) {
   document.getElementById('ward').value = val;
-  // Cross-validate ward ↔ constituency
   const constVal = document.getElementById('constituency').value;
   const expected = _WC()[val];
   const msgEl    = document.getElementById('wardValidMsg');
@@ -1420,174 +1442,29 @@ function onWardChange(val) {
   } else {
     msgEl.innerHTML = '<span class="validation-badge ok">&#x2713; Ward confirmed in ' + constVal + '</span>';
   }
-  // Load polling stations via the live-search widget
   window.loadPollingStations(val);
-  // Update G9 MCA candidates
   updateMCACandidates(val);
 }
-/* ══════════════════════════════════════════════
-   EMAIL / PASSWORD AUTH
-   ══════════════════════════════════════════════ */
 
-let _authTab = 'login'; // 'login' or 'signup'
-
-function switchTab(tab) {
-  _authTab = tab;
-  const isSignup = tab === 'signup';
-
-  // Toggle tab button styles
-  document.getElementById('tabLogin').style.background  = isSignup ? '#fff' : 'var(--forest)';
-  document.getElementById('tabLogin').style.color       = isSignup ? 'var(--muted)' : '#fff';
-  document.getElementById('tabSignup').style.background = isSignup ? 'var(--forest)' : '#fff';
-  document.getElementById('tabSignup').style.color      = isSignup ? '#fff' : 'var(--muted)';
-
-  // Show/hide name field
-  document.getElementById('nameInput').style.display = isSignup ? 'block' : 'none';
-
-  // Update button label
-  document.getElementById('emailAuthBtn').textContent = isSignup ? 'Create Account' : 'Sign In';
-
-  // Update password placeholder
-  document.getElementById('passwordInput').placeholder = isSignup
-    ? 'Password (min 6 characters)'
-    : 'Password';
-
-  // Clear errors
-  document.getElementById('loginErr').style.display = 'none';
-}
-
-async function emailAuth() {
-  const email    = document.getElementById('emailInput').value.trim();
-  const password = document.getElementById('passwordInput').value;
-  const name     = document.getElementById('nameInput').value.trim();
-  const err      = document.getElementById('loginErr');
-  const loading  = document.getElementById('loginLoading');
-  const btn      = document.getElementById('emailAuthBtn');
-
-  // Basic validation
-  if (!email || !password) {
-    err.textContent = 'Please enter your email and password.';
-    err.style.display = 'block'; return;
-  }
-  if (_authTab === 'signup' && !name) {
-    err.textContent = 'Please enter your full name.';
-    err.style.display = 'block'; return;
-  }
-  if (_authTab === 'signup' && password.length < 6) {
-    err.textContent = 'Password must be at least 6 characters.';
-    err.style.display = 'block'; return;
-  }
-
-  btn.disabled = true;
-  err.style.display = 'none';
-  loading.style.display = 'block';
-
-  try {
-    if (_authTab === 'signup') {
-      // Create account then set display name
-      const cred = await auth.createUserWithEmailAndPassword(email, password);
-      await cred.user.updateProfile({ displayName: name });
-      // Force refresh so onAuthStateChanged sees the updated displayName
-      await auth.currentUser.reload();
-    } else {
-      await auth.signInWithEmailAndPassword(email, password);
-    }
-    // onAuthStateChanged will fire and take over from here
-  } catch (e) {
-    btn.disabled = false;
-    loading.style.display = 'none';
-    err.textContent = friendlyAuthError(e.code);
-    err.style.display = 'block';
-  }
-}
-
-async function forgotPassword() {
-  const email = document.getElementById('emailInput').value.trim();
-  const err   = document.getElementById('loginErr');
-  if (!email) {
-    err.textContent = 'Enter your email address above first.';
-    err.style.display = 'block'; return;
-  }
-  try {
-    await auth.sendPasswordResetEmail(email);
-    err.style.cssText = 'display:block;background:#dcfce7;border-color:#86efac;color:#166534;';
-    err.textContent   = '✅ Password reset email sent. Check your inbox.';
-  } catch (e) {
-    err.textContent   = friendlyAuthError(e.code);
-    err.style.display = 'block';
-  }
-}
-
-function friendlyAuthError(code) {
-  const map = {
-    'auth/invalid-email':            'Invalid email address.',
-    'auth/user-not-found':           'No account found with this email.',
-    'auth/wrong-password':           'Incorrect password. Try again.',
-    'auth/email-already-in-use':     'This email is already registered. Sign in instead.',
-    'auth/weak-password':            'Password is too weak. Use at least 6 characters.',
-    'auth/too-many-requests':        'Too many attempts. Please wait and try again.',
-    'auth/network-request-failed':   'Network error. Check your connection.',
-    'auth/popup-closed-by-user':     'Sign-in cancelled.',
-    'auth/invalid-credential':       'Invalid email or password.',
-  };
-  return map[code] || 'Authentication error: ' + code;
-}
 /* ══════════════════════════════════════════════════════════════
-   G9 CANDIDATE DROPDOWN LOGIC
+   G9 CANDIDATE LOGIC
    ══════════════════════════════════════════════════════════════ */
-function buildCandOptions(selectId, candidates, placeholder) {
-  const sel = document.getElementById(selectId);
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">' + placeholder + '</option>';
-  candidates.forEach(name => {
-    const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o);
-  });
-  const other = document.createElement('option'); other.value = '__other__'; other.textContent = 'Other (specify below)'; sel.appendChild(other);
-  if (cur) sel.value = cur;
-}
-
-function handleCandSelect(type, selId, otherRowId, hiddenId) {
-  const val      = document.getElementById(selId).value;
-  const otherRow = document.getElementById(otherRowId);
-  const hidden   = document.getElementById(hiddenId);
-  if (val === '__other__') { otherRow.classList.add('vis'); hidden.value = ''; }
-  else { otherRow.classList.remove('vis'); hidden.value = val; const t = document.getElementById(hiddenId + 'Text'); if (t) t.value = ''; }
-}
-
-function syncCandOther(textId, hiddenId) {
-  document.getElementById(hiddenId).value = document.getElementById(textId).value.trim();
-}
-
 function updateMPCandidates(constituency) {
   _swMPOptions = _MP()[constituency] || [];
   if (window._swMP) {
     window._swMP.clear();
-    window._swMP.cfg.placeholder = _swMPOptions.length
-      ? 'Type to search MP candidates...'
-      : 'No candidates listed — type a name...';
+    window._swMP.cfg.placeholder = _swMPOptions.length ? 'Type to search MP candidates...' : 'No candidates listed — type a name...';
     document.getElementById('swMPInput').placeholder = window._swMP.cfg.placeholder;
   }
 }
-
 function updateMCACandidates(ward) {
   _swMCAOptions = _MCA()[ward] || [];
   if (window._swMCA) {
     window._swMCA.clear();
-    window._swMCA.cfg.placeholder = _swMCAOptions.length
-      ? 'Type to search MCA candidates...'
-      : 'No candidates listed — type a name...';
+    window._swMCA.cfg.placeholder = _swMCAOptions.length ? 'Type to search MCA candidates...' : 'No candidates listed — type a name...';
     document.getElementById('swMCAInput').placeholder = window._swMCA.cfg.placeholder;
   }
 }
-
-/* ══════════════════════════════════════════════════════════════
-   OCCUPATION
-   ══════════════════════════════════════════════════════════════ */
-const OCC_IDS = ['occ_farmer','occ_business','occ_teacher','occ_professional','occ_transport','occ_artisan'];
-function handleOccSelect(id) { const v = document.getElementById(id).value; if (!v) return; OCC_IDS.forEach(o => { if (o !== id) document.getElementById(o).selectedIndex = 0; }); document.getElementById('occ_other').value = ''; setOcc(v); }
-function handleOccOther()    { const v = document.getElementById('occ_other').value.trim(); if (!v) { clearOcc(); return; } OCC_IDS.forEach(id => document.getElementById(id).selectedIndex = 0); setOcc(v); }
-function setOcc(val)         { document.getElementById('occupation').value = val; document.getElementById('occText').textContent = val; document.getElementById('occDisplay').style.display = val ? 'block' : 'none'; }
-function clearOcc()          { OCC_IDS.forEach(id => document.getElementById(id).selectedIndex = 0); document.getElementById('occ_other').value = ''; document.getElementById('occupation').value = ''; document.getElementById('occDisplay').style.display = 'none'; }
 
 /* ══════════════════════════════════════════════════════════════
    CONDITIONAL FIELDS
@@ -1598,7 +1475,9 @@ function toggleGovOther() { const r = document.querySelector('input[name="govern
 function selectGov(card, val) { document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); card.querySelector('input[type="radio"]').checked = true; toggleGovOther(); updateNeg(); }
 function updateNeg() {
   const r = document.querySelector('input[name="governor"]:checked'), sel = r ? r.value : '';
-  [{ name:'Cecily Mbarire', o:'notMbarireOpts', d:'notMbarireDisabled' }, { name:'Lenny Kivuti', o:'notKivutiOpts', d:'notKivutiDisabled' }, { name:'Gitonga Mukunji', o:'notGitongaOpts', d:'notGitongaDisabled' }]
+  [{ name:'Cecily Mbarire', o:'notMbarireOpts', d:'notMbarireDisabled' },
+   { name:'Lenny Kivuti',   o:'notKivutiOpts',  d:'notKivutiDisabled'  },
+   { name:'Gitonga Mukunji',o:'notGitongaOpts', d:'notGitongaDisabled' }]
     .forEach(c => {
       const isSel = sel === c.name, opts = document.getElementById(c.o), dis = document.getElementById(c.d);
       if (!opts || !dis) return;
@@ -1609,16 +1488,24 @@ function updateNeg() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   GPS
+   GPS — BACKGROUND WATCH (status bar)
    ══════════════════════════════════════════════════════════════ */
 let capturedGps = null, gpsWatchId = null;
-const GPS_LAST = 'ecs26_gps_last';
-function todayKey()        { return new Date().toISOString().slice(0,10); }
-function getLastGps()      { try { const s = JSON.parse(localStorage.getItem(GPS_LAST)||'null'); return (s && s.day === todayKey()) ? s : null; } catch { return null; } }
+const GPS_LAST  = 'ecs26_gps_last';
+
+function todayKey()            { return new Date().toISOString().slice(0,10); }
+function getLastGps()          { try { const s = JSON.parse(localStorage.getItem(GPS_LAST)||'null'); return (s && s.day === todayKey()) ? s : null; } catch { return null; } }
 function saveLastGps(la,lo,ts) { localStorage.setItem(GPS_LAST, JSON.stringify({lat:la,lng:lo,ts,day:todayKey()})); }
 function haversine(la1,lo1,la2,lo2) { const R=6371000,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
-function setGpsDot(cls)    { document.getElementById('gpsDot').className = 'gps-dot ' + cls; }
-function setGpsText(t)     { document.getElementById('gpsStatusText').textContent = t; }
+function setGpsDot(cls)        { document.getElementById('gpsDot').className = 'gps-dot ' + cls; }
+function setGpsText(t)         { document.getElementById('gpsStatusText').textContent = t; }
+
+/** Accuracy tier: returns 'good' | 'ok' | 'poor' */
+function accTier(acc) {
+  if (acc <= GPS.MAX_ACC_GOOD) return 'good';
+  if (acc <= GPS.MAX_ACC_OK)   return 'ok';
+  return 'poor';
+}
 
 function startGpsWatch() {
   if (!navigator.geolocation) return;
@@ -1626,69 +1513,210 @@ function startGpsWatch() {
   setGpsDot('acquiring'); setGpsText('Acquiring...');
   gpsWatchId = navigator.geolocation.watchPosition(pos => {
     const acc = Math.round(pos.coords.accuracy);
-    setGpsDot(acc <= GPS.MAX_ACC ? 'good' : 'poor'); setGpsText('\u00b1' + acc + 'm');
+    const tier = accTier(acc);
+    setGpsDot(tier === 'good' ? 'good' : tier === 'ok' ? 'acquiring' : 'poor');
+    setGpsText('\u00b1' + acc + 'm');
     capturedGps = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: acc, ts: Date.now() };
     document.getElementById('locLat').textContent = pos.coords.latitude.toFixed(6);
     document.getElementById('locLng').textContent = pos.coords.longitude.toFixed(6);
-    const ae = document.getElementById('locAcc'); ae.textContent = '\u00b1' + acc + 'm'; ae.className = 'loc-acc ' + (acc <= GPS.MAX_ACC ? 'good' : 'poor');
+    const ae = document.getElementById('locAcc');
+    ae.textContent = '\u00b1' + acc + 'm';
+    ae.className   = 'loc-acc ' + tier;
     document.getElementById('locationBox').style.display = 'block';
-  }, () => { setGpsDot('poor'); setGpsText('Unavailable'); }, { enableHighAccuracy:true, maximumAge:GPS.MAX_AGE, timeout:GPS.TIMEOUT });
+  }, () => { setGpsDot('poor'); setGpsText('Unavailable'); },
+  { enableHighAccuracy:true, maximumAge:GPS.MAX_AGE, timeout:GPS.GEO_TIMEOUT });
 }
 
-/* GPS GUARD */
-let gpsResolve = null, gpsSkipTimer = null;
-function setStep(id, state, detail) { const li = document.getElementById('step-' + id); if (!li) return; li.className = state; const d = document.getElementById('step-' + id + '-detail'); if (d && detail) d.textContent = detail; }
+/* ══════════════════════════════════════════════════════════════
+   GPS GUARD  — polling loop, no skip button
+   ══════════════════════════════════════════════════════════════
+   Strategy:
+   1. Call getCurrentPosition() with a generous timeout/maximumAge.
+   2. If the first reading is above MAX_ACC_ACCEPT, keep retrying
+      every POLL_INTERVAL ms, always keeping the best reading so far.
+   3. Accept the reading once it is ≤ MAX_ACC_ACCEPT OR once
+      POLL_TIMEOUT ms have elapsed (in which case the best reading
+      recorded during the wait is used, even if above threshold —
+      accuracy is still stored in the data so analysts can filter).
+   4. Distance check runs once a valid fix is accepted.
+   5. NO skip button — GPS is a core integrity feature.
+   ══════════════════════════════════════════════════════════════ */
+let gpsResolve  = null;
+let _gpsPollTmr = null;   // setInterval handle
+let _gpsDeadline = null;  // Date.ms when we give up polling
+let _gpsBest    = null;   // best fix so far during the poll loop
+
+function setStep(id, state, detail) {
+  const li = document.getElementById('step-' + id);
+  if (!li) return;
+  li.className = state;
+  const d = document.getElementById('step-' + id + '-detail');
+  if (d && detail !== undefined) d.textContent = detail;
+}
 function setGpsProg(p) { document.getElementById('gpsProg').style.width = p + '%'; }
-function cancelGps()  { clearTimeout(gpsSkipTimer); document.getElementById('gpsGuardModal').classList.add('hidden'); document.getElementById('gpsSkipBtn').style.display = 'none'; if (gpsResolve) gpsResolve({ok:false,reason:'cancelled'}); }
-function skipGps()    { clearTimeout(gpsSkipTimer); document.getElementById('gpsGuardModal').classList.add('hidden'); document.getElementById('gpsSkipBtn').style.display = 'none'; if (gpsResolve) gpsResolve({ok:true,skipped:true,lat:null,lng:null,accuracy:null,ts:Date.now()}); }
-function retryGps()   { clearTimeout(gpsSkipTimer); document.getElementById('gpsRetryBtn').style.display = 'none'; document.getElementById('gpsSkipBtn').style.display = 'none'; runGpsGuard(); }
+
+function cancelGps() {
+  _stopPoll();
+  document.getElementById('gpsGuardModal').classList.add('hidden');
+  if (gpsResolve) gpsResolve({ ok:false, reason:'cancelled' });
+}
+
+function retryGps() {
+  document.getElementById('gpsRetryBtn').style.display = 'none';
+  _gpsBest = null;
+  _gpsDeadline = Date.now() + GPS.POLL_TIMEOUT;
+  setStep('acquire','active','Waiting for location fix…');
+  setStep('accuracy','','Improving… (target ≤ 200 m)');
+  setStep('distance','','Must be ≥ 500 m from last survey');
+  setGpsProg(5);
+  document.getElementById('liveGpsCard').style.display  = 'none';
+  document.getElementById('gpsWaitNote').style.display  = 'none';
+  document.getElementById('gpsRetryBtn').style.display  = 'none';
+  _startPoll();
+}
 
 async function openGpsGuard() {
   return new Promise(res => {
     gpsResolve = res;
+    _gpsBest   = null;
+    _gpsDeadline = Date.now() + GPS.POLL_TIMEOUT;
     document.getElementById('gpsGuardModal').classList.remove('hidden');
-    ['acquire','accuracy','distance','time'].forEach(s => setStep(s,''));
-    setStep('acquire','active','Waiting for location...'); setGpsProg(0);
-    document.getElementById('liveGpsCard').style.display = 'none';
-    document.getElementById('gpsRetryBtn').style.display = 'none';
-    document.getElementById('gpsSkipBtn').style.display  = 'none';
-    document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
-    const last = getLastGps();
-    document.getElementById('firstNote').style.display    = !last ? 'block' : 'none';
-    document.getElementById('gpsGuardSub').textContent    = !last ? 'Recording your starting location for today' : 'Verifying location before submission';
-    runGpsGuard();
+    setStep('acquire','active','Waiting for location fix…');
+    setStep('accuracy','','Improving… (target ≤ 200 m)');
+    setStep('distance','','Must be ≥ 500 m from last survey');
+    setGpsProg(5);
+    document.getElementById('liveGpsCard').style.display  = 'none';
+    document.getElementById('gpsWaitNote').style.display  = 'none';
+    document.getElementById('gpsRetryBtn').style.display  = 'none';
+    document.getElementById('gpsCancelBtn').textContent   = 'Cancel';
+    document.getElementById('gpsGuardSub').textContent    = 'Acquiring GPS fix — please hold the device still';
+
+    if (!navigator.geolocation) {
+      setStep('acquire','fail','GPS not available on this device');
+      document.getElementById('gpsRetryBtn').style.display = 'none';
+      // Cannot proceed without GPS hardware — stay blocked
+      return;
+    }
+    _startPoll();
   });
 }
 
-function runGpsGuard() {
-  gpsSkipTimer = setTimeout(() => { document.getElementById('gpsSkipBtn').style.display = 'block'; }, GPS.SKIP_DELAY);
-  if (!navigator.geolocation) { clearTimeout(gpsSkipTimer); setStep('acquire','fail','GPS not available on this device'); document.getElementById('gpsSkipBtn').style.display = 'block'; return; }
-  setStep('acquire','active','Waiting for location...'); setGpsProg(10);
-  navigator.geolocation.getCurrentPosition(pos => {
-    clearTimeout(gpsSkipTimer); document.getElementById('gpsSkipBtn').style.display = 'none';
-    const { latitude:lat, longitude:lng, accuracy } = pos.coords, ts = Date.now();
-    setStep('acquire','done', lat.toFixed(5) + ', ' + lng.toFixed(5)); setGpsProg(40);
-    document.getElementById('liveGpsCard').style.display = 'block';
-    document.getElementById('liveCoords').textContent    = 'Lat: ' + lat.toFixed(6) + ' | Lng: ' + lng.toFixed(6);
-    document.getElementById('liveAcc').textContent       = 'Accuracy: \u00b1' + Math.round(accuracy) + ' m';
-    setStep('accuracy','active'); setGpsProg(55);
-    if (accuracy > GPS.MAX_ACC) { setStep('accuracy','fail','\u00b1' + Math.round(accuracy) + 'm \u2014 too low'); document.getElementById('gpsRetryBtn').style.display = 'inline-block'; if (gpsResolve) gpsResolve({ok:false,reason:'accuracy',accuracy}); return; }
-    setStep('accuracy','done','\u00b1' + Math.round(accuracy) + 'm \u2713'); setGpsProg(70);
-    const last = getLastGps(); setStep('distance','active'); setGpsProg(80);
-    if (last) { const dist = haversine(last.lat,last.lng,lat,lng); if (dist < GPS.MIN_DIST) { setStep('distance','fail','Only ' + Math.round(dist) + 'm from last'); document.getElementById('gpsRetryBtn').style.display = 'inline-block'; if (gpsResolve) gpsResolve({ok:false,reason:'distance',dist}); return; } setStep('distance','done', Math.round(dist) + 'm \u2713'); } else { setStep('distance','skipped','First survey \u2014 skipped'); }
-    setGpsProg(90); setStep('time','active');
-    if (last) { const gap = ts - last.ts; if (gap < GPS.MIN_TIME) { const w = Math.ceil((GPS.MIN_TIME-gap)/60000); setStep('time','fail','Too soon \u2014 wait ~' + w + ' min'); document.getElementById('gpsRetryBtn').style.display = 'inline-block'; if (gpsResolve) gpsResolve({ok:false,reason:'time',gap}); return; } setStep('time','done', Math.round(gap/60000) + ' min gap \u2713'); } else { setStep('time','skipped','First survey \u2014 skipped'); }
-    setGpsProg(100); capturedGps = {lat,lng,accuracy,ts}; saveLastGps(lat,lng,ts);
-    document.getElementById('gpsCancelBtn').textContent = 'Close';
-    setTimeout(() => { document.getElementById('gpsGuardModal').classList.add('hidden'); if (gpsResolve) gpsResolve({ok:true,lat,lng,accuracy,ts}); }, 800);
-  }, err => {
-    clearTimeout(gpsSkipTimer);
-    const m = {1:'Permission denied',2:'Position unavailable',3:'Timed out \u2014 move to open sky'};
-    setStep('acquire','fail', m[err.code] || 'GPS error');
-    document.getElementById('gpsRetryBtn').style.display = 'inline-block';
-    document.getElementById('gpsSkipBtn').style.display  = 'block';
-    if (gpsResolve) gpsResolve({ok:false,reason:'gps_error',code:err.code});
-  }, { enableHighAccuracy:true, timeout:GPS.TIMEOUT, maximumAge:0 });
+function _stopPoll() {
+  if (_gpsPollTmr) { clearInterval(_gpsPollTmr); _gpsPollTmr = null; }
+}
+
+function _startPoll() {
+  _stopPoll();
+  _pollOnce();
+  _gpsPollTmr = setInterval(_pollOnce, GPS.POLL_INTERVAL);
+}
+
+function _pollOnce() {
+  navigator.geolocation.getCurrentPosition(
+    _onGpsFix,
+    _onGpsErr,
+    { enableHighAccuracy:true, timeout:GPS.GEO_TIMEOUT, maximumAge:GPS.MAX_AGE }
+  );
+}
+
+function _onGpsFix(pos) {
+  const { latitude:lat, longitude:lng, accuracy } = pos.coords;
+  const acc  = Math.round(accuracy);
+  const ts   = Date.now();
+  const tier = accTier(acc);
+
+  // Keep the best (lowest accuracy number) reading
+  if (!_gpsBest || acc < _gpsBest.accuracy) {
+    _gpsBest = { lat, lng, accuracy:acc, ts };
+  }
+
+  // Update step 1
+  setStep('acquire','done', lat.toFixed(5) + ', ' + lng.toFixed(5));
+
+  // Update live card
+  const lc = document.getElementById('liveGpsCard');
+  lc.style.display = 'block';
+  document.getElementById('liveCoords').textContent = 'Lat: ' + lat.toFixed(6) + ' | Lng: ' + lng.toFixed(6);
+  document.getElementById('liveAcc').textContent    = 'Accuracy: \u00b1' + acc + ' m — best so far: \u00b1' + _gpsBest.accuracy + ' m';
+
+  // Tier badge
+  const badge = document.getElementById('accTierBadge');
+  badge.innerHTML = '<span class="acc-tier tier-' + tier + '">'
+    + (tier === 'good' ? '✅ Excellent' : tier === 'ok' ? '⚠️ Acceptable' : '❌ Poor — improving…')
+    + ' (' + acc + ' m)</span>';
+
+  // Progress bar: scale from 5 → 80 based on time elapsed
+  const elapsed  = ts - (_gpsDeadline - GPS.POLL_TIMEOUT);
+  const timePct  = Math.min(elapsed / GPS.POLL_TIMEOUT, 1) * 60;
+  const accPct   = acc <= GPS.MAX_ACC_ACCEPT ? 20 : 0;
+  setGpsProg(Math.round(5 + timePct + accPct));
+
+  // Update step 2 (accuracy)
+  if (acc <= GPS.MAX_ACC_GOOD) {
+    setStep('accuracy','done', '\u00b1' + acc + 'm \u2014 excellent ✓');
+    document.getElementById('gpsWaitNote').style.display = 'none';
+  } else if (acc <= GPS.MAX_ACC_OK) {
+    setStep('accuracy','active', '\u00b1' + acc + 'm \u2014 acceptable, still improving…');
+    document.getElementById('gpsWaitNote').style.display = 'block';
+  } else {
+    setStep('accuracy','active', '\u00b1' + acc + 'm \u2014 improving, please wait…');
+    document.getElementById('gpsWaitNote').style.display = 'block';
+  }
+
+  const shouldAccept = acc <= GPS.MAX_ACC_ACCEPT || Date.now() >= _gpsDeadline;
+  if (!shouldAccept) return;   // keep waiting
+
+  // ── Accept the best reading we have ──
+  _stopPoll();
+  const fix = _gpsBest;  // use best, not necessarily this reading
+
+  if (fix.accuracy > GPS.MAX_ACC_ACCEPT) {
+    // Timed out without a good fix — flag it but still record best
+    setStep('accuracy','active', '\u00b1' + fix.accuracy + 'm — best available (stored)');
+    document.getElementById('gpsWaitNote').style.display = 'none';
+  } else {
+    setStep('accuracy','done', '\u00b1' + fix.accuracy + 'm ✓');
+    document.getElementById('gpsWaitNote').style.display = 'none';
+  }
+
+  // ── Step 3: Distance check ──
+  setStep('distance','active');
+  const last = getLastGps();
+  if (last) {
+    const dist = haversine(last.lat, last.lng, fix.lat, fix.lng);
+    if (dist < GPS.MIN_DIST) {
+      setGpsProg(90);
+      setStep('distance','fail', 'Only ' + Math.round(dist) + 'm from last survey — move at least ' + Math.round(GPS.MIN_DIST - dist) + 'm further');
+      document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+      document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
+      if (gpsResolve) gpsResolve({ ok:false, reason:'distance', dist });
+      return;
+    }
+    setStep('distance','done', Math.round(dist) + 'm from last ✓');
+  } else {
+    setStep('distance','skipped', 'First survey today — skipped');
+  }
+
+  // ── All checks passed ──
+  setGpsProg(100);
+  capturedGps = fix;
+  saveLastGps(fix.lat, fix.lng, fix.ts);
+  document.getElementById('gpsCancelBtn').textContent = 'Close';
+  document.getElementById('gpsGuardSub').textContent  = '✅ Location verified';
+  setTimeout(() => {
+    document.getElementById('gpsGuardModal').classList.add('hidden');
+    if (gpsResolve) gpsResolve({ ok:true, lat:fix.lat, lng:fix.lng, accuracy:fix.accuracy, ts:fix.ts });
+  }, 900);
+}
+
+function _onGpsErr(err) {
+  // Transient errors during polling are tolerated; only show failure if deadline passed
+  if (Date.now() < _gpsDeadline) return;  // keep trying
+  _stopPoll();
+  const msgs = { 1:'Permission denied — enable Location in browser settings', 2:'Position unavailable — move to open sky', 3:'GPS timed out — try outdoors' };
+  setStep('acquire','fail', msgs[err.code] || 'GPS error — check Location permissions');
+  document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+  if (gpsResolve) gpsResolve({ ok:false, reason:'gps_error', code:err.code });
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1705,7 +1733,6 @@ function snap() {
   s._savedAt = new Date().toISOString();
   return s;
 }
-
 function applySnap(s) {
   if (!s) return;
   document.querySelectorAll('input[type="radio"]').forEach(r  => { if (s[r.name] !== undefined) r.checked = (r.value === s[r.name]); });
@@ -1718,13 +1745,12 @@ function applySnap(s) {
       if (s['ward']) {
         const wr = document.querySelector('input[name="ward_pill"][value="' + s['ward'] + '"]');
         if (wr) { wr.checked = true; onWardChange(s['ward']); }
-        // Restore polling station chip after ward loads
         setTimeout(() => {
           const ps = s['pollingStation'];
           if (ps && ps !== '__other__') {
-            document.getElementById('pollingStation').value = ps;
-            document.getElementById('psSearchInput').value  = ps;
-            document.getElementById('psChipName').textContent = ps;
+            document.getElementById('pollingStation').value     = ps;
+            document.getElementById('psSearchInput').value      = ps;
+            document.getElementById('psChipName').textContent   = ps;
             document.getElementById('psChip').classList.add('vis');
             document.getElementById('psClearBtn').style.display = 'block';
             validatePollingStation();
@@ -1736,19 +1762,11 @@ function applySnap(s) {
   const gv = s['governor'];
   if (gv) document.querySelectorAll('.gov-card').forEach(c => { const r = c.querySelector('input[type="radio"]'); if (r && r.value === gv) c.classList.add('selected'); });
   updateNeg(); toggleRuto(); toggleGovOther();
-  if (s['occupation']) setOcc(s['occupation']);
-  ['Senator','WomenRep','MP','MCA'].forEach(type => {
-    const selEl = document.getElementById('pref' + type + 'Sel');
-    const othEl = document.getElementById('pref' + type + 'Other');
-    if (selEl && selEl.value === '__other__' && othEl) othEl.classList.add('vis');
-  });
 }
-
 function saveDraft()    { localStorage.setItem(DRAFT_KEY, JSON.stringify(snap())); showAutosave(); }
 function clearDraft()   { localStorage.removeItem(DRAFT_KEY); }
 function loadDraft()    { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); } catch { return null; } }
 function showAutosave() { const el = document.getElementById('autosave'); el.style.display = 'block'; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 400); }, 2200); }
-
 function checkDraft() {
   const d = loadDraft(); if (!d) return;
   const dt = new Date(d._savedAt);
@@ -1768,10 +1786,10 @@ function attachAutosave() {
    ══════════════════════════════════════════════════════════════ */
 const QUEUE_KEY = 'ecs26_queue';
 let isOnline = navigator.onLine;
-function getQueue()      { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); } catch { return []; } }
-function saveQueue(q)    { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
-function enqueue(d)      { d._queuedAt = new Date().toISOString(); d._queueId = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); const q = getQueue(); q.push(d); saveQueue(q); refreshPendUI(); }
-function dequeue(id)     { saveQueue(getQueue().filter(d => d._queueId !== id)); refreshPendUI(); }
+function getQueue()     { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); } catch { return []; } }
+function saveQueue(q)   { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+function enqueue(d)     { d._queuedAt = new Date().toISOString(); d._queueId = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); const q = getQueue(); q.push(d); saveQueue(q); refreshPendUI(); }
+function dequeue(id)    { saveQueue(getQueue().filter(d => d._queueId !== id)); refreshPendUI(); }
 function refreshPendUI() {
   const n = getQueue().length;
   const pb = document.getElementById('pendBtn'), pbn = document.getElementById('pendBanner');
@@ -1785,14 +1803,13 @@ function renderQueue() {
   if (!q.length) { l.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">No pending surveys.</div>'; return; }
   l.innerHTML = q.map(d => {
     const dt    = new Date(d._queuedAt);
-    const label = [d.gender, d.ward || d.constituency].filter(Boolean).join(' \u00b7 ') || 'Survey';
-    return '<div class="q-item"><div><div style="font-weight:700;">' + label + '</div><div style="font-size:11px;color:#92400e;">' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div><button class="qi-del" onclick="removeQ(\'' + d._queueId + '\')">&#x1F5D1;</button></div>';
+    const label = [d.gender, d.ward || d.constituency].filter(Boolean).join(' · ') || 'Survey';
+    return '<div class="q-item"><div><div style="font-weight:700;">' + label + '</div><div style="font-size:11px;color:#92400e;">' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div><button class="qi-del" onclick="removeQ(\'' + d._queueId + '\')">🗑</button></div>';
   }).join('');
 }
 function removeQ(id)          { if (!confirm('Remove this queued survey?')) return; dequeue(id); renderQueue(); }
 function openOfflineModal()   { renderQueue(); document.getElementById('offlineModal').classList.remove('hidden'); }
 function closeOfflineModal()  { document.getElementById('offlineModal').classList.add('hidden'); }
-
 async function syncNow() {
   if (!navigator.onLine) { alert('You are offline. Please connect first.'); return; }
   const q = getQueue(); if (!q.length) { closeOfflineModal(); return; }
@@ -1808,9 +1825,9 @@ async function syncNow() {
       dequeue(_queueId); done++;
     } catch (err) { console.error(err); }
   }
-  bar.style.width  = '100%';
+  bar.style.width = '100%';
   stat.textContent = done + ' of ' + q.length + ' synced.';
-  btn.disabled     = false;
+  btn.disabled = false;
   renderQueue();
   setTimeout(() => wrap.style.display = 'none', 2000);
 }
@@ -1851,11 +1868,11 @@ function collectData() {
     devOffice:gv('devOffice'), worship:gv('worship'),
     contactName:tx('contactName'), contactPhone:tx('contactPhone'), followUp:gv('followUp'),
     enumDecl:gv('enumDecl'),
-    _respondentId:    'R_' + Date.now(),
-    _submittedAt:     new Date().toISOString(),
-    _researcher:      currentResearcher ? currentResearcher.name  : 'Unknown',
-    _researcherLogin: currentResearcher ? currentResearcher.login : 'Unknown',
-    _researcherEmail: currentResearcher ? currentResearcher.email : '',
+    _respondentId:        'R_' + Date.now(),
+    _submittedAt:         new Date().toISOString(),
+    _researcher:          currentResearcher ? currentResearcher.name  : 'Unknown',
+    _researcherLogin:     currentResearcher ? currentResearcher.login : 'Unknown',
+    _researcherEmail:     currentResearcher ? currentResearcher.email : '',
     _researcherGoogleUid: currentResearcher ? currentResearcher.googleUid : '',
     _gpsLat:      capturedGps ? capturedGps.lat      : null,
     _gpsLng:      capturedGps ? capturedGps.lng      : null,
@@ -1885,7 +1902,7 @@ function validate() {
     if (!val || (typeof val === 'string' && !val.trim())) return msg;
   }
   if (validatePollingStationSilent() === 'MISMATCH') {
-    const go = confirm('\u26a0\ufe0f Data Check: The selected polling station does not match the selected ward.\n\nDo you want to continue anyway?\n\n(This mismatch will be flagged in the data.)');
+    const go = confirm('⚠️ Data Check: The selected polling station does not match the selected ward.\n\nDo you want to continue anyway?\n\n(This mismatch will be flagged in the data.)');
     if (!go) return 'A4: Please verify polling station matches the selected ward.';
   }
   return null;
@@ -1901,45 +1918,64 @@ function resetForm() {
   document.querySelectorAll('[id$="Opts"]').forEach(el => el.style.display = 'flex');
   document.getElementById('wardPilbox').style.display = 'none';
   document.getElementById('wardPills').innerHTML = '';
-  document.getElementById('constituency').value  = '';
-  document.getElementById('ward').value          = '';
+  document.getElementById('constituency').value    = '';
+  document.getElementById('ward').value            = '';
   document.getElementById('wardValidMsg').innerHTML = '';
   resetPollingStation();
   document.getElementById('pollingStationField').style.display = 'none';
-  // Add these instead in resetForm():
-if (window._swSenator)  window._swSenator.clear();
-if (window._swWomenRep) window._swWomenRep.clear();
-if (window._swMP)       window._swMP.clear();
-if (window._swMCA)      window._swMCA.clear();
-if (window._swOcc)      window._swOcc.clear(); capturedGps = null; document.getElementById('locationBox').style.display = 'none';
-  clearDraft(); window.scrollTo({ top:0, behavior:'smooth' });
+  if (window._swSenator)  window._swSenator.clear();
+  if (window._swWomenRep) window._swWomenRep.clear();
+  if (window._swMP)       window._swMP.clear();
+  if (window._swMCA)      window._swMCA.clear();
+  if (window._swOcc)      window._swOcc.clear();
+  capturedGps = null;
+  document.getElementById('locationBox').style.display = 'none';
+  clearDraft();
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
 document.getElementById('surveyForm').addEventListener('submit', async function (e) {
   e.preventDefault();
-  const err = validate(); if (err) { showStatus('\u26a0\ufe0f ' + err, 'warning'); return; }
-  const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.textContent = '\u23f3 Verifying location...';
-  showStatus('Verifying GPS location...', 'warning');
+  const err = validate(); if (err) { showStatus('⚠️ ' + err, 'warning'); return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '⏳ Verifying location…';
+  showStatus('Verifying GPS location…', 'warning');
+
   const gpsResult = await openGpsGuard();
+
   if (!gpsResult.ok) {
-    btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research';
-    const reasons = { cancelled:'Submission cancelled.', accuracy:'GPS accuracy too low. Move to open area and retry.', distance:'Too close to previous survey. Move at least 500m.', time:'Too soon since last survey. Please wait at least 2 minutes.', gps_error:'GPS error. Ensure location is enabled and retry.' };
-    showStatus('\u274c ' + (reasons[gpsResult.reason] || 'GPS check failed.'), 'error'); return;
+    btn.disabled = false; btn.textContent = '📍 Submit Research';
+    const reasons = {
+      cancelled: 'Submission cancelled.',
+      distance:  'Too close to previous survey. Move at least 500 m and retry.',
+      gps_error: 'GPS error. Ensure Location is enabled and retry.'
+    };
+    showStatus('❌ ' + (reasons[gpsResult.reason] || 'GPS check failed.'), 'error');
+    return;
   }
-  if (gpsResult.skipped) showStatus('\u26a0\ufe0f Submitting without GPS \u2014 location not recorded.', 'warning');
-  btn.textContent = '\ud83d\udce4 Submitting...';
+
+  btn.textContent = '📤 Submitting…';
   const data = collectData();
-  if (!navigator.onLine) { enqueue(data); showStatus('\ud83d\udcf6 Offline. Survey saved locally and will sync when reconnected.', 'offline', 6000); btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research'; resetForm(); return; }
+
+  if (!navigator.onLine) {
+    enqueue(data);
+    showStatus('📵 Offline. Survey saved locally and will sync when reconnected.', 'offline', 6000);
+    btn.disabled = false; btn.textContent = '📍 Submit Research';
+    resetForm(); return;
+  }
   try {
     const { contactName, contactPhone, followUp, ...surveyData } = data;
     await db.collection('responses').add({ ...surveyData, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
-    if (contactName || contactPhone) await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId: surveyData._respondentId, _submittedAt: surveyData._submittedAt, _researcher: surveyData._researcher, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
-    showStatus('\u2705 Survey submitted successfully! Thank you.', 'success', 8000);
+    if (contactName || contactPhone) {
+      await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId: surveyData._respondentId, _submittedAt: surveyData._submittedAt, _researcher: surveyData._researcher, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+    showStatus('✅ Survey submitted successfully! Thank you.', 'success', 8000);
     resetForm();
-  } catch (err) {
-    console.error(err); enqueue(data); showStatus('\u26a0\ufe0f Submission failed. Survey saved locally and will retry.', 'warning', 7000);
+  } catch (err2) {
+    console.error(err2); enqueue(data);
+    showStatus('⚠️ Submission failed. Survey saved locally and will retry.', 'warning', 7000);
   }
-  btn.disabled = false; btn.textContent = '\ud83d\udccd Submit Research';
+  btn.disabled = false; btn.textContent = '📍 Submit Research';
 });
 
 /* ══════════════════════════════════════════════════════════════
@@ -1949,7 +1985,7 @@ function updateNet(online) {
   isOnline = online;
   const b = document.getElementById('netBadge');
   b.className = online ? 'online' : 'offline';
-  b.innerHTML = online ? '\u2705 Online' : '\ud83d\udcf5 Offline';
+  b.innerHTML = online ? '✅ Online' : '📵 Offline';
   b.style.display = 'flex';
   clearTimeout(b._t);
   if (online) { b._t = setTimeout(() => b.style.display = 'none', 3000); syncBg(); }
@@ -1971,45 +2007,28 @@ window.addEventListener('offline', () => updateNet(false));
 function checkProx() {
   const last = getLastGps();
   if (!last || !capturedGps) { document.getElementById('proximityBanner').style.display = 'none'; return; }
-  const dist     = haversine(last.lat, last.lng, capturedGps.lat, capturedGps.lng);
-  const timeDiff = Date.now() - last.ts;
-  const tooClose = dist < GPS.MIN_DIST, tooSoon = timeDiff < GPS.MIN_TIME;
-  const banner   = document.getElementById('proximityBanner');
-  if (tooClose || tooSoon) {
-    let msg = '';
-    if (tooClose) msg += 'Move at least ' + (GPS.MIN_DIST - Math.round(dist)) + 'm further. ';
-    if (tooSoon)  msg += 'Wait ' + Math.ceil((GPS.MIN_TIME - timeDiff) / 60000) + ' more minute(s).';
-    document.getElementById('proxMsg').textContent = msg.trim();
+  const dist   = haversine(last.lat, last.lng, capturedGps.lat, capturedGps.lng);
+  const banner = document.getElementById('proximityBanner');
+  if (dist < GPS.MIN_DIST) {
+    document.getElementById('proxMsg').textContent = 'Move at least ' + Math.round(GPS.MIN_DIST - dist) + 'm further before next respondent.';
     banner.style.display = 'block';
   } else { banner.style.display = 'none'; }
 }
 setInterval(checkProx, 15000);
+
 /* ══════════════════════════════════════════════════════════════
    SEARCH WIDGET — reusable live-search dropdown
-   Usage:
-     new SearchWidget({
-       inputId:    'myInput',       // text input element id
-       hiddenId:   'myHidden',      // hidden input to store value
-       chipId:     'myChip',        // chip display element id
-       chipLabelId:'myChipLabel',   // span inside chip for selected text
-       dropdownId: 'myDropdown',    // dropdown div id
-       clearId:    'myClear',       // clear button id
-       icon:       '🏷',            // emoji shown in each option
-       getOptions: () => ['A','B'], // function returning current option list
-       placeholder:'Search...',    // input placeholder
-       onSelect:   (val) => {}      // optional callback after selection
-     })
    ══════════════════════════════════════════════════════════════ */
 class SearchWidget {
   constructor(cfg) {
-    this.cfg      = cfg;
-    this.focused  = -1;
-    this._inp     = () => document.getElementById(cfg.inputId);
-    this._hid     = () => document.getElementById(cfg.hiddenId);
-    this._chip    = () => document.getElementById(cfg.chipId);
-    this._clabel  = () => document.getElementById(cfg.chipLabelId);
-    this._dd      = () => document.getElementById(cfg.dropdownId);
-    this._clr     = () => document.getElementById(cfg.clearId);
+    this.cfg     = cfg;
+    this.focused = -1;
+    this._inp    = () => document.getElementById(cfg.inputId);
+    this._hid    = () => document.getElementById(cfg.hiddenId);
+    this._chip   = () => document.getElementById(cfg.chipId);
+    this._clabel = () => document.getElementById(cfg.chipLabelId);
+    this._dd     = () => document.getElementById(cfg.dropdownId);
+    this._clr    = () => document.getElementById(cfg.clearId);
     this._bind();
   }
   _bind() {
@@ -2034,7 +2053,7 @@ class SearchWidget {
     this._render(q);
   }
   _onFocus() {
-    const q = this._inp().value.trim();
+    const q    = this._inp().value.trim();
     const opts = this.cfg.getOptions();
     if (q) this._render(q);
     else if (opts.length) this._render('');
@@ -2044,9 +2063,9 @@ class SearchWidget {
     const items = dd ? dd.querySelectorAll('.sw-option') : [];
     if (!items.length) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); this.focused = Math.min(this.focused + 1, items.length - 1); this._highlight(items); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); this.focused = Math.max(this.focused - 1, 0); this._highlight(items); }
-    else if (e.key === 'Enter')  { e.preventDefault(); if (this.focused >= 0 && items[this.focused]) items[this.focused].click(); }
-    else if (e.key === 'Escape') { this._closeDD(); }
+    else if (e.key === 'ArrowUp')  { e.preventDefault(); this.focused = Math.max(this.focused - 1, 0); this._highlight(items); }
+    else if (e.key === 'Enter')    { e.preventDefault(); if (this.focused >= 0 && items[this.focused]) items[this.focused].click(); }
+    else if (e.key === 'Escape')   { this._closeDD(); }
   }
   _highlight(items) {
     items.forEach((el, i) => el.classList.toggle('sw-focused', i === this.focused));
@@ -2057,9 +2076,8 @@ class SearchWidget {
     const opts = this.cfg.getOptions();
     const norm = q.toLowerCase();
     let matches;
-    if (!q) {
-      matches = opts.slice(0, 10);
-    } else {
+    if (!q) { matches = opts.slice(0, 10); }
+    else {
       const sw = opts.filter(o => o.toLowerCase().startsWith(norm));
       const ct = opts.filter(o => !o.toLowerCase().startsWith(norm) && o.toLowerCase().includes(norm));
       matches  = [...sw, ...ct].slice(0, 14);
@@ -2069,9 +2087,7 @@ class SearchWidget {
     } else {
       const icon = this.cfg.icon || '▸';
       dd.innerHTML = matches.map(o => {
-        const hl = q
-          ? o.replace(new RegExp('(' + this._escReg(q) + ')','gi'), '<mark>$1</mark>')
-          : this._esc(o);
+        const hl = q ? o.replace(new RegExp('(' + this._escReg(q) + ')','gi'), '<mark>$1</mark>') : this._esc(o);
         return '<div class="sw-option" data-val="' + this._esc(o) + '">' + icon + ' ' + hl + '</div>';
       }).join('');
     }
@@ -2104,8 +2120,6 @@ class SearchWidget {
   _esc(s)    { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   _escReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 }
-
-
 </script>
 </body>
 </html>
