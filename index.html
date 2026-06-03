@@ -49,7 +49,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);l
 .login-err{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:10px 14px;font-size:14px;margin-top:14px;display:none;}
 .login-loading{font-size:14px;color:var(--muted);margin-top:14px;display:none;}
 
-/* ── RESEARCHER MODAL ── */
+/* ── MODALS ── */
 .overlay{position:fixed;inset:0;background:rgba(8,20,10,.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
 .overlay.hidden{display:none;}
 .mbox{background:#fff;border-radius:18px;width:100%;max-width:640px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.25);animation:mIn .22s ease;}
@@ -73,7 +73,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);l
 .user-chip-name{font-weight:700;color:var(--forest);}
 .user-chip-email{color:var(--muted);font-size:13px;}
 
-/* ── SURVEY LAYOUT — (unchanged from original) ── */
+/* ── SURVEY LAYOUT ── */
 .site-header{background:var(--forest);color:#fff;padding:0;position:relative;overflow:hidden;}
 .header-stripe{height:5px;background:linear-gradient(90deg,var(--gold) 0%,var(--mint) 50%,var(--gold) 100%);}
 .header-inner{padding:28px 20px 24px;position:relative;z-index:2;}
@@ -105,6 +105,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);l
 #netBadge.offline{background:var(--red);color:#fff;display:flex;}
 #netBadge.online{background:var(--leaf);color:#fff;display:flex;}
 #autosave{position:fixed;bottom:70px;right:20px;z-index:998;font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:20px;padding:6px 14px;box-shadow:var(--sh);display:none;transition:opacity .4s;}
+#surveyWrapper{display:none;}
 .container{max-width:800px;margin:0 auto;padding:20px 12px 80px;}
 #resBanner{background:#f0fdf4;border:1px solid #bbf7d0;border-left:5px solid var(--leaf);border-radius:var(--r);padding:14px 16px;margin-bottom:20px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:14px;color:#166534;}
 .res-small-btn{font-size:12px;padding:8px 14px;border:1px solid var(--leaf);background:#fff;color:var(--leaf);border-radius:20px;cursor:pointer;font-weight:700;font-family:inherit;min-height:44px;}
@@ -159,6 +160,10 @@ textarea{min-height:80px;resize:vertical;}
 #phoneMsg .ph-err{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;margin-top:8px;}
 .proj-counter{font-size:12px;margin-top:6px;color:var(--muted);font-style:italic;}
 .proj-counter.done{color:#166534;font-weight:600;font-style:normal;}
+#wardValidMsg,#psValidMsg{margin-top:8px;}
+.ps-mismatch-alert{background:#fff1f2;border:1.5px solid #fca5a5;border-left:4px solid var(--red);border-radius:8px;padding:12px 14px;margin-top:10px;font-size:13px;color:#991b1b;display:none;}
+.ps-mismatch-alert strong{display:block;margin-bottom:2px;}
+.ps-match-ok{background:#f0fdf4;border:1.5px solid #bbf7d0;border-left:4px solid var(--leaf);border-radius:8px;padding:12px 14px;margin-top:10px;font-size:13px;color:#166534;display:none;}
 .ps-search-wrap{position:relative;}
 .ps-search-input{width:100%;padding:13px 44px 13px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;background:var(--cream);color:var(--ink);font-family:inherit;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;}
 .ps-search-input:focus{outline:none;border-color:var(--leaf);background:#fff;box-shadow:0 0 0 3px rgba(45,122,69,.12);}
@@ -174,13 +179,11 @@ textarea{min-height:80px;resize:vertical;}
 .ps-option.other{color:var(--muted);font-style:italic;}
 .ps-option mark{background:var(--gold-lt);color:var(--ink);border-radius:3px;padding:0 2px;font-style:normal;}
 .ps-empty{padding:14px 16px;font-size:14px;color:var(--muted);font-style:italic;text-align:center;}
+.ps-count{font-size:12px;color:var(--muted);margin-top:6px;}
 .ps-selected-chip{display:none;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid var(--leaf);border-radius:8px;padding:11px 14px;margin-top:10px;font-size:14px;color:var(--forest);}
 .ps-selected-chip.vis{display:flex;}
 .ps-chip-name{font-weight:700;flex:1;}
 .ps-chip-clear{background:none;border:none;cursor:pointer;color:var(--red);font-size:15px;font-weight:700;padding:6px 8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;}
-.ps-mismatch-alert{background:#fff1f2;border:1.5px solid #fca5a5;border-left:4px solid var(--red);border-radius:8px;padding:12px 14px;margin-top:10px;font-size:13px;color:#991b1b;display:none;}
-.ps-mismatch-alert strong{display:block;margin-bottom:2px;}
-.ps-match-ok{background:#f0fdf4;border:1.5px solid #bbf7d0;border-left:4px solid var(--leaf);border-radius:8px;padding:12px 14px;margin-top:10px;font-size:13px;color:#166534;display:none;}
 .gov-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px;}
 @media(min-width:480px){.gov-row{grid-template-columns:repeat(4,1fr);}}
 .gov-card{border:2px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;transition:all .15s;text-align:center;background:#fafaf8;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
@@ -189,6 +192,8 @@ textarea{min-height:80px;resize:vertical;}
 .gov-card input{display:none;}
 .gc-name{font-weight:700;font-size:13px;color:var(--forest);line-height:1.2;}
 .gc-tag{font-size:10px;color:var(--muted);margin-top:4px;}
+.elec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
+@media(max-width:500px){.elec-grid{grid-template-columns:1fr;}}
 .cond-field{display:none;margin-top:12px;}
 .cond-field.vis{display:block;}
 .disabled-note{background:var(--warm);padding:11px 14px;border-radius:7px;color:var(--muted);font-size:14px;margin-top:8px;display:none;border:1px solid var(--border);}
@@ -261,15 +266,13 @@ textarea{min-height:80px;resize:vertical;}
 @media(min-width:520px){.g9-grid{grid-template-columns:1fr 1fr;}}
 .cand-block{margin-bottom:0;}
 .cand-block .elec-label{display:block;font-weight:700;font-size:12px;color:var(--forest);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px;}
-.elec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
-@media(max-width:500px){.elec-grid{grid-template-columns:1fr;}}
-.ps-count{font-size:12px;color:var(--muted);margin-top:6px;}
-#wardValidMsg,#psValidMsg{margin-top:8px;}
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- ═══════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════ -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">ECS</div>
@@ -282,7 +285,7 @@ textarea{min-height:80px;resize:vertical;}
       <div><strong>Checking invite link&hellip;</strong></div>
     </div>
 
-    <!-- AUTH CONTROLS — hidden until invite validated -->
+    <!-- AUTH CONTROLS — hidden until invite is validated -->
     <div id="loginAuthWrap" style="display:none;">
       <button class="google-btn" id="googleSignInBtn" onclick="signInWithGoogle()">
         <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -309,7 +312,7 @@ textarea{min-height:80px;resize:vertical;}
           <button type="button" onclick="forgotPassword()" style="background:none;border:none;color:var(--leaf);font-size:13px;cursor:pointer;font-family:inherit;text-decoration:underline;padding:8px;">Forgot password?</button>
         </div>
       </div>
-    </div>
+    </div><!-- /loginAuthWrap -->
 
     <div class="login-err" id="loginErr"></div>
     <div class="login-loading" id="loginLoading">&#x23F3; Signing in...</div>
@@ -321,7 +324,9 @@ textarea{min-height:80px;resize:vertical;}
   </div>
 </div>
 
-<!-- RESEARCHER WELCOME MODAL -->
+<!-- ═══════════════════════════════════════════════
+     RESEARCHER WELCOME MODAL
+═══════════════════════════════════════════════ -->
 <div class="overlay hidden" id="researcherModal">
   <div class="mbox mbox-sm">
     <div class="mhead forest">
@@ -352,7 +357,9 @@ textarea{min-height:80px;resize:vertical;}
   </div>
 </div>
 
-<!-- GPS GUARD MODAL -->
+<!-- ═══════════════════════════════════════════════
+     GPS GUARD MODAL
+═══════════════════════════════════════════════ -->
 <div class="overlay hidden" id="gpsGuardModal">
   <div class="mbox mbox-sm">
     <div class="mhead forest">
@@ -374,7 +381,7 @@ textarea{min-height:80px;resize:vertical;}
       </div>
       <div class="gps-wait-note" id="gpsWaitNote" style="display:none;">
         <strong>&#x23F3; Improving accuracy&hellip;</strong>
-        Hold the device still, preferably near an open window or outdoors.
+        Hold the device still, preferably near an open window or outdoors. The GPS will keep improving automatically.
       </div>
     </div>
     <div class="mfoot">
@@ -386,12 +393,14 @@ textarea{min-height:80px;resize:vertical;}
   </div>
 </div>
 
-<!-- OFFLINE QUEUE MODAL -->
+<!-- ═══════════════════════════════════════════════
+     OFFLINE QUEUE MODAL
+═══════════════════════════════════════════════ -->
 <div class="overlay hidden" id="offlineModal">
   <div class="mbox mbox-sm">
     <div class="mhead forest"><h2>&#x1F4E4; Pending Submissions</h2><p>Surveys saved locally while offline</p></div>
     <div class="mscroll">
-      <p style="font-size:14px;color:var(--muted);margin-bottom:12px;">Connect to the internet and tap <strong>Sync Now</strong> to upload.</p>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:12px;">These surveys were completed while offline. Connect to the internet and tap <strong>Sync Now</strong> to upload them.</p>
       <div class="q-list" id="queueList"></div>
       <div class="sync-prog-wrap" id="syncWrap">
         <div class="sync-prog-outer"><div class="sync-prog-inner" id="syncBar"></div></div>
@@ -402,7 +411,9 @@ textarea{min-height:80px;resize:vertical;}
   </div>
 </div>
 
-<!-- SITE HEADER -->
+<!-- ═══════════════════════════════════════════════
+     SITE HEADER
+═══════════════════════════════════════════════ -->
 <div class="site-header" id="siteHeader" style="display:none;">
   <div class="header-stripe"></div>
   <div class="header-inner">
@@ -432,9 +443,12 @@ textarea{min-height:80px;resize:vertical;}
 <div id="netBadge"></div>
 <div id="autosave">&#x1F4BE; Draft saved</div>
 
-<!-- SURVEY WRAPPER — identical to original, truncated for brevity -->
+<!-- ═══════════════════════════════════════════════
+     SURVEY WRAPPER
+═══════════════════════════════════════════════ -->
 <div id="surveyWrapper" style="display:none;">
 <div class="container">
+
   <div id="resBanner">
     <div><img id="bannerAvatar" src="" alt="" style="width:30px;height:30px;border-radius:50%;vertical-align:middle;margin-right:6px;"><strong>&#x1F52C; <span id="bannerName"></span></strong> &nbsp;&middot;&nbsp; ID: <span id="bannerId"></span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
@@ -442,21 +456,467 @@ textarea{min-height:80px;resize:vertical;}
       <button class="res-small-btn danger" onclick="signOutGoogle()">Sign Out</button>
     </div>
   </div>
-  <div id="pendBanner"><strong>&#x1F4E4; You have <span id="pendCountText">0</span> survey(s) queued for upload.</strong><div style="font-size:13px;margin-top:3px;">Saved while offline.</div><button class="sync-btn" onclick="openOfflineModal()">View &amp; Sync &rarr;</button></div>
 
-  <!-- All form sections (A through Declaration) are identical to original -->
-  <!-- Paste the full <form id="surveyForm"> ... </form> block from the original here -->
-  <!-- OMITTED IN SNIPPET — use original form content unchanged -->
+  <div id="pendBanner"><strong>&#x1F4E4; You have <span id="pendCountText">0</span> survey(s) queued for upload.</strong><div style="font-size:13px;margin-top:3px;">Saved while offline. Connect to sync.</div><button class="sync-btn" onclick="openOfflineModal()">View &amp; Sync &rarr;</button></div>
 
+  <form id="surveyForm" autocomplete="off">
+
+  <!-- SECTION A -->
+  <div class="card">
+    <div class="card-head th-forest">
+      <div class="sec-badge">A</div>
+      <div class="sec-label">Section A &mdash; Respondent Demographics<span>Personal background information</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">A1.</span> Gender</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="gender" id="gm" value="Male" required><label for="gm">Male</label></div>
+          <div class="pill"><input type="radio" name="gender" id="gf" value="Female"><label for="gf">Female</label></div>
+          <div class="pill"><input type="radio" name="gender" id="gp" value="Prefer not to say"><label for="gp">Prefer not to say</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A2.</span> Constituency</label>
+        <div class="pilbox" id="constPilbox">
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_man" value="Manyatta" onchange="onConstChange('Manyatta')"><label for="c_man">Manyatta</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_run" value="Runyenjes" onchange="onConstChange('Runyenjes')"><label for="c_run">Runyenjes</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_mbn" value="Mbeere North" onchange="onConstChange('Mbeere North')"><label for="c_mbn">Mbeere North</label></div>
+          <div class="pilbox-item"><input type="radio" name="constituency_pill" id="c_mbs" value="Mbeere South" onchange="onConstChange('Mbeere South')"><label for="c_mbs">Mbeere South</label></div>
+        </div>
+        <input type="hidden" id="constituency">
+      </div>
+      <div class="field" id="wardPilbox" style="display:none;">
+        <label class="field-label"><span class="qnum">A3.</span> Ward</label>
+        <div class="pilbox" id="wardPills"></div>
+        <input type="hidden" id="ward">
+        <div id="wardValidMsg"></div>
+      </div>
+      <div class="field" id="pollingStationField" style="display:none;">
+        <label class="field-label"><span class="qnum">A4.</span> Polling Station <span class="fnote" id="psConstLabel"></span></label>
+        <div class="ps-search-wrap" id="psSearchWrap">
+          <input type="text" class="ps-search-input" id="psSearchInput" placeholder="Type to search polling stations..." autocomplete="off" spellcheck="false" oninput="psOnInput()" onfocus="psOnFocus()" onkeydown="psOnKey(event)">
+          <button type="button" class="ps-clear-btn" id="psClearBtn" onclick="psClear()" title="Clear" style="display:none;">&#x2715;</button>
+          <div class="ps-dropdown" id="psDropdown"></div>
+        </div>
+        <div class="ps-selected-chip" id="psChip">
+          <span>&#x1F3EB;</span>
+          <span class="ps-chip-name" id="psChipName"></span>
+          <button type="button" class="ps-chip-clear" onclick="psClear()" title="Change">&#x270F; Change</button>
+        </div>
+        <input type="hidden" id="pollingStation">
+        <div id="psValidMsg"></div>
+        <div class="ps-mismatch-alert" id="psMismatchAlert"><strong>&#x26A0; Polling station / ward mismatch</strong>This station is not listed under the selected ward. Please verify.</div>
+        <div class="ps-match-ok" id="psMatchOk">&#x2705; Confirmed in <strong id="psMatchWard"></strong> ward, <strong id="psMatchConst"></strong> constituency.</div>
+      </div>
+      <div class="loc-box" id="locationBox">
+        <div class="loc-head">&#x1F4CD; Interview Location (GPS)</div>
+        <div class="loc-row"><span>Latitude: <span class="loc-val" id="locLat">-</span></span><span>Longitude: <span class="loc-val" id="locLng">-</span></span><span>Accuracy: <span class="loc-acc" id="locAcc">-</span></span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">Location captured automatically &mdash; not linked to your identity.</div>
+      </div>
+      <div class="field" style="margin-top:20px;">
+        <label class="field-label"><span class="qnum">A5.</span> Age Category</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="age" id="a1" value="18-34" required><label for="a1">18&ndash;34</label></div>
+          <div class="pill"><input type="radio" name="age" id="a2" value="35-44"><label for="a2">35&ndash;44</label></div>
+          <div class="pill"><input type="radio" name="age" id="a3" value="45-60"><label for="a3">45&ndash;60</label></div>
+          <div class="pill"><input type="radio" name="age" id="a4" value="61+"><label for="a4">61+</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A6.</span> Highest Education Level</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="education" id="enon" value="None" required><label for="enon">None</label></div>
+          <div class="pill"><input type="radio" name="education" id="epri" value="Primary"><label for="epri">Primary</label></div>
+          <div class="pill"><input type="radio" name="education" id="esec" value="Secondary"><label for="esec">Secondary</label></div>
+          <div class="pill"><input type="radio" name="education" id="ecol" value="College"><label for="ecol">College</label></div>
+          <div class="pill"><input type="radio" name="education" id="euni" value="University"><label for="euni">University</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A7.</span> Employment Status</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="employment" id="ee" value="Employed" required><label for="ee">Employed</label></div>
+          <div class="pill"><input type="radio" name="employment" id="ese" value="Self-Employed"><label for="ese">Self-Employed</label></div>
+          <div class="pill"><input type="radio" name="employment" id="eu" value="Unemployed"><label for="eu">Unemployed</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">A8.</span> Occupation <span class="fnote">Type to search or enter manually</span></label>
+        <div class="occ-grid">
+          <div class="sw-wrap">
+            <input type="text" class="sw-input" id="swOccInput" placeholder="Type occupation (e.g. farmer, teacher, nurse)..." autocomplete="off" spellcheck="false">
+            <button type="button" class="sw-clear" id="swOccClear" title="Clear" style="display:none;">&#x2715;</button>
+            <div class="sw-dropdown" id="swOccDD"></div>
+          </div>
+          <div class="sw-chip" id="swOccChip"><span>&#x1F4BC;</span><span class="sw-chip-label" id="swOccLabel"></span><button type="button" class="sw-chip-edit" id="swOccEdit">&#x270E; Change</button></div>
+          <input type="hidden" id="occupation">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION B -->
+  <div class="card">
+    <div class="card-head th-leaf">
+      <div class="sec-badge">B</div>
+      <div class="sec-label">Section B &mdash; Political Participation &amp; Governance<span>Civic engagement and opinions</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">B1.</span> Are you a registered voter?</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="voter" id="vy" value="Yes" required><label for="vy">Yes</label></div>
+          <div class="pill"><input type="radio" name="voter" id="vn" value="No"><label for="vn">No</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">B2.</span> Areas where the county government has <strong>NOT</strong> delivered: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="checkbox" id="b5a" value="Agriculture"><label for="b5a">Agriculture</label></div>
+          <div class="pill"><input type="checkbox" id="b5b" value="Infrastructure"><label for="b5b">Infrastructure</label></div>
+          <div class="pill"><input type="checkbox" id="b5c" value="Water"><label for="b5c">Water</label></div>
+          <div class="pill"><input type="checkbox" id="b5d" value="SMEs"><label for="b5d">SMEs</label></div>
+          <div class="pill"><input type="checkbox" id="b5e" value="Health"><label for="b5e">Health</label></div>
+          <div class="pill"><input type="checkbox" id="b5f" value="Education"><label for="b5f">Education</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION C -->
+  <div class="card">
+    <div class="card-head th-gold">
+      <div class="sec-badge">C</div>
+      <div class="sec-label">Section C &mdash; Political Information &amp; Transparency<span>How you access information</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">C1.</span> How do you usually get political information? <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="checkbox" id="c1a" value="Radio"><label for="c1a">Radio</label></div>
+          <div class="pill"><input type="checkbox" id="c1b" value="TV"><label for="c1b">TV</label></div>
+          <div class="pill"><input type="checkbox" id="c1c" value="Newspapers"><label for="c1c">Newspapers</label></div>
+          <div class="pill"><input type="checkbox" id="c1d" value="Social Media"><label for="c1d">Social Media</label></div>
+          <div class="pill"><input type="checkbox" id="c1e" value="Word of Mouth"><label for="c1e">Word of Mouth</label></div>
+          <div class="pill"><input type="checkbox" id="c1f" value="Barazas"><label for="c1f">Barazas</label></div>
+          <div class="pill"><input type="checkbox" id="c1g" value="Other"><label for="c1g">Other</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION D -->
+  <div class="card">
+    <div class="card-head th-forest">
+      <div class="sec-badge">D</div>
+      <div class="sec-label">Section D &mdash; Project Delivery Assessment<span>County government performance</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">D1.</span> Rate the performance of the current county government:</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="performance" id="pex" value="Excellent" required><label for="pex">Excellent</label></div>
+          <div class="pill"><input type="radio" name="performance" id="pgd" value="Good"><label for="pgd">Good</label></div>
+          <div class="pill"><input type="radio" name="performance" id="pfa" value="Fair"><label for="pfa">Fair</label></div>
+          <div class="pill"><input type="radio" name="performance" id="ppo" value="Poor"><label for="ppo">Poor</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">D2.</span> Are you aware of any projects delivered by the county government in your area?</label>
+        <div class="pill-row" style="margin-bottom:8px;">
+          <div class="pill"><input type="radio" name="projectsAware" id="paw_y" value="Yes" onchange="toggleCond('projectsAware','Yes','projectsDeliveredField')"><label for="paw_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="projectsAware" id="paw_n" value="No" onchange="toggleCond('projectsAware','Yes','projectsDeliveredField')"><label for="paw_n">No</label></div>
+        </div>
+        <div class="cond-field" id="projectsDeliveredField">
+          <label class="field-label" style="font-size:12.5px;">If Yes &mdash; name 2 projects:</label>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+            <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-weight:700;color:var(--leaf);font-family:'Fraunces',serif;font-size:16px;padding-top:11px;flex-shrink:0;">1.</span><textarea id="deliveredP1" placeholder="Describe first project..." rows="2" style="flex:1;resize:vertical;"></textarea></div>
+            <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-weight:700;color:var(--leaf);font-family:'Fraunces',serif;font-size:16px;padding-top:11px;flex-shrink:0;">2.</span><textarea id="deliveredP2" placeholder="Describe second project..." rows="2" style="flex:1;resize:vertical;"></textarea></div>
+          </div>
+          <input type="hidden" id="projectsDelivered">
+          <div class="proj-counter" id="deliveredCounter"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">D3.</span> Are there any projects promised but not delivered?</label>
+        <div class="pill-row" style="margin-bottom:8px;">
+          <div class="pill"><input type="radio" name="missedPromises" id="mp_y" value="Yes" onchange="toggleCond('missedPromises','Yes','projectsMissingField')"><label for="mp_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="missedPromises" id="mp_n" value="No" onchange="toggleCond('missedPromises','Yes','projectsMissingField')"><label for="mp_n">No</label></div>
+        </div>
+        <div class="cond-field" id="projectsMissingField">
+          <label class="field-label" style="font-size:12.5px;">If Yes &mdash; name 2 projects:</label>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+            <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-weight:700;color:var(--leaf);font-family:'Fraunces',serif;font-size:16px;padding-top:11px;flex-shrink:0;">1.</span><textarea id="missingP1" placeholder="Describe first project..." rows="2" style="flex:1;resize:vertical;"></textarea></div>
+            <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-weight:700;color:var(--leaf);font-family:'Fraunces',serif;font-size:16px;padding-top:11px;flex-shrink:0;">2.</span><textarea id="missingP2" placeholder="Describe second project..." rows="2" style="flex:1;resize:vertical;"></textarea></div>
+          </div>
+          <input type="hidden" id="projectsMissing">
+          <div class="proj-counter" id="missingCounter"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">D4.</span> List your top 2 priority needs in your ward:</label>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-weight:700;color:var(--leaf);font-family:'Fraunces',serif;font-size:16px;padding-top:11px;flex-shrink:0;">1.</span><textarea id="needsP1" placeholder="First priority need..." rows="2" style="flex:1;resize:vertical;"></textarea></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-weight:700;color:var(--leaf);font-family:'Fraunces',serif;font-size:16px;padding-top:11px;flex-shrink:0;">2.</span><textarea id="needsP2" placeholder="Second priority need..." rows="2" style="flex:1;resize:vertical;"></textarea></div>
+        </div>
+        <input type="hidden" id="needs">
+        <div class="proj-counter" id="needsCounter"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION E -->
+  <div class="card">
+    <div class="card-head th-leaf">
+      <div class="sec-badge">E</div>
+      <div class="sec-label">Section E &mdash; Business &amp; Economic Issues<span>SME challenges in Embu County</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">E1.</span> Main challenges faced by business people / SMEs: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="checkbox" id="e1a" value="Finance / Capital"><label for="e1a">Finance / Capital</label></div>
+          <div class="pill"><input type="checkbox" id="e1b" value="High Taxes"><label for="e1b">High Taxes</label></div>
+          <div class="pill"><input type="checkbox" id="e1c" value="Limited Market"><label for="e1c">Limited Market</label></div>
+          <div class="pill"><input type="checkbox" id="e1d" value="Lack of Government Support"><label for="e1d">Lack of Gov&apos;t Support</label></div>
+          <div class="pill"><input type="checkbox" id="e1e" value="Competition"><label for="e1e">Competition</label></div>
+          <div class="pill"><input type="checkbox" id="e1f" value="Poor Infrastructure"><label for="e1f">Poor Infrastructure</label></div>
+          <div class="pill"><input type="checkbox" id="e1g" value="Other"><label for="e1g">Other</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION G -->
+  <div class="card">
+    <div class="card-head th-ink">
+      <div class="sec-badge">G</div>
+      <div class="sec-label">Section G &mdash; Political Sentiment &amp; Inclination<span>Candidate preferences and party affiliation</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">G1.</span> If elections were held today, would you re-elect President William Ruto?</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="reelectRuto" id="ruto_y" value="Yes" required onchange="toggleRuto()"><label for="ruto_y">Yes</label></div>
+          <div class="pill"><input type="radio" name="reelectRuto" id="ruto_n" value="No" onchange="toggleRuto()"><label for="ruto_n">No</label></div>
+        </div>
+        <div class="cond-field" id="rutoCandField">
+          <label class="field-label" style="margin-top:8px;font-size:14px;"><span class="qnum">G1.1.</span> If No &mdash; preferred presidential candidate:</label>
+          <input type="text" id="preferredPres" placeholder="Enter preferred candidate's name...">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G2.</span> If elections were held today, who would you elect as Governor of Embu County?</label>
+        <div class="gov-row" id="govGrid">
+          <div class="gov-card" onclick="selectGov(this,'Cecily Mbarire')"><input type="radio" name="governor" value="Cecily Mbarire" onchange="updateNeg()"><div class="gc-name">Cecily Mbarire</div><div class="gc-tag">Incumbent</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Lenny Kivuti')"><input type="radio" name="governor" value="Lenny Kivuti" onchange="updateNeg()"><div class="gc-name">Lenny Kivuti</div><div class="gc-tag">Challenger</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Gitonga Mukunji')"><input type="radio" name="governor" value="Gitonga Mukunji" onchange="updateNeg()"><div class="gc-name">Gitonga Mukunji</div><div class="gc-tag">Challenger</div></div>
+          <div class="gov-card" onclick="selectGov(this,'Other')"><input type="radio" name="governor" value="Other" onchange="updateNeg()"><div class="gc-name">Other</div><div class="gc-tag">Specify below</div></div>
+        </div>
+        <div class="cond-field" id="govOtherField" style="margin-top:10px;"><input type="text" id="governorOther" placeholder="Please specify the candidate's name..."></div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G3.</span> Most preferred political party in Embu County:</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="party" id="p_bus" value="BUS"><label for="p_bus">BUS</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_uda" value="UDA"><label for="p_uda">UDA</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_odm" value="ODM"><label for="p_odm">ODM</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_jub" value="Jubilee"><label for="p_jub">Jubilee</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_dp" value="DP"><label for="p_dp">DP</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_dcp" value="DCP"><label for="p_dcp">DCP</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_wip" value="Wiper"><label for="p_wip">Wiper</label></div>
+          <div class="pill"><input type="radio" name="party" id="p_oth" value="Other"><label for="p_oth">Other</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G4.</span> Why would you vote for your preferred governor? <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="checkbox" id="g4a" value="Track record"><label for="g4a">Track record</label></div>
+          <div class="pill"><input type="checkbox" id="g4b" value="Development agenda"><label for="g4b">Development agenda</label></div>
+          <div class="pill"><input type="checkbox" id="g4c" value="Trustworthy"><label for="g4c">Trustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g4d" value="Leadership qualities"><label for="g4d">Leadership qualities</label></div>
+          <div class="pill"><input type="checkbox" id="g4e" value="Community connection"><label for="g4e">Community connection</label></div>
+          <div class="pill"><input type="checkbox" id="g4f" value="Communication"><label for="g4f">Communication</label></div>
+          <div class="pill"><input type="checkbox" id="g4g" value="Proven delivery"><label for="g4g">Proven delivery</label></div>
+          <div class="pill"><input type="checkbox" id="g4h" value="Party affiliation"><label for="g4h">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g4i" value="New ideas"><label for="g4i">New ideas</label></div>
+          <div class="pill"><input type="checkbox" id="g4j" value="Personal help"><label for="g4j">Personal help</label></div>
+          <div class="pill"><input type="checkbox" id="g4k" value="Other"><label for="g4k">Other</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G5.</span> Reasons for NOT voting for Cecily Mbarire: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notMbarireOpts">
+          <div class="pill"><input type="checkbox" id="g5a" value="Poor performance"><label for="g5a">Poor performance</label></div>
+          <div class="pill"><input type="checkbox" id="g5b" value="Corruption"><label for="g5b">Corruption</label></div>
+          <div class="pill"><input type="checkbox" id="g5c" value="Untrustworthy"><label for="g5c">Untrustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g5d" value="Tribal favoritism"><label for="g5d">Tribal favoritism</label></div>
+          <div class="pill"><input type="checkbox" id="g5e" value="Party affiliation"><label for="g5e">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g5f" value="Weak leadership"><label for="g5f">Weak leadership</label></div>
+          <div class="pill"><input type="checkbox" id="g5g" value="No vision"><label for="g5g">No vision</label></div>
+          <div class="pill"><input type="checkbox" id="g5h" value="Land issues"><label for="g5h">Land issues</label></div>
+          <div class="pill"><input type="checkbox" id="g5i" value="Other"><label for="g5i">Other</label></div>
+        </div>
+        <div id="notMbarireDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Cecily Mbarire as your preferred candidate.</div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G6.</span> Advice to Cecily Mbarire:</label>
+        <textarea id="adviceMbarire" placeholder="Your advice or message to Cecily Mbarire..."></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G7.</span> Reasons for NOT voting for Lenny Kivuti: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notKivutiOpts">
+          <div class="pill"><input type="checkbox" id="g7a" value="Poor performance"><label for="g7a">Poor performance</label></div>
+          <div class="pill"><input type="checkbox" id="g7b" value="Corruption"><label for="g7b">Corruption</label></div>
+          <div class="pill"><input type="checkbox" id="g7c" value="Untrustworthy"><label for="g7c">Untrustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g7d" value="Tribal favoritism"><label for="g7d">Tribal favoritism</label></div>
+          <div class="pill"><input type="checkbox" id="g7e" value="Party affiliation"><label for="g7e">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g7f" value="Weak leadership"><label for="g7f">Weak leadership</label></div>
+          <div class="pill"><input type="checkbox" id="g7g" value="No vision"><label for="g7g">No vision</label></div>
+          <div class="pill"><input type="checkbox" id="g7h" value="Land issues"><label for="g7h">Land issues</label></div>
+          <div class="pill"><input type="checkbox" id="g7i" value="Other"><label for="g7i">Other</label></div>
+        </div>
+        <div id="notKivutiDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Lenny Kivuti as your preferred candidate.</div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G8.</span> Reasons for NOT voting for Gitonga Mukunji: <span class="fnote">(tick all that apply)</span></label>
+        <div class="pill-row" id="notGitongaOpts">
+          <div class="pill"><input type="checkbox" id="g8a" value="Poor performance"><label for="g8a">Poor performance</label></div>
+          <div class="pill"><input type="checkbox" id="g8b" value="Corruption"><label for="g8b">Corruption</label></div>
+          <div class="pill"><input type="checkbox" id="g8c" value="Untrustworthy"><label for="g8c">Untrustworthy</label></div>
+          <div class="pill"><input type="checkbox" id="g8d" value="Tribal favoritism"><label for="g8d">Tribal favoritism</label></div>
+          <div class="pill"><input type="checkbox" id="g8e" value="Party affiliation"><label for="g8e">Party affiliation</label></div>
+          <div class="pill"><input type="checkbox" id="g8f" value="Weak leadership"><label for="g8f">Weak leadership</label></div>
+          <div class="pill"><input type="checkbox" id="g8g" value="No vision"><label for="g8g">No vision</label></div>
+          <div class="pill"><input type="checkbox" id="g8h" value="Land issues"><label for="g8h">Land issues</label></div>
+          <div class="pill"><input type="checkbox" id="g8i" value="Other"><label for="g8i">Other</label></div>
+        </div>
+        <div id="notGitongaDisabled" class="disabled-note">&#x26A0; Disabled &mdash; you selected Gitonga Mukunji as your preferred candidate.</div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">G9.</span> Preferred candidates for the following positions:</label>
+        <p class="sec-note">Select from known candidates or type a name.</p>
+        <div class="g9-grid">
+          <div class="cand-block">
+            <span class="cand-block elec-label">&#x1F3DB; Senator</span>
+            <div class="sw-wrap"><input type="text" class="sw-input" id="swSenatorInput" placeholder="Type to search senator..." autocomplete="off" spellcheck="false"><button type="button" class="sw-clear" id="swSenatorClear" title="Clear" style="display:none;">&#x2715;</button><div class="sw-dropdown" id="swSenatorDD"></div></div>
+            <div class="sw-chip" id="swSenatorChip"><span>&#x1F3DB;</span><span class="sw-chip-label" id="swSenatorLabel"></span><button type="button" class="sw-chip-edit" id="swSenatorEdit">&#x270E; Change</button></div>
+            <input type="hidden" id="prefSenator">
+          </div>
+          <div class="cand-block">
+            <span class="cand-block elec-label">&#x1F469; Women Representative</span>
+            <div class="sw-wrap"><input type="text" class="sw-input" id="swWomenRepInput" placeholder="Type to search Women Rep..." autocomplete="off" spellcheck="false"><button type="button" class="sw-clear" id="swWomenRepClear" title="Clear" style="display:none;">&#x2715;</button><div class="sw-dropdown" id="swWomenRepDD"></div></div>
+            <div class="sw-chip" id="swWomenRepChip"><span>&#x1F469;</span><span class="sw-chip-label" id="swWomenRepLabel"></span><button type="button" class="sw-chip-edit" id="swWomenRepEdit">&#x270E; Change</button></div>
+            <input type="hidden" id="prefWomenRep">
+          </div>
+          <div class="cand-block">
+            <span class="cand-block elec-label">&#x1F5F3; Member of Parliament (MP)</span>
+            <div class="sw-wrap"><input type="text" class="sw-input" id="swMPInput" placeholder="Select constituency first (A2)..." autocomplete="off" spellcheck="false"><button type="button" class="sw-clear" id="swMPClear" title="Clear" style="display:none;">&#x2715;</button><div class="sw-dropdown" id="swMPDD"></div></div>
+            <div class="sw-chip" id="swMPChip"><span>&#x1F5F3;</span><span class="sw-chip-label" id="swMPLabel"></span><button type="button" class="sw-chip-edit" id="swMPEdit">&#x270E; Change</button></div>
+            <input type="hidden" id="prefMP">
+          </div>
+          <div class="cand-block">
+            <span class="cand-block elec-label">&#x1F4CD; Member of County Assembly (MCA)</span>
+            <div class="sw-wrap"><input type="text" class="sw-input" id="swMCAInput" placeholder="Select ward first (A3)..." autocomplete="off" spellcheck="false"><button type="button" class="sw-clear" id="swMCAClear" title="Clear" style="display:none;">&#x2715;</button><div class="sw-dropdown" id="swMCADD"></div></div>
+            <div class="sw-chip" id="swMCAChip"><span>&#x1F4CD;</span><span class="sw-chip-label" id="swMCALabel"></span><button type="button" class="sw-chip-edit" id="swMCAEdit">&#x270E; Change</button></div>
+            <input type="hidden" id="prefMCA">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION H -->
+  <div class="card">
+    <div class="card-head th-sky">
+      <div class="sec-badge">H</div>
+      <div class="sec-label">Section H &mdash; Civic &amp; Community Perspectives<span>Development and community views</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label"><span class="qnum">H1.</span> Which office has contributed most to development in your area?</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="devOffice" id="do_pres" value="President" required><label for="do_pres">President</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_gov" value="Governor"><label for="do_gov">Governor</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_mp" value="MP"><label for="do_mp">MP</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_mca" value="MCA"><label for="do_mca">MCA</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_sen" value="Senator"><label for="do_sen">Senator</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_wr" value="Women Rep"><label for="do_wr">Women Rep</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label"><span class="qnum">H2.</span> How often do you attend places of worship (church / mosque)?</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="worship" id="ws_reg" value="Regularly" required><label for="ws_reg">Regularly</label></div>
+          <div class="pill"><input type="radio" name="worship" id="ws_rar" value="Rarely"><label for="ws_rar">Rarely</label></div>
+          <div class="pill"><input type="radio" name="worship" id="ws_nev" value="Never"><label for="ws_nev">Never</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION I -->
+  <div class="card">
+    <div class="card-head th-opt">
+      <div class="sec-badge">I</div>
+      <div class="sec-label">Section I &mdash; Optional Contact Details<span>Strictly optional &mdash; stored separately</span></div>
+    </div>
+    <div class="card-body">
+      <p class="sec-note">Contact details are stored separately and used only for research follow-up.</p>
+      <div class="two-col">
+        <div class="field">
+          <label class="field-label">Full Name <span class="opt-badge">optional</span></label>
+          <input type="text" id="contactName" placeholder="Your full name">
+        </div>
+        <div class="field">
+          <label class="field-label">Phone Number <span class="opt-badge">optional</span></label>
+          <input type="tel" id="contactPhone" inputmode="numeric" placeholder="e.g. 0712 345 678" autocomplete="tel" style="width:100%;box-sizing:border-box;">
+          <div id="phoneMsg"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Consent to be contacted for follow-up? <span class="opt-badge">optional</span></label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="followUp" id="fuy" value="Yes"><label for="fuy">Yes</label></div>
+          <div class="pill"><input type="radio" name="followUp" id="fun" value="No"><label for="fun">No</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DECLARATION -->
+  <div class="card">
+    <div class="card-head th-forest">
+      <div class="sec-badge">&#x2713;</div>
+      <div class="sec-label">Enumerator Declaration<span>Confirm this interview was conducted properly</span></div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="field-label">I confirm this interview was conducted in accordance with the survey guidelines and the respondent gave informed consent.</label>
+        <div class="pill-row">
+          <div class="pill"><input type="radio" name="enumDecl" id="decl_y" value="Confirmed" required><label for="decl_y">&#x2713; Confirm</label></div>
+          <div class="pill"><input type="radio" name="enumDecl" id="decl_n" value="Declined"><label for="decl_n">&#x2715; Decline</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="submit-wrap">
+    <button type="submit" id="submitBtn">&#x1F4CD; Submit Research</button>
+    <div id="status" class="status-msg" style="display:none;"></div>
+  </div>
+
+  </form>
 </div>
-</div>
+</div><!-- /surveyWrapper -->
 
 <script src="ecs_polling_stations.js"></script>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
    FIREBASE CONFIG
-   ══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey:            "AIzaSyAXeNgPLKFgfxBKNta7UlGzHW-bjWzghas",
   authDomain:        "survey-842bd.firebaseapp.com",
@@ -471,14 +931,17 @@ const auth = firebase.auth();
 
 /* ══════════════════════════════════════════════════════════════
    INVITE TOKEN SYSTEM
-   ══════════════════════════════════════════════════════════════ */
-let _inviteToken = null;
-let _inviteValid = false;
+   ─ Reads ?invite=TOKEN from URL, persists across OAuth redirect
+   ─ Validates against Firestore `invites` collection
+   ─ Consumes (marks used) once on first sign-in
+══════════════════════════════════════════════════════════════ */
+let _inviteToken  = null;
+let _inviteValid  = false;
+let _inviteConsumed = false;
 
-/* Read ?invite=TOKEN from URL, persist across OAuth redirect */
 (function readInviteToken() {
-  const params   = new URLSearchParams(window.location.search);
-  const fromUrl  = params.get('invite');
+  const params  = new URLSearchParams(window.location.search);
+  const fromUrl = params.get('invite');
   if (fromUrl) {
     sessionStorage.setItem('ecs26_invite', fromUrl);
     history.replaceState({}, '', window.location.pathname + window.location.hash);
@@ -554,7 +1017,7 @@ async function initInviteGate() {
 
 /* ══════════════════════════════════════════════════════════════
    GPS CONFIG
-   ══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════ */
 const GPS = {
   MAX_ACC_ACCEPT:200, MAX_ACC_GOOD:60, MAX_ACC_OK:120,
   MIN_DIST:500, POLL_INTERVAL:3000, POLL_TIMEOUT:90000,
@@ -567,8 +1030,8 @@ function _MCA() { return window.ECS_MCA_CANDIDATES    || {}; }
 function _WC()  { return window.ECS_WARD_CONSTITUENCY || {}; }
 
 /* ══════════════════════════════════════════════════════════════
-   POLLING STATION SEARCH
-   ══════════════════════════════════════════════════════════════ */
+   POLLING STATION SEARCH  (mobile-scroll-safe)
+══════════════════════════════════════════════════════════════ */
 let _psStations = [], _psFocused = -1;
 
 window.loadPollingStations = function(ward) {
@@ -576,7 +1039,9 @@ window.loadPollingStations = function(ward) {
   const field = document.getElementById('pollingStationField');
   const lbl   = document.getElementById('psConstLabel');
   if (field) field.style.display = _psStations.length ? 'block' : 'none';
-  if (lbl)   lbl.textContent = _psStations.length ? '(' + _psStations.length + ' stations in ' + ward + ')' : '(no stations found)';
+  if (lbl)   lbl.textContent = _psStations.length
+    ? '(' + _psStations.length + ' stations in ' + ward + ')'
+    : '(no stations found)';
   resetPollingStation();
 };
 
@@ -592,7 +1057,7 @@ function resetPollingStation() {
   if (chip) chip.classList.remove('vis');
   if (dd)   { dd.innerHTML = ''; dd.classList.remove('open'); }
   if (clr)  clr.style.display = 'none';
-  ['psMismatchAlert','psMatchOk'].forEach(id => { const e=document.getElementById(id); if(e) e.style.display='none'; });
+  ['psMismatchAlert','psMatchOk'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
   const msg = document.getElementById('psValidMsg'); if (msg) msg.innerHTML = '';
 }
 
@@ -618,48 +1083,105 @@ function psOnKey(e) {
   else if (e.key === 'Enter')     { e.preventDefault(); if (_psFocused >= 0 && items[_psFocused]) psSelect(items[_psFocused].dataset.val); }
   else if (e.key === 'Escape')    { psCloseDropdown(); }
 }
-function psHighlight(items) { items.forEach((el,i)=>el.classList.toggle('focused',i===_psFocused)); if(_psFocused>=0) items[_psFocused].scrollIntoView({block:'nearest'}); }
+function psHighlight(items) {
+  items.forEach((el, i) => el.classList.toggle('focused', i === _psFocused));
+  if (_psFocused >= 0) items[_psFocused].scrollIntoView({ block:'nearest' });
+}
 function psRenderDropdown(q) {
-  const dd = document.getElementById('psDropdown');
+  const dd   = document.getElementById('psDropdown');
   const norm = q.toLowerCase();
   let matches;
-  if (!q) { matches = _psStations.slice(0,8); }
-  else { const sw=_psStations.filter(s=>s.toLowerCase().startsWith(norm)); const ct=_psStations.filter(s=>!s.toLowerCase().startsWith(norm)&&s.toLowerCase().includes(norm)); matches=[...sw,...ct].slice(0,12); }
+  if (!q) { matches = _psStations.slice(0, 8); }
+  else {
+    const sw = _psStations.filter(s => s.toLowerCase().startsWith(norm));
+    const ct = _psStations.filter(s => !s.toLowerCase().startsWith(norm) && s.toLowerCase().includes(norm));
+    matches  = [...sw, ...ct].slice(0, 12);
+  }
   dd.innerHTML = '';
-  if (!matches.length && q) { const e=document.createElement('div'); e.className='ps-empty'; e.innerHTML='No station matches &ldquo;'+escHtml(q)+'&rdquo;'; dd.appendChild(e); }
-  else { matches.forEach(s=>{ const el=document.createElement('div'); el.className='ps-option'; el.dataset.val=s; const hl=q?s.replace(new RegExp('('+escReg(q)+')','gi'),'<mark>$1</mark>'):escHtml(s); el.innerHTML='&#x1F3EB; '+hl; el.addEventListener('mousedown',e=>{e.preventDefault();psSelect(s);}); el.addEventListener('touchstart',e=>{e.preventDefault();psSelect(s);},{passive:false}); dd.appendChild(el); }); }
-  const other = document.createElement('div'); other.className='ps-option other'; other.dataset.val='__other__'; other.innerHTML='&#x270F; Other / Not listed';
-  other.addEventListener('mousedown',e=>{e.preventDefault();psSelect('__other__');}); other.addEventListener('touchstart',e=>{e.preventDefault();psSelect('__other__');},{passive:false}); dd.appendChild(other);
-  dd.classList.add('open'); _psFocused = -1;
+  if (!matches.length && q) {
+    const empty = document.createElement('div');
+    empty.className = 'ps-empty';
+    empty.innerHTML = 'No station matches &ldquo;' + escHtml(q) + '&rdquo;';
+    dd.appendChild(empty);
+  } else {
+    matches.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'ps-option';
+      el.dataset.val = s;
+      const hl = q ? s.replace(new RegExp('(' + escReg(q) + ')','gi'), '<mark>$1</mark>') : escHtml(s);
+      el.innerHTML = '&#x1F3EB; ' + hl;
+      el.addEventListener('mousedown',  e => { e.preventDefault(); psSelect(s); });
+      el.addEventListener('touchstart', e => { e.preventDefault(); psSelect(s); }, { passive:false });
+      dd.appendChild(el);
+    });
+  }
+  const other = document.createElement('div');
+  other.className = 'ps-option other';
+  other.dataset.val = '__other__';
+  other.innerHTML = '&#x270F; Other / Not listed';
+  other.addEventListener('mousedown',  e => { e.preventDefault(); psSelect('__other__'); });
+  other.addEventListener('touchstart', e => { e.preventDefault(); psSelect('__other__'); }, { passive:false });
+  dd.appendChild(other);
+  dd.classList.add('open');
+  _psFocused = -1;
 }
 function psSelect(val) {
   psCloseDropdown();
-  const inp=document.getElementById('psSearchInput'), hid=document.getElementById('pollingStation'), chip=document.getElementById('psChip'), name=document.getElementById('psChipName'), clr=document.getElementById('psClearBtn');
-  if (val === '__other__') { inp.value=''; inp.placeholder='Type station name manually...'; hid.value='__other__'; if(chip) chip.classList.remove('vis'); if(clr) clr.style.display='none'; inp.classList.remove('field-valid','field-invalid'); const msg=document.getElementById('psValidMsg'); if(msg) msg.innerHTML='<span class="validation-badge warn">&#x270F; Manual entry</span>'; return; }
-  inp.value=val; hid.value=val; if(clr){clr.style.display='flex';} if(name) name.textContent=val; if(chip) chip.classList.add('vis'); validatePollingStation();
+  const inp  = document.getElementById('psSearchInput');
+  const hid  = document.getElementById('pollingStation');
+  const chip = document.getElementById('psChip');
+  const name = document.getElementById('psChipName');
+  const clr  = document.getElementById('psClearBtn');
+  if (val === '__other__') {
+    inp.value = ''; inp.placeholder = 'Type station name manually...';
+    hid.value = '__other__';
+    if (chip) chip.classList.remove('vis');
+    if (clr) clr.style.display = 'none';
+    inp.classList.remove('field-valid','field-invalid');
+    const msg = document.getElementById('psValidMsg');
+    if (msg) msg.innerHTML = '<span class="validation-badge warn">&#x270F; Manual entry</span>';
+    return;
+  }
+  inp.value = val; hid.value = val;
+  if (clr) clr.style.display = 'flex';
+  if (name) name.textContent = val;
+  if (chip) chip.classList.add('vis');
+  validatePollingStation();
 }
-function psClear() { resetPollingStation(); document.getElementById('pollingStationField').style.display=_psStations.length?'block':'none'; }
-function psCloseDropdown() { const dd=document.getElementById('psDropdown'); if(dd) dd.classList.remove('open'); }
-document.addEventListener('touchstart',e=>{ const wrap=document.getElementById('psSearchWrap'); if(wrap&&!wrap.contains(e.target)) psCloseDropdown(); },{passive:true});
-document.addEventListener('click',e=>{ const wrap=document.getElementById('psSearchWrap'); if(wrap&&!wrap.contains(e.target)) psCloseDropdown(); });
-function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function escReg(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function psClear() { resetPollingStation(); document.getElementById('pollingStationField').style.display = _psStations.length ? 'block' : 'none'; }
+function psCloseDropdown() { const dd = document.getElementById('psDropdown'); if (dd) dd.classList.remove('open'); }
+document.addEventListener('touchstart', e => { const w = document.getElementById('psSearchWrap'); if (w && !w.contains(e.target)) psCloseDropdown(); }, { passive:true });
+document.addEventListener('click', e => { const w = document.getElementById('psSearchWrap'); if (w && !w.contains(e.target)) psCloseDropdown(); });
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escReg(s)  { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 function validatePollingStation() {
-  const ps=document.getElementById('pollingStation').value, ward=document.getElementById('ward').value, con=document.getElementById('constituency').value;
-  const alert2=document.getElementById('psMismatchAlert'), ok=document.getElementById('psMatchOk'), msg=document.getElementById('psValidMsg'), inp=document.getElementById('psSearchInput');
-  if(alert2) alert2.style.display='none'; if(ok) ok.style.display='none'; if(msg) msg.innerHTML='';
-  if(!ps||ps==='__other__') return;
-  if(!ward){if(msg) msg.innerHTML='<span class="validation-badge warn">&#x26A0; Please select a ward first (A3)</span>'; return;}
-  const valid=(_PS()[ward]||[]).includes(ps);
-  if(valid){if(inp){inp.classList.add('field-valid');inp.classList.remove('field-invalid');} if(ok){ok.style.display='block';document.getElementById('psMatchWard').textContent=ward;document.getElementById('psMatchConst').textContent=con;}}
-  else{if(inp){inp.classList.add('field-invalid');inp.classList.remove('field-valid');} if(alert2) alert2.style.display='block';}
+  const ps    = document.getElementById('pollingStation').value;
+  const ward  = document.getElementById('ward').value;
+  const con   = document.getElementById('constituency').value;
+  const alert2 = document.getElementById('psMismatchAlert');
+  const ok    = document.getElementById('psMatchOk');
+  const msg   = document.getElementById('psValidMsg');
+  const inp   = document.getElementById('psSearchInput');
+  if (alert2) alert2.style.display = 'none';
+  if (ok)     ok.style.display     = 'none';
+  if (msg)    msg.innerHTML        = '';
+  if (!ps || ps === '__other__') return;
+  if (!ward) { if (msg) msg.innerHTML = '<span class="validation-badge warn">&#x26A0; Please select a ward first (A3)</span>'; return; }
+  const valid = (_PS()[ward] || []).includes(ps);
+  if (valid) {
+    if (inp) { inp.classList.add('field-valid'); inp.classList.remove('field-invalid'); }
+    if (ok)  { ok.style.display = 'block'; document.getElementById('psMatchWard').textContent = ward; document.getElementById('psMatchConst').textContent = con; }
+  } else {
+    if (inp) { inp.classList.add('field-invalid'); inp.classList.remove('field-valid'); }
+    if (alert2) alert2.style.display = 'block';
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   GOOGLE AUTH — patched to consume invite token
-   ══════════════════════════════════════════════════════════════ */
+   GOOGLE AUTH  — patched to consume invite token
+══════════════════════════════════════════════════════════════ */
 let currentUser = null, currentResearcher = null;
-const RES_KEY = 'ecs26_researcher';
+const RES_KEY   = 'ecs26_researcher';
 
 async function signInWithGoogle() {
   const btn = document.getElementById('googleSignInBtn');
@@ -668,12 +1190,14 @@ async function signInWithGoogle() {
   btn.disabled = true; err.style.display = 'none'; loading.style.display = 'block';
   try {
     const p = new firebase.auth.GoogleAuthProvider();
-    p.setCustomParameters({ prompt: 'select_account' });
+    p.setCustomParameters({ prompt:'select_account' });
     await auth.signInWithPopup(p);
-    /* consumeInviteToken is called in onAuthStateChanged after user object is available */
+    /* consumeInviteToken is called in onAuthStateChanged */
   } catch(e) {
     btn.disabled = false; loading.style.display = 'none';
-    err.textContent = e.code === 'auth/popup-closed-by-user' ? 'Sign-in cancelled.' : 'Sign-in failed: ' + e.message;
+    err.textContent = e.code === 'auth/popup-closed-by-user'
+      ? 'Sign-in cancelled. Please try again.'
+      : 'Sign-in failed: ' + e.message;
     err.style.display = 'block';
   }
 }
@@ -683,13 +1207,10 @@ async function signOutGoogle() {
   await auth.signOut(); location.reload();
 }
 
-/* Track whether we've already consumed the invite for this session */
-let _inviteConsumed = false;
-
 auth.onAuthStateChanged(async user => {
   if (user) {
     currentUser = user;
-    /* Consume invite on FIRST sign-in (not on page refresh for returning user) */
+    /* Consume invite on first sign-in of this session only */
     if (_inviteToken && !_inviteConsumed) {
       _inviteConsumed = true;
       await consumeInviteToken(user.uid);
@@ -698,28 +1219,27 @@ auth.onAuthStateChanged(async user => {
   } else {
     currentUser = null;
     document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('siteHeader').style.display = 'none';
+    document.getElementById('siteHeader').style.display  = 'none';
     document.getElementById('surveyWrapper').style.display = 'none';
-    document.getElementById('googleSignInBtn').disabled = false;
+    document.getElementById('googleSignInBtn').disabled  = false;
     document.getElementById('loginLoading').style.display = 'none';
-    /* Run invite gate check when user is not signed in */
     initInviteGate();
   }
 });
 
 function generateResearcherId(user) {
   const name = user.displayName || user.email || 'XX';
-  const initials = name.trim().split(/\s+/).map(w=>w[0]&&w[0].toUpperCase()||'').join('').slice(0,3).padEnd(2,'X');
+  const initials = name.trim().split(/\s+/).map(w => w[0] && w[0].toUpperCase() || '').join('').slice(0,3).padEnd(2,'X');
   let hash = 0;
-  for (let i=0; i<user.uid.length; i++) hash = (hash*31+user.uid.charCodeAt(i))&0xffffffff;
-  return 'ECS-' + initials + '-' + String(Math.abs(hash)%9000+1000);
+  for (let i = 0; i < user.uid.length; i++) hash = (hash * 31 + user.uid.charCodeAt(i)) & 0xffffffff;
+  return 'ECS-' + initials + '-' + String(Math.abs(hash) % 9000 + 1000);
 }
 
 function onUserSignedIn(user) {
   document.getElementById('loginScreen').style.display = 'none';
   const id = generateResearcherId(user);
   document.getElementById('userDisplayName').textContent = user.displayName || user.email || '';
-  document.getElementById('userEmail').textContent = user.email || '';
+  document.getElementById('userEmail').textContent       = user.email || '';
   document.getElementById('generatedIdDisplay').textContent = id;
   const av = document.getElementById('userAvatar');
   if (user.photoURL) av.src = user.photoURL; else av.style.display = 'none';
@@ -734,16 +1254,17 @@ function onUserSignedIn(user) {
 
 function confirmResearcher() {
   const user = currentUser, id = generateResearcherId(user);
-  currentResearcher = { name: user.displayName||user.email, login: id, email: user.email, googleUid: user.uid, photoURL: user.photoURL||'' };
+  currentResearcher = { name:user.displayName||user.email, login:id, email:user.email, googleUid:user.uid, photoURL:user.photoURL||'' };
   localStorage.setItem(RES_KEY, JSON.stringify(currentResearcher));
   document.getElementById('researcherModal').classList.add('hidden');
   showSurvey();
 }
 
 function showSurvey() {
-  document.getElementById('siteHeader').style.display = 'block';
+  document.getElementById('siteHeader').style.display    = 'block';
   document.getElementById('surveyWrapper').style.display = 'block';
-  const banner = document.getElementById('resBanner'); banner.style.display = 'flex';
+  const banner = document.getElementById('resBanner');
+  banner.style.display = 'flex';
   document.getElementById('bannerName').textContent = currentResearcher.name;
   document.getElementById('bannerId').textContent   = currentResearcher.login;
   const av = document.getElementById('bannerAvatar');
@@ -752,9 +1273,10 @@ function showSurvey() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   EMAIL / PASSWORD AUTH — patched to consume invite on signup
-   ══════════════════════════════════════════════════════════════ */
+   EMAIL / PASSWORD AUTH  — patched: re-validates invite on signup
+══════════════════════════════════════════════════════════════ */
 let _authTab = 'login';
+
 function switchTab(tab) {
   _authTab = tab;
   const isSignup = tab === 'signup';
@@ -775,13 +1297,13 @@ async function emailAuth() {
   const err      = document.getElementById('loginErr');
   const loading  = document.getElementById('loginLoading');
   const btn      = document.getElementById('emailAuthBtn');
-  if (!email || !password) { err.textContent='Please enter your email and password.'; err.style.display='block'; return; }
-  if (_authTab==='signup' && !name) { err.textContent='Please enter your full name.'; err.style.display='block'; return; }
-  if (_authTab==='signup' && password.length<6) { err.textContent='Password must be at least 6 characters.'; err.style.display='block'; return; }
+  if (!email || !password) { err.textContent = 'Please enter your email and password.'; err.style.display = 'block'; return; }
+  if (_authTab === 'signup' && !name)            { err.textContent = 'Please enter your full name.'; err.style.display = 'block'; return; }
+  if (_authTab === 'signup' && password.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
   btn.disabled = true; err.style.display = 'none'; loading.style.display = 'block';
   try {
     if (_authTab === 'signup') {
-      /* For signup, re-validate token right before creating account */
+      /* Re-validate token immediately before account creation */
       if (_inviteToken) {
         const check = await validateInviteToken(_inviteToken);
         if (!check.ok) {
@@ -794,7 +1316,7 @@ async function emailAuth() {
       const cred = await auth.createUserWithEmailAndPassword(email, password);
       await cred.user.updateProfile({ displayName: name });
       await auth.currentUser.reload();
-      /* consumeInviteToken called via onAuthStateChanged */
+      /* consumeInviteToken fires via onAuthStateChanged */
     } else {
       await auth.signInWithEmailAndPassword(email, password);
     }
@@ -807,181 +1329,670 @@ async function emailAuth() {
 async function forgotPassword() {
   const email = document.getElementById('emailInput').value.trim();
   const err   = document.getElementById('loginErr');
-  if (!email) { err.textContent='Enter your email address above first.'; err.style.display='block'; return; }
+  if (!email) { err.textContent = 'Enter your email address above first.'; err.style.display = 'block'; return; }
   try {
     await auth.sendPasswordResetEmail(email);
-    err.style.cssText='display:block;background:#dcfce7;border-color:#86efac;color:#166534;';
-    err.textContent='✅ Password reset email sent. Check your inbox.';
-  } catch(e) { err.textContent=friendlyAuthError(e.code); err.style.display='block'; }
+    err.style.cssText = 'display:block;background:#dcfce7;border-color:#86efac;color:#166534;';
+    err.textContent   = '✅ Password reset email sent. Check your inbox.';
+  } catch(e) { err.textContent = friendlyAuthError(e.code); err.style.display = 'block'; }
 }
 
 function friendlyAuthError(code) {
   const map = {
-    'auth/invalid-email':'Invalid email address.','auth/user-not-found':'No account found with this email.',
-    'auth/wrong-password':'Incorrect password.','auth/email-already-in-use':'This email is already registered. Sign in instead.',
-    'auth/weak-password':'Password too weak — use at least 6 characters.','auth/too-many-requests':'Too many attempts. Please wait.',
-    'auth/network-request-failed':'Network error. Check your connection.','auth/invalid-credential':'Invalid email or password.',
+    'auth/invalid-email':          'Invalid email address.',
+    'auth/user-not-found':         'No account found with this email.',
+    'auth/wrong-password':         'Incorrect password. Try again.',
+    'auth/email-already-in-use':   'This email is already registered. Sign in instead.',
+    'auth/weak-password':          'Password is too weak. Use at least 6 characters.',
+    'auth/too-many-requests':      'Too many attempts. Please wait and try again.',
+    'auth/network-request-failed': 'Network error. Check your connection.',
+    'auth/popup-closed-by-user':   'Sign-in cancelled.',
+    'auth/invalid-credential':     'Invalid email or password.',
   };
   return map[code] || 'Authentication error: ' + code;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SEARCH WIDGETS, CONSTITUENCY/WARD, GPS, DRAFT, OFFLINE QUEUE,
-   FORM COLLECT/VALIDATE/SUBMIT — all unchanged from original
-   (paste the full implementations from the original file here)
-   ══════════════════════════════════════════════════════════════ */
-
-/* Stub placeholders — replace with full implementations from original */
+   SEARCH WIDGET INSTANCES
+══════════════════════════════════════════════════════════════ */
 const SW_SENATORS  = ['Njeru Ndwiga','Clive Imanyara','Lenny Kivuti','Njeru Githae','Cecily Mbarire'];
 const SW_WOMENREP  = ['Millicent Omanga','Wanjiru Githae','Tabitha Mutinda','Mary Njue','Grace Kamau'];
-let _swMPOptions = [], _swMCAOptions = [];
-const SW_OCCUPATIONS = ['Subsistence Farmer','Commercial Farmer','Teacher','Nurse / Midwife','Engineer','Accountant / Auditor','Boda Boda Rider','Casual Labourer','Student','Retired'];
+let _swMPOptions   = [];
+let _swMCAOptions  = [];
+const SW_OCCUPATIONS = [
+  'Subsistence Farmer','Commercial Farmer','Livestock Farmer','Horticulture Farmer','Agro-dealer',
+  'Retail Shop Owner','Wholesale Trader','Hawker / Street Vendor','Market Trader',
+  'Restaurant / Food Business','Online Business',
+  'ECDE / Nursery Teacher','Primary School Teacher','Secondary School Teacher',
+  'College Lecturer','University Lecturer','VTC Instructor','Private Tutor',
+  'Doctor / Clinical Officer','Nurse / Midwife','Engineer','Accountant / Auditor',
+  'Lawyer / Advocate','ICT / Technology','Banker / Finance',
+  'Government Officer','NGO / Non-profit Worker',
+  'Matatu Driver','Matatu Conductor','Boda Boda Rider','Truck / Lorry Driver','Taxi / Cab Driver',
+  'Mason / Fundi','Carpenter','Electrician','Plumber','Mechanic',
+  'Tailor / Seamstress','Welder / Metal Worker','Hairdresser / Barber',
+  'Police Officer','Kenya Defence Forces','Prison Warden',
+  'Pastor / Clergy','Social Worker','Community Health Worker',
+  'Casual Labourer','Domestic Worker','Student','Retired'
+];
+
 function initSearchWidgets() {
-  window._swSenator  = new SearchWidget({inputId:'swSenatorInput',hiddenId:'prefSenator',chipId:'swSenatorChip',chipLabelId:'swSenatorLabel',clearId:'swSenatorClear',dropdownId:'swSenatorDD',icon:'🏛',placeholder:'Type to search senator...',getOptions:()=>SW_SENATORS});
-  document.getElementById('swSenatorEdit').addEventListener('click',()=>window._swSenator.clear());
-  window._swWomenRep = new SearchWidget({inputId:'swWomenRepInput',hiddenId:'prefWomenRep',chipId:'swWomenRepChip',chipLabelId:'swWomenRepLabel',clearId:'swWomenRepClear',dropdownId:'swWomenRepDD',icon:'👩',placeholder:'Type to search Women Rep...',getOptions:()=>SW_WOMENREP});
-  document.getElementById('swWomenRepEdit').addEventListener('click',()=>window._swWomenRep.clear());
-  window._swMP       = new SearchWidget({inputId:'swMPInput',hiddenId:'prefMP',chipId:'swMPChip',chipLabelId:'swMPLabel',clearId:'swMPClear',dropdownId:'swMPDD',icon:'🗳',placeholder:'Select constituency first...',getOptions:()=>_swMPOptions});
-  document.getElementById('swMPEdit').addEventListener('click',()=>window._swMP.clear());
-  window._swMCA      = new SearchWidget({inputId:'swMCAInput',hiddenId:'prefMCA',chipId:'swMCAChip',chipLabelId:'swMCALabel',clearId:'swMCAClear',dropdownId:'swMCADD',icon:'📍',placeholder:'Select ward first...',getOptions:()=>_swMCAOptions});
-  document.getElementById('swMCAEdit').addEventListener('click',()=>window._swMCA.clear());
-  window._swOcc      = new SearchWidget({inputId:'swOccInput',hiddenId:'occupation',chipId:'swOccChip',chipLabelId:'swOccLabel',clearId:'swOccClear',dropdownId:'swOccDD',icon:'💼',placeholder:'Type occupation...',getOptions:()=>SW_OCCUPATIONS});
-  document.getElementById('swOccEdit').addEventListener('click',()=>window._swOcc.clear());
+  window._swSenator  = new SearchWidget({ inputId:'swSenatorInput',  hiddenId:'prefSenator',  chipId:'swSenatorChip',  chipLabelId:'swSenatorLabel',  clearId:'swSenatorClear',  dropdownId:'swSenatorDD',  icon:'🏛', placeholder:'Type to search senator...',         getOptions:() => SW_SENATORS });
+  document.getElementById('swSenatorEdit').addEventListener('click', () => window._swSenator.clear());
+  window._swWomenRep = new SearchWidget({ inputId:'swWomenRepInput', hiddenId:'prefWomenRep', chipId:'swWomenRepChip', chipLabelId:'swWomenRepLabel', clearId:'swWomenRepClear', dropdownId:'swWomenRepDD', icon:'👩', placeholder:'Type to search Women Rep...',        getOptions:() => SW_WOMENREP });
+  document.getElementById('swWomenRepEdit').addEventListener('click', () => window._swWomenRep.clear());
+  window._swMP       = new SearchWidget({ inputId:'swMPInput',       hiddenId:'prefMP',       chipId:'swMPChip',       chipLabelId:'swMPLabel',       clearId:'swMPClear',       dropdownId:'swMPDD',       icon:'🗳', placeholder:'Select constituency first (A2)...',  getOptions:() => _swMPOptions });
+  document.getElementById('swMPEdit').addEventListener('click', () => window._swMP.clear());
+  window._swMCA      = new SearchWidget({ inputId:'swMCAInput',      hiddenId:'prefMCA',      chipId:'swMCAChip',      chipLabelId:'swMCALabel',      clearId:'swMCAClear',      dropdownId:'swMCADD',      icon:'📍', placeholder:'Select ward first (A3)...',          getOptions:() => _swMCAOptions });
+  document.getElementById('swMCAEdit').addEventListener('click', () => window._swMCA.clear());
+  window._swOcc      = new SearchWidget({ inputId:'swOccInput',      hiddenId:'occupation',   chipId:'swOccChip',      chipLabelId:'swOccLabel',      clearId:'swOccClear',      dropdownId:'swOccDD',      icon:'💼', placeholder:'Type occupation...',                 getOptions:() => SW_OCCUPATIONS });
+  document.getElementById('swOccEdit').addEventListener('click', () => window._swOcc.clear());
 }
 
-const WARDS = {'Manyatta':['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],'Runyenjes':['Gaturi North','Kagaari South','Kagaari North','Central Ward','Kyeni North','Kyeni South'],'Mbeere South':['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],'Mbeere North':['Nthawa','Muminji','Evurore']};
-function onConstChange(val) { document.getElementById('constituency').value=val; document.getElementById('ward').value=''; document.getElementById('wardValidMsg').innerHTML=''; const wbox=document.getElementById('wardPilbox'),wpills=document.getElementById('wardPills'),wards=WARDS[val]||[]; wpills.innerHTML=''; wards.forEach((w,i)=>{const id='w_'+i,item=document.createElement('div'); item.className='pilbox-item'; item.innerHTML='<input type="radio" name="ward_pill" id="'+id+'" value="'+w+'"><label for="'+id+'">'+w+'</label>'; item.querySelector('input').addEventListener('change',function(){onWardChange(w);}); wpills.appendChild(item);}); wbox.style.display=wards.length?'block':'none'; resetPollingStation(); document.getElementById('pollingStationField').style.display='none'; updateMPCandidates(val); }
-function onWardChange(val) { document.getElementById('ward').value=val; const constVal=document.getElementById('constituency').value,expected=_WC()[val],msgEl=document.getElementById('wardValidMsg'); if(constVal&&expected&&expected!==constVal){msgEl.innerHTML='<span class="validation-badge err">&#x26A0; Ward "'+val+'" belongs to '+expected+'</span>';}else{msgEl.innerHTML='<span class="validation-badge ok">&#x2713; Ward confirmed in '+constVal+'</span>';} window.loadPollingStations(val); updateMCACandidates(val); }
-function updateMPCandidates(c){_swMPOptions=_MP()[c]||[];if(window._swMP){window._swMP.clear();const ph=_swMPOptions.length?'Type to search MP candidates...':'No candidates listed — type a name...';window._swMP.cfg.placeholder=ph;document.getElementById('swMPInput').placeholder=ph;}}
-function updateMCACandidates(w){_swMCAOptions=_MCA()[w]||[];if(window._swMCA){window._swMCA.clear();const ph=_swMCAOptions.length?'Type to search MCA candidates...':'No candidates listed — type a name...';window._swMCA.cfg.placeholder=ph;document.getElementById('swMCAInput').placeholder=ph;}}
-function toggleCond(name,showVal,fieldId){const r=document.querySelector('input[name="'+name+'"]:checked');document.getElementById(fieldId).classList.toggle('vis',r&&r.value===showVal);}
-function toggleRuto(){const r=document.querySelector('input[name="reelectRuto"]:checked');document.getElementById('rutoCandField').classList.toggle('vis',r&&r.value==='No');if(r&&r.value==='Yes') document.getElementById('preferredPres').value='';}
-function toggleGovOther(){const r=document.querySelector('input[name="governor"]:checked');document.getElementById('govOtherField').classList.toggle('vis',r&&r.value==='Other');}
-function selectGov(card,val){document.querySelectorAll('.gov-card').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');card.querySelector('input[type="radio"]').checked=true;toggleGovOther();updateNeg();}
-function updateNeg(){const r=document.querySelector('input[name="governor"]:checked'),sel=r?r.value:'';[{name:'Cecily Mbarire',o:'notMbarireOpts',d:'notMbarireDisabled'},{name:'Lenny Kivuti',o:'notKivutiOpts',d:'notKivutiDisabled'},{name:'Gitonga Mukunji',o:'notGitongaOpts',d:'notGitongaDisabled'}].forEach(c=>{const isSel=sel===c.name,opts=document.getElementById(c.o),dis=document.getElementById(c.d);if(!opts||!dis)return;opts.style.display=isSel?'none':'flex';dis.style.display=isSel?'block':'none';if(isSel)opts.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);});}
+/* ══════════════════════════════════════════════════════════════
+   CONSTITUENCY / WARD
+══════════════════════════════════════════════════════════════ */
+const WARDS = {
+  'Manyatta':    ['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],
+  'Runyenjes':   ['Gaturi North','Kagaari South','Kagaari North','Central Ward','Kyeni North','Kyeni South'],
+  'Mbeere South':['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],
+  'Mbeere North':['Nthawa','Muminji','Evurore']
+};
 
-let capturedGps=null,gpsWatchId=null;
-const GPS_LAST='ecs26_gps_last';
-function todayKey(){return new Date().toISOString().slice(0,10);}
-function getLastGps(){try{const s=JSON.parse(localStorage.getItem(GPS_LAST)||'null');return(s&&s.day===todayKey())?s:null;}catch{return null;}}
-function saveLastGps(la,lo,ts){localStorage.setItem(GPS_LAST,JSON.stringify({lat:la,lng:lo,ts,day:todayKey()}));}
-function haversine(la1,lo1,la2,lo2){const R=6371000,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function setGpsDot(cls){document.getElementById('gpsDot').className='gps-dot '+cls;}
-function setGpsText(t){document.getElementById('gpsStatusText').textContent=t;}
-function accTier(acc){if(acc<=GPS.MAX_ACC_GOOD)return 'good';if(acc<=GPS.MAX_ACC_OK)return 'ok';return 'poor';}
-function startGpsWatch(){if(!navigator.geolocation)return;document.getElementById('gpsBar').style.display='block';setGpsDot('acquiring');setGpsText('Acquiring...');gpsWatchId=navigator.geolocation.watchPosition(pos=>{const acc=Math.round(pos.coords.accuracy),tier=accTier(acc);setGpsDot(tier==='good'?'good':tier==='ok'?'acquiring':'poor');setGpsText('\u00b1'+acc+'m');capturedGps={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:acc,ts:Date.now()};document.getElementById('locLat').textContent=pos.coords.latitude.toFixed(6);document.getElementById('locLng').textContent=pos.coords.longitude.toFixed(6);const ae=document.getElementById('locAcc');ae.textContent='\u00b1'+acc+'m';ae.className='loc-acc '+tier;document.getElementById('locationBox').style.display='block';},()=>{setGpsDot('poor');setGpsText('Unavailable');},{enableHighAccuracy:true,maximumAge:GPS.MAX_AGE,timeout:GPS.GEO_TIMEOUT});}
+function onConstChange(val) {
+  document.getElementById('constituency').value = val;
+  document.getElementById('ward').value = '';
+  document.getElementById('wardValidMsg').innerHTML = '';
+  const wbox   = document.getElementById('wardPilbox');
+  const wpills = document.getElementById('wardPills');
+  const wards  = WARDS[val] || [];
+  wpills.innerHTML = '';
+  wards.forEach((w, i) => {
+    const id   = 'w_' + i;
+    const item = document.createElement('div');
+    item.className = 'pilbox-item';
+    item.innerHTML = '<input type="radio" name="ward_pill" id="' + id + '" value="' + w + '"><label for="' + id + '">' + w + '</label>';
+    item.querySelector('input').addEventListener('change', function() { onWardChange(w); });
+    wpills.appendChild(item);
+  });
+  wbox.style.display = wards.length ? 'block' : 'none';
+  resetPollingStation();
+  document.getElementById('pollingStationField').style.display = 'none';
+  updateMPCandidates(val);
+}
 
-let gpsResolve=null,_gpsPollTmr=null,_gpsDeadline=null,_gpsBest=null;
-function setStep(id,state,detail){const li=document.getElementById('step-'+id);if(!li)return;li.className=state;const d=document.getElementById('step-'+id+'-detail');if(d&&detail!==undefined)d.textContent=detail;}
-function setGpsProg(p){document.getElementById('gpsProg').style.width=p+'%';}
-function cancelGps(){_stopPoll();document.getElementById('gpsGuardModal').classList.add('hidden');if(gpsResolve)gpsResolve({ok:false,reason:'cancelled'});}
-function retryGps(){document.getElementById('gpsRetryBtn').style.display='none';_gpsBest=null;_gpsDeadline=Date.now()+GPS.POLL_TIMEOUT;setStep('acquire','active','Waiting for location fix…');setStep('accuracy','','Improving…');setStep('distance','','Must be ≥ 500 m from last survey');setGpsProg(5);document.getElementById('liveGpsCard').style.display='none';document.getElementById('gpsWaitNote').style.display='none';_startPoll();}
-async function openGpsGuard(){return new Promise(res=>{gpsResolve=res;_gpsBest=null;_gpsDeadline=Date.now()+GPS.POLL_TIMEOUT;document.getElementById('gpsGuardModal').classList.remove('hidden');setStep('acquire','active','Waiting for location fix…');setStep('accuracy','','Improving…');setStep('distance','','Must be ≥ 500 m');setGpsProg(5);['liveGpsCard','gpsWaitNote'].forEach(id=>{document.getElementById(id).style.display='none';});document.getElementById('gpsRetryBtn').style.display='none';document.getElementById('gpsCancelBtn').textContent='Cancel';document.getElementById('gpsGuardSub').textContent='Acquiring GPS fix — please hold the device still';if(!navigator.geolocation){setStep('acquire','fail','GPS not available');return;}_startPoll();});}
-function _stopPoll(){if(_gpsPollTmr){clearInterval(_gpsPollTmr);_gpsPollTmr=null;}}
-function _startPoll(){_stopPoll();_pollOnce();_gpsPollTmr=setInterval(_pollOnce,GPS.POLL_INTERVAL);}
-function _pollOnce(){navigator.geolocation.getCurrentPosition(_onGpsFix,_onGpsErr,{enableHighAccuracy:true,timeout:GPS.GEO_TIMEOUT,maximumAge:GPS.MAX_AGE});}
-function _onGpsFix(pos){const{latitude:lat,longitude:lng,accuracy}=pos.coords,acc=Math.round(accuracy),ts=Date.now(),tier=accTier(acc);if(!_gpsBest||acc<_gpsBest.accuracy)_gpsBest={lat,lng,accuracy:acc,ts};setStep('acquire','done',lat.toFixed(5)+', '+lng.toFixed(5));const lc=document.getElementById('liveGpsCard');lc.style.display='block';document.getElementById('liveCoords').textContent='Lat: '+lat.toFixed(6)+' | Lng: '+lng.toFixed(6);document.getElementById('liveAcc').textContent='Accuracy: ±'+acc+' m — best so far: ±'+_gpsBest.accuracy+' m';const badge=document.getElementById('accTierBadge');badge.innerHTML='<span class="acc-tier tier-'+tier+'">'+(tier==='good'?'✅ Excellent':tier==='ok'?'⚠️ Acceptable':'❌ Poor — improving…')+'('+acc+' m)</span>';const elapsed=ts-(_gpsDeadline-GPS.POLL_TIMEOUT);setGpsProg(Math.round(5+Math.min(elapsed/GPS.POLL_TIMEOUT,1)*60+(acc<=GPS.MAX_ACC_ACCEPT?20:0)));if(acc<=GPS.MAX_ACC_GOOD){setStep('accuracy','done','±'+acc+'m ✓');document.getElementById('gpsWaitNote').style.display='none';}else if(acc<=GPS.MAX_ACC_OK){setStep('accuracy','active','±'+acc+'m — acceptable');document.getElementById('gpsWaitNote').style.display='block';}else{setStep('accuracy','active','±'+acc+'m — improving…');document.getElementById('gpsWaitNote').style.display='block';}if(acc>GPS.MAX_ACC_ACCEPT&&Date.now()<_gpsDeadline)return;_stopPoll();const fix=_gpsBest;if(fix.accuracy>GPS.MAX_ACC_ACCEPT){setStep('accuracy','active','±'+fix.accuracy+'m — best available');}else{setStep('accuracy','done','±'+fix.accuracy+'m ✓');}document.getElementById('gpsWaitNote').style.display='none';setStep('distance','active');const last=getLastGps();if(last){const dist=haversine(last.lat,last.lng,fix.lat,fix.lng);if(dist<GPS.MIN_DIST){setGpsProg(90);setStep('distance','fail','Only '+Math.round(dist)+'m — move at least '+Math.round(GPS.MIN_DIST-dist)+'m further');document.getElementById('gpsRetryBtn').style.display='inline-block';document.getElementById('gpsCancelBtn').textContent='Cancel';if(gpsResolve)gpsResolve({ok:false,reason:'distance',dist});return;}setStep('distance','done',Math.round(dist)+'m from last ✓');}else{setStep('distance','skipped','First survey today');}setGpsProg(100);capturedGps=fix;saveLastGps(fix.lat,fix.lng,fix.ts);document.getElementById('gpsCancelBtn').textContent='Close';document.getElementById('gpsGuardSub').textContent='✅ Location verified';setTimeout(()=>{document.getElementById('gpsGuardModal').classList.add('hidden');if(gpsResolve)gpsResolve({ok:true,lat:fix.lat,lng:fix.lng,accuracy:fix.accuracy,ts:fix.ts});},900);}
-function _onGpsErr(err){if(Date.now()<_gpsDeadline)return;_stopPoll();const msgs={1:'Permission denied',2:'Position unavailable',3:'GPS timed out'};setStep('acquire','fail',msgs[err.code]||'GPS error');document.getElementById('gpsRetryBtn').style.display='inline-block';if(gpsResolve)gpsResolve({ok:false,reason:'gps_error',code:err.code});}
+function onWardChange(val) {
+  document.getElementById('ward').value = val;
+  const constVal = document.getElementById('constituency').value;
+  const expected = _WC()[val];
+  const msgEl    = document.getElementById('wardValidMsg');
+  if (constVal && expected && expected !== constVal) {
+    msgEl.innerHTML = '<span class="validation-badge err">&#x26A0; Ward "' + val + '" belongs to ' + expected + '</span>';
+  } else {
+    msgEl.innerHTML = '<span class="validation-badge ok">&#x2713; Ward confirmed in ' + constVal + '</span>';
+  }
+  window.loadPollingStations(val);
+  updateMCACandidates(val);
+}
 
-const DRAFT_KEY='ecs26_draft';
-let autosaveTimer=null;
-function snap(){const s={};document.querySelectorAll('input[type="radio"]').forEach(r=>{if(r.checked)s[r.name]=r.value;});document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{s['cb_'+cb.id]=cb.checked;});document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el=>{if(el.id)s[el.id]=el.value;});s._savedAt=new Date().toISOString();return s;}
-function applySnap(s){if(!s)return;document.querySelectorAll('input[type="radio"]').forEach(r=>{if(s[r.name]!==undefined)r.checked=(r.value===s[r.name]);});document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{if(s['cb_'+cb.id]!==undefined)cb.checked=s['cb_'+cb.id];});document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el=>{if(el.id&&s[el.id]!==undefined)el.value=s[el.id];});if(s['constituency']){const r=document.querySelector('input[name="constituency_pill"][value="'+s['constituency']+'"]');if(r){r.checked=true;onConstChange(s['constituency']);}}const gv=s['governor'];if(gv)document.querySelectorAll('.gov-card').forEach(c=>{const r=c.querySelector('input[type="radio"]');if(r&&r.value===gv)c.classList.add('selected');});updateNeg();toggleRuto();toggleGovOther();}
-function saveDraft(){localStorage.setItem(DRAFT_KEY,JSON.stringify(snap()));showAutosave();}
-function clearDraft(){localStorage.removeItem(DRAFT_KEY);}
-function loadDraft(){try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}catch{return null;}}
-function showAutosave(){const el=document.getElementById('autosave');el.style.display='block';el.style.opacity='1';clearTimeout(el._t);el._t=setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.style.display='none',400);},2200);}
-function checkDraft(){const d=loadDraft();if(!d)return;const dt=new Date(d._savedAt);document.getElementById('draftSub').textContent='Last saved: '+dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.getElementById('draftBar').style.display='block';}
-function restoreDraft(){applySnap(loadDraft());document.getElementById('draftBar').style.display='none';showAutosave();}
-function discardDraft(){if(!confirm('Discard the saved draft and start fresh?'))return;clearDraft();document.getElementById('draftBar').style.display='none';}
-function attachAutosave(){const f=document.getElementById('surveyForm');f.addEventListener('input',()=>{clearTimeout(autosaveTimer);autosaveTimer=setTimeout(saveDraft,1500);});f.addEventListener('change',()=>{clearTimeout(autosaveTimer);autosaveTimer=setTimeout(saveDraft,1500);});}
+function updateMPCandidates(c) {
+  _swMPOptions = _MP()[c] || [];
+  if (window._swMP) { window._swMP.clear(); const ph = _swMPOptions.length ? 'Type to search MP candidates...' : 'No candidates listed — type a name...'; window._swMP.cfg.placeholder = ph; document.getElementById('swMPInput').placeholder = ph; }
+}
+function updateMCACandidates(w) {
+  _swMCAOptions = _MCA()[w] || [];
+  if (window._swMCA) { window._swMCA.clear(); const ph = _swMCAOptions.length ? 'Type to search MCA candidates...' : 'No candidates listed — type a name...'; window._swMCA.cfg.placeholder = ph; document.getElementById('swMCAInput').placeholder = ph; }
+}
 
-const QUEUE_KEY='ecs26_queue';
-let isOnline=navigator.onLine;
-function getQueue(){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]');}catch{return[];}}
-function saveQueue(q){localStorage.setItem(QUEUE_KEY,JSON.stringify(q));}
-function enqueue(d){d._queuedAt=new Date().toISOString();d._queueId='q_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);const q=getQueue();q.push(d);saveQueue(q);refreshPendUI();}
-function dequeue(id){saveQueue(getQueue().filter(d=>d._queueId!==id));refreshPendUI();}
-function refreshPendUI(){const n=getQueue().length;const pb=document.getElementById('pendBtn'),pbn=document.getElementById('pendBanner');if(pb)pb.style.display=n>0?'inline-block':'none';if(pbn)pbn.style.display=n>0?'block':'none';const ct=document.getElementById('pendCountText'),cb=document.getElementById('pendCount');if(ct)ct.textContent=n;if(cb)cb.textContent=n;}
-function renderQueue(){const l=document.getElementById('queueList'),q=getQueue();if(!q.length){l.innerHTML='<div style="text-align:center;color:var(--muted);font-size:14px;padding:16px;">No pending surveys.</div>';return;}l.innerHTML=q.map(d=>{const dt=new Date(d._queuedAt),label=[d.gender,d.ward||d.constituency].filter(Boolean).join(' · ')||'Survey';return'<div class="q-item"><div><div style="font-weight:700;">'+label+'</div><div style="font-size:12px;color:#92400e;">'+dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div></div><button class="qi-del" onclick="removeQ(\''+d._queueId+'\')">🗑</button></div>';}).join('');}
-function removeQ(id){if(!confirm('Remove this queued survey?'))return;dequeue(id);renderQueue();}
-function openOfflineModal(){renderQueue();document.getElementById('offlineModal').classList.remove('hidden');}
-function closeOfflineModal(){document.getElementById('offlineModal').classList.add('hidden');}
-async function syncNow(){if(!navigator.onLine){alert('You are offline.');return;}const q=getQueue();if(!q.length){closeOfflineModal();return;}const btn=document.getElementById('syncNowBtn');btn.disabled=true;const wrap=document.getElementById('syncWrap'),bar=document.getElementById('syncBar'),stat=document.getElementById('syncStat');wrap.style.display='block';let done=0;for(const e of q){stat.textContent='Syncing '+(done+1)+' of '+q.length+'...';bar.style.width=Math.round(done/q.length*100)+'%';try{const{_queueId,_queuedAt,...data}=e;await db.collection('responses').add({...data,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});dequeue(_queueId);done++;}catch(err){console.error(err);}}bar.style.width='100%';stat.textContent=done+' of '+q.length+' synced.';btn.disabled=false;renderQueue();setTimeout(()=>wrap.style.display='none',2000);}
+/* ══════════════════════════════════════════════════════════════
+   CONDITIONAL FIELDS
+══════════════════════════════════════════════════════════════ */
+function toggleCond(name, showVal, fieldId) { const r = document.querySelector('input[name="' + name + '"]:checked'); document.getElementById(fieldId).classList.toggle('vis', r && r.value === showVal); }
+function toggleRuto() { const r = document.querySelector('input[name="reelectRuto"]:checked'); document.getElementById('rutoCandField').classList.toggle('vis', r && r.value === 'No'); if (r && r.value === 'Yes') document.getElementById('preferredPres').value = ''; }
+function toggleGovOther() { const r = document.querySelector('input[name="governor"]:checked'); document.getElementById('govOtherField').classList.toggle('vis', r && r.value === 'Other'); }
+function selectGov(card, val) { document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); card.querySelector('input[type="radio"]').checked = true; toggleGovOther(); updateNeg(); }
+function updateNeg() {
+  const r = document.querySelector('input[name="governor"]:checked'), sel = r ? r.value : '';
+  [{ name:'Cecily Mbarire', o:'notMbarireOpts', d:'notMbarireDisabled' },
+   { name:'Lenny Kivuti',    o:'notKivutiOpts',  d:'notKivutiDisabled'  },
+   { name:'Gitonga Mukunji', o:'notGitongaOpts', d:'notGitongaDisabled' }]
+    .forEach(c => {
+      const isSel = sel === c.name;
+      const opts  = document.getElementById(c.o);
+      const dis   = document.getElementById(c.d);
+      if (!opts || !dis) return;
+      opts.style.display = isSel ? 'none' : 'flex';
+      dis.style.display  = isSel ? 'block' : 'none';
+      if (isSel) opts.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    });
+}
 
-function getChk(ids){return ids.filter(id=>{const e=document.getElementById(id);return e&&e.checked;}).map(id=>document.getElementById(id).value);}
-function gv(name){const e=document.querySelector('input[name="'+name+'"]:checked');return e?e.value:'';}
-function tx(id){const e=document.getElementById(id);return e?e.value.trim():'';}
-function validatePollingStationSilent(){const ps=document.getElementById('pollingStation').value,ward=document.getElementById('ward').value;if(!ps||ps==='__other__')return 'not_selected';if(!ward)return 'no_ward';return(_PS()[ward]||[]).includes(ps)?'matched':'MISMATCH';}
-function collectData(){return{constituency:tx('constituency'),ward:tx('ward'),pollingStation:tx('pollingStation'),_psValidation:validatePollingStationSilent(),age:gv('age'),education:gv('education'),employment:gv('employment'),occupation:tx('occupation'),voter:gv('voter'),notDelivered:getChk(['b5a','b5b','b5c','b5d','b5e','b5f']),infoSources:getChk(['c1a','c1b','c1c','c1d','c1e','c1f','c1g']),performance:gv('performance'),projectsAware:gv('projectsAware'),projectsDelivered:tx('projectsDelivered'),missedPromises:gv('missedPromises'),projectsMissing:tx('projectsMissing'),needs:tx('needs'),smeChallenges:getChk(['e1a','e1b','e1c','e1d','e1e','e1f','e1g']),reelectRuto:gv('reelectRuto'),preferredPres:tx('preferredPres'),governor:gv('governor'),governorOther:tx('governorOther'),party:gv('party'),voteReasons:getChk(['g4a','g4b','g4c','g4d','g4e','g4f','g4g','g4h','g4i','g4j','g4k']),notMbarire:getChk(['g5a','g5b','g5c','g5d','g5e','g5f','g5g','g5h','g5i']),adviceMbarire:tx('adviceMbarire'),notKivuti:getChk(['g7a','g7b','g7c','g7d','g7e','g7f','g7g','g7h','g7i']),notGitonga:getChk(['g8a','g8b','g8c','g8d','g8e','g8f','g8g','g8h','g8i']),prefSenator:tx('prefSenator'),prefWomenRep:tx('prefWomenRep'),prefMP:tx('prefMP'),prefMCA:tx('prefMCA'),devOffice:gv('devOffice'),worship:gv('worship'),contactName:tx('contactName'),contactPhone:tx('contactPhone'),followUp:gv('followUp'),gender:gv('gender'),enumDecl:gv('enumDecl'),_respondentId:'R_'+Date.now(),_submittedAt:new Date().toISOString(),_researcher:currentResearcher?currentResearcher.name:'Unknown',_researcherLogin:currentResearcher?currentResearcher.login:'Unknown',_researcherEmail:currentResearcher?currentResearcher.email:'',_researcherGoogleUid:currentResearcher?currentResearcher.googleUid:'',_gpsLat:capturedGps?capturedGps.lat:null,_gpsLng:capturedGps?capturedGps.lng:null,_gpsAccuracy:capturedGps?capturedGps.accuracy:null,_gpsSkipped:!capturedGps};}
-function validate(){const req=[['gender','A1: Please select gender'],['constituency','A2: Please select constituency'],['ward','A3: Please select ward'],['age','A5: Please select age category'],['education','A6: Please select education level'],['employment','A7: Please select employment status'],['voter','B1: Please indicate if registered voter'],['performance','D1: Please rate county government performance'],['devOffice','H1: Please select which office contributes most to development'],['worship','H2: Please indicate how often you attend worship'],['enumDecl','Declaration: Please confirm enumerator declaration']];for(const[name,msg]of req){let val;if(['constituency','ward'].includes(name)){val=document.getElementById(name)?document.getElementById(name).value:'';}else{val=document.querySelector('input[name="'+name+'"]:checked');}if(!val||(typeof val==='string'&&!val.trim()))return msg;}if(validatePollingStationSilent()==='MISMATCH'){const go=confirm('⚠️ Polling station / ward mismatch detected.\n\nContinue anyway?');if(!go)return'A4: Please verify polling station.';}return null;}
-function showStatus(msg,type,dur){const el=document.getElementById('status');el.textContent=msg;el.className='status-msg '+type;el.style.display='block';if(dur)setTimeout(()=>el.style.display='none',dur);}
-function resetForm(){document.getElementById('surveyForm').reset();document.querySelectorAll('.gov-card').forEach(c=>c.classList.remove('selected'));document.querySelectorAll('.cond-field').forEach(f=>f.classList.remove('vis'));document.querySelectorAll('.disabled-note').forEach(n=>n.style.display='none');document.querySelectorAll('[id$="Opts"]').forEach(el=>el.style.display='flex');document.getElementById('wardPilbox').style.display='none';document.getElementById('wardPills').innerHTML='';document.getElementById('constituency').value='';document.getElementById('ward').value='';document.getElementById('wardValidMsg').innerHTML='';resetPollingStation();document.getElementById('pollingStationField').style.display='none';if(window._swSenator)window._swSenator.clear();if(window._swWomenRep)window._swWomenRep.clear();if(window._swMP)window._swMP.clear();if(window._swMCA)window._swMCA.clear();if(window._swOcc)window._swOcc.clear();capturedGps=null;document.getElementById('locationBox').style.display='none';clearDraft();window.scrollTo({top:0,behavior:'smooth'});}
+/* ══════════════════════════════════════════════════════════════
+   GPS — BACKGROUND WATCH
+══════════════════════════════════════════════════════════════ */
+let capturedGps = null, gpsWatchId = null;
+const GPS_LAST  = 'ecs26_gps_last';
 
-/* Submit handler — unchanged from original */
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('surveyForm');
-  if (!form) return;
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const err = validate(); if (err) { showStatus('⚠️ ' + err, 'warning'); return; }
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true; btn.textContent = '⏳ Verifying location…';
-    showStatus('Verifying GPS location…', 'warning');
-    const gpsResult = await openGpsGuard();
-    if (!gpsResult.ok) {
-      btn.disabled = false; btn.textContent = '📍 Submit Research';
-      const reasons = { cancelled:'Submission cancelled.', distance:'Too close to previous survey.', gps_error:'GPS error. Enable Location and retry.' };
-      showStatus('❌ ' + (reasons[gpsResult.reason]||'GPS check failed.'), 'error');
+function todayKey()            { return new Date().toISOString().slice(0,10); }
+function getLastGps()          { try { const s = JSON.parse(localStorage.getItem(GPS_LAST)||'null'); return (s && s.day === todayKey()) ? s : null; } catch { return null; } }
+function saveLastGps(la,lo,ts) { localStorage.setItem(GPS_LAST, JSON.stringify({lat:la,lng:lo,ts,day:todayKey()})); }
+function haversine(la1,lo1,la2,lo2) { const R=6371000,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+function setGpsDot(cls) { document.getElementById('gpsDot').className = 'gps-dot ' + cls; }
+function setGpsText(t)  { document.getElementById('gpsStatusText').textContent = t; }
+function accTier(acc)   { if (acc <= GPS.MAX_ACC_GOOD) return 'good'; if (acc <= GPS.MAX_ACC_OK) return 'ok'; return 'poor'; }
+
+function startGpsWatch() {
+  if (!navigator.geolocation) return;
+  document.getElementById('gpsBar').style.display = 'block';
+  setGpsDot('acquiring'); setGpsText('Acquiring...');
+  gpsWatchId = navigator.geolocation.watchPosition(pos => {
+    const acc  = Math.round(pos.coords.accuracy);
+    const tier = accTier(acc);
+    setGpsDot(tier === 'good' ? 'good' : tier === 'ok' ? 'acquiring' : 'poor');
+    setGpsText('\u00b1' + acc + 'm');
+    capturedGps = { lat:pos.coords.latitude, lng:pos.coords.longitude, accuracy:acc, ts:Date.now() };
+    document.getElementById('locLat').textContent = pos.coords.latitude.toFixed(6);
+    document.getElementById('locLng').textContent = pos.coords.longitude.toFixed(6);
+    const ae = document.getElementById('locAcc');
+    ae.textContent = '\u00b1' + acc + 'm';
+    ae.className   = 'loc-acc ' + tier;
+    document.getElementById('locationBox').style.display = 'block';
+  }, () => { setGpsDot('poor'); setGpsText('Unavailable'); },
+  { enableHighAccuracy:true, maximumAge:GPS.MAX_AGE, timeout:GPS.GEO_TIMEOUT });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GPS GUARD MODAL
+══════════════════════════════════════════════════════════════ */
+let gpsResolve = null, _gpsPollTmr = null, _gpsDeadline = null, _gpsBest = null;
+
+function setStep(id, state, detail) {
+  const li = document.getElementById('step-' + id); if (!li) return;
+  li.className = state;
+  const d = document.getElementById('step-' + id + '-detail');
+  if (d && detail !== undefined) d.textContent = detail;
+}
+function setGpsProg(p) { document.getElementById('gpsProg').style.width = p + '%'; }
+function cancelGps() { _stopPoll(); document.getElementById('gpsGuardModal').classList.add('hidden'); if (gpsResolve) gpsResolve({ ok:false, reason:'cancelled' }); }
+function retryGps() {
+  document.getElementById('gpsRetryBtn').style.display = 'none';
+  _gpsBest = null; _gpsDeadline = Date.now() + GPS.POLL_TIMEOUT;
+  setStep('acquire','active','Waiting for location fix…');
+  setStep('accuracy','','Improving… (target ≤ 200 m)');
+  setStep('distance','','Must be ≥ 500 m from last survey');
+  setGpsProg(5);
+  document.getElementById('liveGpsCard').style.display = 'none';
+  document.getElementById('gpsWaitNote').style.display = 'none';
+  _startPoll();
+}
+async function openGpsGuard() {
+  return new Promise(res => {
+    gpsResolve = res; _gpsBest = null; _gpsDeadline = Date.now() + GPS.POLL_TIMEOUT;
+    document.getElementById('gpsGuardModal').classList.remove('hidden');
+    setStep('acquire','active','Waiting for location fix…');
+    setStep('accuracy','','Improving… (target ≤ 200 m)');
+    setStep('distance','','Must be ≥ 500 m from last survey');
+    setGpsProg(5);
+    document.getElementById('liveGpsCard').style.display = 'none';
+    document.getElementById('gpsWaitNote').style.display = 'none';
+    document.getElementById('gpsRetryBtn').style.display = 'none';
+    document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
+    document.getElementById('gpsGuardSub').textContent   = 'Acquiring GPS fix — please hold the device still';
+    if (!navigator.geolocation) { setStep('acquire','fail','GPS not available on this device'); return; }
+    _startPoll();
+  });
+}
+function _stopPoll()  { if (_gpsPollTmr) { clearInterval(_gpsPollTmr); _gpsPollTmr = null; } }
+function _startPoll() { _stopPoll(); _pollOnce(); _gpsPollTmr = setInterval(_pollOnce, GPS.POLL_INTERVAL); }
+function _pollOnce()  { navigator.geolocation.getCurrentPosition(_onGpsFix, _onGpsErr, { enableHighAccuracy:true, timeout:GPS.GEO_TIMEOUT, maximumAge:GPS.MAX_AGE }); }
+function _onGpsFix(pos) {
+  const { latitude:lat, longitude:lng, accuracy } = pos.coords;
+  const acc = Math.round(accuracy), ts = Date.now(), tier = accTier(acc);
+  if (!_gpsBest || acc < _gpsBest.accuracy) _gpsBest = { lat, lng, accuracy:acc, ts };
+  setStep('acquire','done', lat.toFixed(5) + ', ' + lng.toFixed(5));
+  const lc = document.getElementById('liveGpsCard'); lc.style.display = 'block';
+  document.getElementById('liveCoords').textContent = 'Lat: ' + lat.toFixed(6) + ' | Lng: ' + lng.toFixed(6);
+  document.getElementById('liveAcc').textContent    = 'Accuracy: ±' + acc + ' m — best so far: ±' + _gpsBest.accuracy + ' m';
+  const badge = document.getElementById('accTierBadge');
+  badge.innerHTML = '<span class="acc-tier tier-' + tier + '">' + (tier==='good'?'✅ Excellent':tier==='ok'?'⚠️ Acceptable':'❌ Poor — improving…') + ' (' + acc + ' m)</span>';
+  const elapsed = ts - (_gpsDeadline - GPS.POLL_TIMEOUT);
+  setGpsProg(Math.round(5 + Math.min(elapsed / GPS.POLL_TIMEOUT, 1) * 60 + (acc <= GPS.MAX_ACC_ACCEPT ? 20 : 0)));
+  if (acc <= GPS.MAX_ACC_GOOD)      { setStep('accuracy','done',   '±' + acc + 'm — excellent ✓'); document.getElementById('gpsWaitNote').style.display = 'none'; }
+  else if (acc <= GPS.MAX_ACC_OK)   { setStep('accuracy','active', '±' + acc + 'm — acceptable, improving…'); document.getElementById('gpsWaitNote').style.display = 'block'; }
+  else                              { setStep('accuracy','active', '±' + acc + 'm — improving…'); document.getElementById('gpsWaitNote').style.display = 'block'; }
+  if (acc > GPS.MAX_ACC_ACCEPT && Date.now() < _gpsDeadline) return;
+  _stopPoll();
+  const fix = _gpsBest;
+  if (fix.accuracy > GPS.MAX_ACC_ACCEPT) { setStep('accuracy','active', '±' + fix.accuracy + 'm — best available'); document.getElementById('gpsWaitNote').style.display = 'none'; }
+  else { setStep('accuracy','done', '±' + fix.accuracy + 'm ✓'); document.getElementById('gpsWaitNote').style.display = 'none'; }
+  setStep('distance','active');
+  const last = getLastGps();
+  if (last) {
+    const dist = haversine(last.lat, last.lng, fix.lat, fix.lng);
+    if (dist < GPS.MIN_DIST) {
+      setGpsProg(90);
+      setStep('distance','fail', 'Only ' + Math.round(dist) + 'm — move at least ' + Math.round(GPS.MIN_DIST - dist) + 'm further');
+      document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+      document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
+      if (gpsResolve) gpsResolve({ ok:false, reason:'distance', dist });
       return;
     }
-    btn.textContent = '📤 Submitting…';
-    const data = collectData();
-    if (!navigator.onLine) {
-      enqueue(data);
-      showStatus('📵 Offline. Survey saved locally.', 'offline', 6000);
-      btn.disabled = false; btn.textContent = '📍 Submit Research';
-      resetForm(); return;
-    }
-    try {
-      const { contactName, contactPhone, followUp, ...surveyData } = data;
-      await db.collection('responses').add({ ...surveyData, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
-      if (contactName || contactPhone) {
-        await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId: surveyData._respondentId, _submittedAt: surveyData._submittedAt, _researcher: surveyData._researcher, _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    setStep('distance','done', Math.round(dist) + 'm from last ✓');
+  } else { setStep('distance','skipped','First survey today — skipped'); }
+  setGpsProg(100);
+  capturedGps = fix;
+  saveLastGps(fix.lat, fix.lng, fix.ts);
+  document.getElementById('gpsCancelBtn').textContent = 'Close';
+  document.getElementById('gpsGuardSub').textContent  = '✅ Location verified';
+  setTimeout(() => { document.getElementById('gpsGuardModal').classList.add('hidden'); if (gpsResolve) gpsResolve({ ok:true, lat:fix.lat, lng:fix.lng, accuracy:fix.accuracy, ts:fix.ts }); }, 900);
+}
+function _onGpsErr(err) {
+  if (Date.now() < _gpsDeadline) return;
+  _stopPoll();
+  const msgs = { 1:'Permission denied — enable Location in browser settings', 2:'Position unavailable — move to open sky', 3:'GPS timed out — try outdoors' };
+  setStep('acquire','fail', msgs[err.code] || 'GPS error');
+  document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+  if (gpsResolve) gpsResolve({ ok:false, reason:'gps_error', code:err.code });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DRAFT / AUTOSAVE
+══════════════════════════════════════════════════════════════ */
+const DRAFT_KEY = 'ecs26_draft';
+let autosaveTimer = null;
+
+function snap() {
+  const s = {};
+  document.querySelectorAll('input[type="radio"]').forEach(r     => { if (r.checked) s[r.name] = r.value; });
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => { s['cb_' + cb.id] = cb.checked; });
+  document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el => { if (el.id) s[el.id] = el.value; });
+  s._savedAt = new Date().toISOString();
+  return s;
+}
+function applySnap(s) {
+  if (!s) return;
+  document.querySelectorAll('input[type="radio"]').forEach(r     => { if (s[r.name] !== undefined) r.checked = (r.value === s[r.name]); });
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => { if (s['cb_' + cb.id] !== undefined) cb.checked = s['cb_' + cb.id]; });
+  document.querySelectorAll('input[type="text"],input[type="hidden"],textarea,select').forEach(el => { if (el.id && s[el.id] !== undefined) el.value = s[el.id]; });
+  if (s['constituency']) {
+    const r = document.querySelector('input[name="constituency_pill"][value="' + s['constituency'] + '"]');
+    if (r) { r.checked = true; onConstChange(s['constituency']); }
+    setTimeout(() => {
+      if (s['ward']) {
+        const wr = document.querySelector('input[name="ward_pill"][value="' + s['ward'] + '"]');
+        if (wr) { wr.checked = true; onWardChange(s['ward']); }
+        setTimeout(() => {
+          const ps = s['pollingStation'];
+          if (ps && ps !== '__other__') {
+            document.getElementById('pollingStation').value   = ps;
+            document.getElementById('psSearchInput').value    = ps;
+            document.getElementById('psChipName').textContent = ps;
+            document.getElementById('psChip').classList.add('vis');
+            document.getElementById('psClearBtn').style.display = 'flex';
+            validatePollingStation();
+          }
+        }, 100);
       }
-      showStatus('✅ Survey submitted successfully!', 'success', 8000);
-      resetForm();
-    } catch(err2) {
-      console.error(err2); enqueue(data);
-      showStatus('⚠️ Submission failed. Survey saved locally.', 'warning', 7000);
-    }
+    }, 50);
+  }
+  const gv = s['governor'];
+  if (gv) document.querySelectorAll('.gov-card').forEach(c => { const r = c.querySelector('input[type="radio"]'); if (r && r.value === gv) c.classList.add('selected'); });
+  updateNeg(); toggleRuto(); toggleGovOther();
+}
+function saveDraft()    { localStorage.setItem(DRAFT_KEY, JSON.stringify(snap())); showAutosave(); }
+function clearDraft()   { localStorage.removeItem(DRAFT_KEY); }
+function loadDraft()    { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); } catch { return null; } }
+function showAutosave() { const el = document.getElementById('autosave'); el.style.display = 'block'; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 400); }, 2200); }
+function checkDraft() {
+  const d = loadDraft(); if (!d) return;
+  const dt = new Date(d._savedAt);
+  document.getElementById('draftSub').textContent = 'Last saved: ' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('draftBar').style.display = 'block';
+}
+function restoreDraft() { applySnap(loadDraft()); document.getElementById('draftBar').style.display = 'none'; showAutosave(); }
+function discardDraft() { if (!confirm('Discard the saved draft and start fresh?')) return; clearDraft(); document.getElementById('draftBar').style.display = 'none'; }
+function attachAutosave() {
+  const f = document.getElementById('surveyForm');
+  f.addEventListener('input',  () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveDraft, 1500); });
+  f.addEventListener('change', () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveDraft, 1500); });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   OFFLINE QUEUE
+══════════════════════════════════════════════════════════════ */
+const QUEUE_KEY = 'ecs26_queue';
+let isOnline = navigator.onLine;
+function getQueue()    { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); } catch { return []; } }
+function saveQueue(q)  { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+function enqueue(d)    { d._queuedAt = new Date().toISOString(); d._queueId = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); const q = getQueue(); q.push(d); saveQueue(q); refreshPendUI(); }
+function dequeue(id)   { saveQueue(getQueue().filter(d => d._queueId !== id)); refreshPendUI(); }
+function refreshPendUI() {
+  const n  = getQueue().length;
+  const pb = document.getElementById('pendBtn'), pbn = document.getElementById('pendBanner');
+  if (pb)  pb.style.display  = n > 0 ? 'inline-block' : 'none';
+  if (pbn) pbn.style.display = n > 0 ? 'block' : 'none';
+  const ct = document.getElementById('pendCountText'), cb = document.getElementById('pendCount');
+  if (ct) ct.textContent = n; if (cb) cb.textContent = n;
+}
+function renderQueue() {
+  const l = document.getElementById('queueList'), q = getQueue();
+  if (!q.length) { l.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:14px;padding:16px;">No pending surveys.</div>'; return; }
+  l.innerHTML = q.map(d => {
+    const dt    = new Date(d._queuedAt);
+    const label = [d.gender, d.ward || d.constituency].filter(Boolean).join(' · ') || 'Survey';
+    return '<div class="q-item"><div><div style="font-weight:700;">' + label + '</div><div style="font-size:12px;color:#92400e;">' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div><button class="qi-del" onclick="removeQ(\'' + d._queueId + '\')">🗑</button></div>';
+  }).join('');
+}
+function removeQ(id)         { if (!confirm('Remove this queued survey?')) return; dequeue(id); renderQueue(); }
+function openOfflineModal()  { renderQueue(); document.getElementById('offlineModal').classList.remove('hidden'); }
+function closeOfflineModal() { document.getElementById('offlineModal').classList.add('hidden'); }
+async function syncNow() {
+  if (!navigator.onLine) { alert('You are offline. Please connect first.'); return; }
+  const q = getQueue(); if (!q.length) { closeOfflineModal(); return; }
+  const btn = document.getElementById('syncNowBtn'); btn.disabled = true;
+  const wrap = document.getElementById('syncWrap'), bar = document.getElementById('syncBar'), stat = document.getElementById('syncStat');
+  wrap.style.display = 'block'; let done = 0;
+  for (const e of q) {
+    stat.textContent = 'Syncing ' + (done+1) + ' of ' + q.length + '...';
+    bar.style.width  = Math.round(done / q.length * 100) + '%';
+    try {
+      const { _queueId, _queuedAt, ...data } = e;
+      await db.collection('responses').add({ ...data, _syncedAt:firebase.firestore.FieldValue.serverTimestamp() });
+      dequeue(_queueId); done++;
+    } catch(err) { console.error(err); }
+  }
+  bar.style.width  = '100%';
+  stat.textContent = done + ' of ' + q.length + ' synced.';
+  btn.disabled     = false;
+  renderQueue();
+  setTimeout(() => wrap.style.display = 'none', 2000);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORM COLLECT / VALIDATE / SUBMIT
+══════════════════════════════════════════════════════════════ */
+function getChk(ids) { return ids.filter(id => { const e = document.getElementById(id); return e && e.checked; }).map(id => document.getElementById(id).value); }
+function gv(name)    { const e = document.querySelector('input[name="' + name + '"]:checked'); return e ? e.value : ''; }
+function tx(id)      { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+
+function validatePollingStationSilent() {
+  const ps   = document.getElementById('pollingStation').value;
+  const ward = document.getElementById('ward').value;
+  if (!ps || ps === '__other__') return 'not_selected';
+  if (!ward) return 'no_ward';
+  return (_PS()[ward] || []).includes(ps) ? 'matched' : 'MISMATCH';
+}
+
+function collectData() {
+  return {
+    constituency:tx('constituency'), ward:tx('ward'), pollingStation:tx('pollingStation'),
+    _psValidation:validatePollingStationSilent(),
+    age:gv('age'), education:gv('education'), employment:gv('employment'), occupation:tx('occupation'),
+    voter:gv('voter'), notDelivered:getChk(['b5a','b5b','b5c','b5d','b5e','b5f']),
+    infoSources:getChk(['c1a','c1b','c1c','c1d','c1e','c1f','c1g']),
+    performance:gv('performance'), projectsAware:gv('projectsAware'), projectsDelivered:tx('projectsDelivered'),
+    missedPromises:gv('missedPromises'), projectsMissing:tx('projectsMissing'), needs:tx('needs'),
+    smeChallenges:getChk(['e1a','e1b','e1c','e1d','e1e','e1f','e1g']),
+    reelectRuto:gv('reelectRuto'), preferredPres:tx('preferredPres'),
+    governor:gv('governor'), governorOther:tx('governorOther'), party:gv('party'),
+    voteReasons:getChk(['g4a','g4b','g4c','g4d','g4e','g4f','g4g','g4h','g4i','g4j','g4k']),
+    notMbarire:getChk(['g5a','g5b','g5c','g5d','g5e','g5f','g5g','g5h','g5i']),
+    adviceMbarire:tx('adviceMbarire'),
+    notKivuti:getChk(['g7a','g7b','g7c','g7d','g7e','g7f','g7g','g7h','g7i']),
+    notGitonga:getChk(['g8a','g8b','g8c','g8d','g8e','g8f','g8g','g8h','g8i']),
+    prefSenator:tx('prefSenator'), prefWomenRep:tx('prefWomenRep'), prefMP:tx('prefMP'), prefMCA:tx('prefMCA'),
+    devOffice:gv('devOffice'), worship:gv('worship'),
+    contactName:tx('contactName'), contactPhone:tx('contactPhone'), followUp:gv('followUp'),
+    gender:gv('gender'), enumDecl:gv('enumDecl'),
+    _respondentId:        'R_' + Date.now(),
+    _submittedAt:         new Date().toISOString(),
+    _researcher:          currentResearcher ? currentResearcher.name      : 'Unknown',
+    _researcherLogin:     currentResearcher ? currentResearcher.login     : 'Unknown',
+    _researcherEmail:     currentResearcher ? currentResearcher.email     : '',
+    _researcherGoogleUid: currentResearcher ? currentResearcher.googleUid : '',
+    _gpsLat:      capturedGps ? capturedGps.lat      : null,
+    _gpsLng:      capturedGps ? capturedGps.lng      : null,
+    _gpsAccuracy: capturedGps ? capturedGps.accuracy : null,
+    _gpsSkipped:  !capturedGps
+  };
+}
+
+function validate() {
+  const req = [
+    ['gender','A1: Please select gender'],['constituency','A2: Please select constituency'],
+    ['ward','A3: Please select ward'],['age','A5: Please select age category'],
+    ['education','A6: Please select education level'],['employment','A7: Please select employment status'],
+    ['voter','B1: Please indicate if you are a registered voter'],
+    ['performance','D1: Please rate county government performance'],
+    ['devOffice','H1: Please select which office contributes most to development'],
+    ['worship','H2: Please indicate how often you attend worship'],
+    ['enumDecl','Declaration: Please confirm enumerator declaration']
+  ];
+  for (const [name, msg] of req) {
+    let val;
+    if (['constituency','ward'].includes(name)) { val = document.getElementById(name) ? document.getElementById(name).value : ''; }
+    else { val = document.querySelector('input[name="' + name + '"]:checked'); }
+    if (!val || (typeof val === 'string' && !val.trim())) return msg;
+  }
+  if (validatePollingStationSilent() === 'MISMATCH') {
+    const go = confirm('⚠️ Polling station / ward mismatch detected.\n\nContinue anyway?');
+    if (!go) return 'A4: Please verify polling station matches the selected ward.';
+  }
+  return null;
+}
+
+function showStatus(msg, type, dur) { const el = document.getElementById('status'); el.textContent = msg; el.className = 'status-msg ' + type; el.style.display = 'block'; if (dur) setTimeout(() => el.style.display = 'none', dur); }
+
+function resetForm() {
+  document.getElementById('surveyForm').reset();
+  document.querySelectorAll('.gov-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.cond-field').forEach(f => f.classList.remove('vis'));
+  document.querySelectorAll('.disabled-note').forEach(n => n.style.display = 'none');
+  document.querySelectorAll('[id$="Opts"]').forEach(el => el.style.display = 'flex');
+  document.getElementById('wardPilbox').style.display = 'none';
+  document.getElementById('wardPills').innerHTML = '';
+  document.getElementById('constituency').value     = '';
+  document.getElementById('ward').value             = '';
+  document.getElementById('wardValidMsg').innerHTML = '';
+  resetPollingStation();
+  document.getElementById('pollingStationField').style.display = 'none';
+  if (window._swSenator)  window._swSenator.clear();
+  if (window._swWomenRep) window._swWomenRep.clear();
+  if (window._swMP)       window._swMP.clear();
+  if (window._swMCA)      window._swMCA.clear();
+  if (window._swOcc)      window._swOcc.clear();
+  capturedGps = null;
+  document.getElementById('locationBox').style.display = 'none';
+  clearDraft();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+document.getElementById('surveyForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const err = validate(); if (err) { showStatus('⚠️ ' + err, 'warning'); return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '⏳ Verifying location…';
+  showStatus('Verifying GPS location…', 'warning');
+  const gpsResult = await openGpsGuard();
+  if (!gpsResult.ok) {
     btn.disabled = false; btn.textContent = '📍 Submit Research';
-  });
+    const reasons = { cancelled:'Submission cancelled.', distance:'Too close to previous survey. Move at least 500 m and retry.', gps_error:'GPS error. Ensure Location is enabled and retry.' };
+    showStatus('❌ ' + (reasons[gpsResult.reason] || 'GPS check failed.'), 'error');
+    return;
+  }
+  btn.textContent = '📤 Submitting…';
+  const data = collectData();
+  if (!navigator.onLine) {
+    enqueue(data);
+    showStatus('📵 Offline. Survey saved locally and will sync when reconnected.', 'offline', 6000);
+    btn.disabled = false; btn.textContent = '📍 Submit Research';
+    resetForm(); return;
+  }
+  try {
+    const { contactName, contactPhone, followUp, ...surveyData } = data;
+    await db.collection('responses').add({ ...surveyData, _serverTimestamp:firebase.firestore.FieldValue.serverTimestamp() });
+    if (contactName || contactPhone) {
+      await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId:surveyData._respondentId, _submittedAt:surveyData._submittedAt, _researcher:surveyData._researcher, _serverTimestamp:firebase.firestore.FieldValue.serverTimestamp() });
+    }
+    showStatus('✅ Survey submitted successfully! Thank you.', 'success', 8000);
+    resetForm();
+  } catch(err2) {
+    console.error(err2); enqueue(data);
+    showStatus('⚠️ Submission failed. Survey saved locally and will retry.', 'warning', 7000);
+  }
+  btn.disabled = false; btn.textContent = '📍 Submit Research';
 });
 
-function updateNet(online){isOnline=online;const b=document.getElementById('netBadge');b.className=online?'online':'offline';b.innerHTML=online?'✅ Online':'📵 Offline';b.style.display='flex';clearTimeout(b._t);if(online){b._t=setTimeout(()=>b.style.display='none',3000);syncBg();}}
-async function syncBg(){const q=getQueue();if(!q.length)return;for(const e of[...q]){try{const{_queueId,_queuedAt,contactName,contactPhone,followUp,...data}=e;await db.collection('responses').add({...data,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});if(contactName||contactPhone)await db.collection('contacts').add({contactName,contactPhone,followUp,_respondentId:data._respondentId,_syncedAt:firebase.firestore.FieldValue.serverTimestamp()});dequeue(_queueId);}catch{break;}}}
-window.addEventListener('online',()=>updateNet(true));
-window.addEventListener('offline',()=>updateNet(false));
-function checkProx(){const last=getLastGps();if(!last||!capturedGps){document.getElementById('proximityBanner').style.display='none';return;}const dist=haversine(last.lat,last.lng,capturedGps.lat,capturedGps.lng),banner=document.getElementById('proximityBanner');if(dist<GPS.MIN_DIST){document.getElementById('proxMsg').textContent='Move at least '+Math.round(GPS.MIN_DIST-dist)+'m further before next respondent.';banner.style.display='block';}else{banner.style.display='none';}}
-setInterval(checkProx,15000);
+/* ══════════════════════════════════════════════════════════════
+   NETWORK / PROXIMITY / BACKGROUND SYNC
+══════════════════════════════════════════════════════════════ */
+function updateNet(online) {
+  isOnline = online;
+  const b = document.getElementById('netBadge');
+  b.className = online ? 'online' : 'offline';
+  b.innerHTML = online ? '✅ Online' : '📵 Offline';
+  b.style.display = 'flex';
+  clearTimeout(b._t);
+  if (online) { b._t = setTimeout(() => b.style.display = 'none', 3000); syncBg(); }
+}
+async function syncBg() {
+  const q = getQueue(); if (!q.length) return;
+  for (const e of [...q]) {
+    try {
+      const { _queueId, _queuedAt, contactName, contactPhone, followUp, ...data } = e;
+      await db.collection('responses').add({ ...data, _syncedAt:firebase.firestore.FieldValue.serverTimestamp() });
+      if (contactName || contactPhone) await db.collection('contacts').add({ contactName, contactPhone, followUp, _respondentId:data._respondentId, _syncedAt:firebase.firestore.FieldValue.serverTimestamp() });
+      dequeue(_queueId);
+    } catch { break; }
+  }
+}
+window.addEventListener('online',  () => updateNet(true));
+window.addEventListener('offline', () => updateNet(false));
 
-(function(){const ph=document.getElementById('contactPhone'),msg=document.getElementById('phoneMsg');if(!ph||!msg)return;function fmt(raw){const d=raw.replace(/\D/g,'').slice(0,10);let out=d;if(d.length>7)out=d.slice(0,4)+' '+d.slice(4,7)+' '+d.slice(7);else if(d.length>4)out=d.slice(0,4)+' '+d.slice(4);return{formatted:out,digits:d};}function check(digits){if(!digits.length)return null;const ok=digits.startsWith('07')||digits.startsWith('01');if(!ok)return{s:'err',t:'❌ Invalid prefix — must start with 07 or 01'};if(digits.length<10){const r=10-digits.length;return{s:'warn',t:'⏳ '+r+' digit'+(r>1?'s':'')+' remaining'};}return{s:'ok',t:'✅ Valid Kenyan number'};}ph.addEventListener('input',function(){const{formatted,digits}=fmt(this.value);if(this.value!==formatted){const pos=this.selectionStart;this.value=formatted;try{this.setSelectionRange(pos,pos);}catch(e){}}const r=check(digits);msg.innerHTML='';this.style.borderColor=this.style.background='';if(!r)return;const sp=document.createElement('span');sp.className='ph-'+r.s;sp.textContent=r.t;msg.appendChild(sp);if(r.s==='ok'){this.style.borderColor='var(--leaf)';this.style.background='#f0fdf4';}else if(r.s==='warn'){this.style.borderColor='var(--gold)';this.style.background='#fffbeb';}else{this.style.borderColor='var(--red)';this.style.background='#fff1f2';}});})();
+function checkProx() {
+  const last = getLastGps();
+  if (!last || !capturedGps) { document.getElementById('proximityBanner').style.display = 'none'; return; }
+  const dist = haversine(last.lat, last.lng, capturedGps.lat, capturedGps.lng);
+  const banner = document.getElementById('proximityBanner');
+  if (dist < GPS.MIN_DIST) { document.getElementById('proxMsg').textContent = 'Move at least ' + Math.round(GPS.MIN_DIST - dist) + 'm further before next respondent.'; banner.style.display = 'block'; }
+  else { banner.style.display = 'none'; }
+}
+setInterval(checkProx, 15000);
 
-(function(){function setupPair(p1Id,p2Id,hiddenId,badgeId){const p1=document.getElementById(p1Id),p2=document.getElementById(p2Id),hidden=document.getElementById(hiddenId),badge=document.getElementById(badgeId);if(!p1||!p2||!hidden||!badge)return;function sync(){const v1=p1.value.trim(),v2=p2.value.trim(),n=(v1?1:0)+(v2?1:0);hidden.value=[v1?'1. '+v1:'',v2?'2. '+v2:''].filter(Boolean).join('\n');if(n===0){badge.textContent='';badge.className='proj-counter';}else if(n===1){badge.textContent='1 / 2 entered';badge.className='proj-counter';}else{badge.textContent='✅ 2 / 2 entered';badge.className='proj-counter done';}p1.style.borderColor=v1?'var(--leaf)':'';p1.style.background=v1?'#f0fdf4':'';p2.style.borderColor=v2?'var(--leaf)':'';p2.style.background=v2?'#f0fdf4':'';}p1.addEventListener('input',sync);p2.addEventListener('input',sync);const field=p1.closest('.cond-field');if(field){new MutationObserver(()=>{if(!field.classList.contains('vis')){p1.value=p2.value=hidden.value='';badge.textContent='';badge.className='proj-counter';[p1,p2].forEach(el=>{el.style.borderColor=el.style.background='';});}}).observe(field,{attributes:true,attributeFilter:['class']});}}setupPair('deliveredP1','deliveredP2','projectsDelivered','deliveredCounter');setupPair('missingP1','missingP2','projectsMissing','missingCounter');setupPair('needsP1','needsP2','needs','needsCounter');const _v=window.validate;window.validate=function(){const base=_v?_v():null;if(base)return base;const d2f=document.getElementById('projectsDeliveredField'),d3f=document.getElementById('projectsMissingField');if(d2f&&d2f.classList.contains('vis')){const v1=document.getElementById('deliveredP1').value.trim(),v2=document.getElementById('deliveredP2').value.trim();if(!v1||!v2)return'D2: Please describe both projects delivered.';}if(d3f&&d3f.classList.contains('vis')){const v1=document.getElementById('missingP1').value.trim(),v2=document.getElementById('missingP2').value.trim();if(!v1||!v2)return'D3: Please describe both missed projects.';}const nv1=document.getElementById('needsP1').value.trim(),nv2=document.getElementById('needsP2').value.trim();if(!nv1||!nv2)return'D4: Please enter both priority needs.';return null;};})();
+/* ── Phone validation ── */
+(function(){
+  const ph = document.getElementById('contactPhone'), msg = document.getElementById('phoneMsg');
+  if (!ph || !msg) return;
+  function fmt(raw){ const d=raw.replace(/\D/g,'').slice(0,10); let out=d; if(d.length>7)out=d.slice(0,4)+' '+d.slice(4,7)+' '+d.slice(7); else if(d.length>4)out=d.slice(0,4)+' '+d.slice(4); return{formatted:out,digits:d}; }
+  function check(digits){ if(!digits.length)return null; const ok=digits.startsWith('07')||digits.startsWith('01'); if(!ok)return{s:'err',t:'❌ Invalid prefix — must start with 07 or 01'}; if(digits.length<10){const r=10-digits.length;return{s:'warn',t:'⏳ '+r+' digit'+(r>1?'s':'')+' remaining'};}return{s:'ok',t:'✅ Valid Kenyan number'}; }
+  ph.addEventListener('input', function(){
+    const {formatted,digits}=fmt(this.value);
+    if(this.value!==formatted){const pos=this.selectionStart;this.value=formatted;try{this.setSelectionRange(pos,pos);}catch(e){}}
+    const r=check(digits); msg.innerHTML=''; this.style.borderColor=this.style.background='';
+    if(!r)return;
+    const sp=document.createElement('span'); sp.className='ph-'+r.s; sp.textContent=r.t; msg.appendChild(sp);
+    if(r.s==='ok'){this.style.borderColor='var(--leaf)';this.style.background='#f0fdf4';}
+    else if(r.s==='warn'){this.style.borderColor='var(--gold)';this.style.background='#fffbeb';}
+    else{this.style.borderColor='var(--red)';this.style.background='#fff1f2';}
+  });
+})();
 
-class SearchWidget{constructor(cfg){this.cfg=cfg;this.focused=-1;this._inp=()=>document.getElementById(cfg.inputId);this._hid=()=>document.getElementById(cfg.hiddenId);this._chip=()=>document.getElementById(cfg.chipId);this._clabel=()=>document.getElementById(cfg.chipLabelId);this._dd=()=>document.getElementById(cfg.dropdownId);this._clr=()=>document.getElementById(cfg.clearId);this._bind();}
-_bind(){const inp=this._inp();if(!inp)return;inp.addEventListener('input',()=>this._onInput());inp.addEventListener('focus',()=>this._onFocus());inp.addEventListener('keydown',e=>this._onKey(e));const clr=this._clr();if(clr)clr.addEventListener('click',()=>this.clear());document.addEventListener('touchstart',e=>{const wrap=inp.closest('.sw-wrap');if(wrap&&!wrap.contains(e.target))this._closeDD();},{passive:true});document.addEventListener('click',e=>{const wrap=inp.closest('.sw-wrap');if(wrap&&!wrap.contains(e.target))this._closeDD();});}
-_onInput(){const q=this._inp().value.trim(),clr=this._clr();if(clr)clr.style.display=q?'flex':'none';this.focused=-1;if(!q){this._closeDD();return;}this._render(q);}
-_onFocus(){const q=this._inp().value.trim(),opts=this.cfg.getOptions();if(q)this._render(q);else if(opts.length)this._render('');}
-_onKey(e){const dd=this._dd(),items=dd?dd.querySelectorAll('.sw-option'):[];if(!items.length)return;if(e.key==='ArrowDown'){e.preventDefault();this.focused=Math.min(this.focused+1,items.length-1);this._highlight(items);}else if(e.key==='ArrowUp'){e.preventDefault();this.focused=Math.max(this.focused-1,0);this._highlight(items);}else if(e.key==='Enter'){e.preventDefault();if(this.focused>=0&&items[this.focused])this.select(items[this.focused].dataset.val);}else if(e.key==='Escape'){this._closeDD();}}
-_highlight(items){items.forEach((el,i)=>el.classList.toggle('sw-focused',i===this.focused));if(this.focused>=0)items[this.focused].scrollIntoView({block:'nearest'});}
-_render(q){const dd=this._dd();if(!dd)return;const opts=this.cfg.getOptions(),norm=q.toLowerCase();let matches;if(!q){matches=opts.slice(0,10);}else{const sw=opts.filter(o=>o.toLowerCase().startsWith(norm)),ct=opts.filter(o=>!o.toLowerCase().startsWith(norm)&&o.toLowerCase().includes(norm));matches=[...sw,...ct].slice(0,14);}dd.innerHTML='';if(!matches.length&&q){const empty=document.createElement('div');empty.className='sw-empty';empty.innerHTML='No match for &ldquo;'+this._esc(q)+'&rdquo;';dd.appendChild(empty);}else{const icon=this.cfg.icon||'▸';matches.forEach(o=>{const el=document.createElement('div');el.className='sw-option';el.dataset.val=o;const hl=q?o.replace(new RegExp('('+this._escReg(q)+')','gi'),'<mark>$1</mark>'):this._esc(o);el.innerHTML=icon+' '+hl;el.addEventListener('mousedown',e=>{e.preventDefault();this.select(o);});el.addEventListener('touchstart',e=>{e.preventDefault();this.select(o);},{passive:false});dd.appendChild(el);});}dd.classList.add('open');this.focused=-1;}
-select(val){this._closeDD();const inp=this._inp(),hid=this._hid(),chip=this._chip(),cl=this._clabel(),clr=this._clr();if(inp){inp.value=val;inp.classList.add('sw-valid');}if(hid)hid.value=val;if(cl)cl.textContent=val;if(chip)chip.classList.add('vis');if(clr)clr.style.display='flex';if(this.cfg.onSelect)this.cfg.onSelect(val);}
-clear(){const inp=this._inp(),hid=this._hid(),chip=this._chip(),clr=this._clr();if(inp){inp.value='';inp.classList.remove('sw-valid');inp.placeholder=this.cfg.placeholder||'Search...';}if(hid)hid.value='';if(chip)chip.classList.remove('vis');if(clr)clr.style.display='none';this._closeDD();if(this.cfg.onSelect)this.cfg.onSelect('');}
-_closeDD(){const dd=this._dd();if(dd)dd.classList.remove('open');}
-_esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-_escReg(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}}
+/* ── Project two-textarea sync ── */
+(function(){
+  function setupPair(p1Id, p2Id, hiddenId, badgeId){
+    const p1=document.getElementById(p1Id),p2=document.getElementById(p2Id),hidden=document.getElementById(hiddenId),badge=document.getElementById(badgeId);
+    if(!p1||!p2||!hidden||!badge)return;
+    function sync(){
+      const v1=p1.value.trim(),v2=p2.value.trim(),n=(v1?1:0)+(v2?1:0);
+      hidden.value=[v1?'1. '+v1:'',v2?'2. '+v2:''].filter(Boolean).join('\n');
+      if(n===0){badge.textContent='';badge.className='proj-counter';}
+      else if(n===1){badge.textContent='1 / 2 entered';badge.className='proj-counter';}
+      else{badge.textContent='✅ 2 / 2 entered';badge.className='proj-counter done';}
+      p1.style.borderColor=v1?'var(--leaf)':''; p1.style.background=v1?'#f0fdf4':'';
+      p2.style.borderColor=v2?'var(--leaf)':''; p2.style.background=v2?'#f0fdf4':'';
+    }
+    p1.addEventListener('input',sync); p2.addEventListener('input',sync);
+    const field=p1.closest('.cond-field');
+    if(field){new MutationObserver(()=>{if(!field.classList.contains('vis')){p1.value=p2.value=hidden.value='';badge.textContent='';badge.className='proj-counter';[p1,p2].forEach(el=>{el.style.borderColor=el.style.background='';});}}).observe(field,{attributes:true,attributeFilter:['class']});}
+  }
+  setupPair('deliveredP1','deliveredP2','projectsDelivered','deliveredCounter');
+  setupPair('missingP1',  'missingP2',  'projectsMissing',  'missingCounter');
+  setupPair('needsP1',    'needsP2',    'needs',            'needsCounter');
+  const _v=window.validate;
+  window.validate=function(){
+    const base=_v?_v():null; if(base)return base;
+    const d2f=document.getElementById('projectsDeliveredField'),d3f=document.getElementById('projectsMissingField');
+    if(d2f&&d2f.classList.contains('vis')){const v1=document.getElementById('deliveredP1').value.trim(),v2=document.getElementById('deliveredP2').value.trim();if(!v1||!v2)return'D2: Please describe both projects delivered.';}
+    if(d3f&&d3f.classList.contains('vis')){const v1=document.getElementById('missingP1').value.trim(),v2=document.getElementById('missingP2').value.trim();if(!v1||!v2)return'D3: Please describe both missed projects.';}
+    const nv1=document.getElementById('needsP1').value.trim(),nv2=document.getElementById('needsP2').value.trim();
+    if(!nv1||!nv2)return'D4: Please enter both of your top 2 priority needs.';
+    return null;
+  };
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   SEARCH WIDGET  (mobile-scroll-safe: mousedown/touchstart,
+                   no inp.focus() after select)
+══════════════════════════════════════════════════════════════ */
+class SearchWidget {
+  constructor(cfg) {
+    this.cfg=cfg; this.focused=-1;
+    this._inp=()=>document.getElementById(cfg.inputId);
+    this._hid=()=>document.getElementById(cfg.hiddenId);
+    this._chip=()=>document.getElementById(cfg.chipId);
+    this._clabel=()=>document.getElementById(cfg.chipLabelId);
+    this._dd=()=>document.getElementById(cfg.dropdownId);
+    this._clr=()=>document.getElementById(cfg.clearId);
+    this._bind();
+  }
+  _bind(){
+    const inp=this._inp(); if(!inp)return;
+    inp.addEventListener('input',()=>this._onInput());
+    inp.addEventListener('focus',()=>this._onFocus());
+    inp.addEventListener('keydown',e=>this._onKey(e));
+    const clr=this._clr(); if(clr)clr.addEventListener('click',()=>this.clear());
+    document.addEventListener('touchstart',e=>{const w=inp.closest('.sw-wrap');if(w&&!w.contains(e.target))this._closeDD();},{passive:true});
+    document.addEventListener('click',e=>{const w=inp.closest('.sw-wrap');if(w&&!w.contains(e.target))this._closeDD();});
+  }
+  _onInput(){const q=this._inp().value.trim(),clr=this._clr();if(clr)clr.style.display=q?'flex':'none';this.focused=-1;if(!q){this._closeDD();return;}this._render(q);}
+  _onFocus(){const q=this._inp().value.trim(),opts=this.cfg.getOptions();if(q)this._render(q);else if(opts.length)this._render('');}
+  _onKey(e){const dd=this._dd(),items=dd?dd.querySelectorAll('.sw-option'):[];if(!items.length)return;if(e.key==='ArrowDown'){e.preventDefault();this.focused=Math.min(this.focused+1,items.length-1);this._highlight(items);}else if(e.key==='ArrowUp'){e.preventDefault();this.focused=Math.max(this.focused-1,0);this._highlight(items);}else if(e.key==='Enter'){e.preventDefault();if(this.focused>=0&&items[this.focused])this.select(items[this.focused].dataset.val);}else if(e.key==='Escape'){this._closeDD();}}
+  _highlight(items){items.forEach((el,i)=>el.classList.toggle('sw-focused',i===this.focused));if(this.focused>=0)items[this.focused].scrollIntoView({block:'nearest'});}
+  _render(q){
+    const dd=this._dd();if(!dd)return;
+    const opts=this.cfg.getOptions(),norm=q.toLowerCase();
+    let matches;
+    if(!q){matches=opts.slice(0,10);}
+    else{const sw=opts.filter(o=>o.toLowerCase().startsWith(norm)),ct=opts.filter(o=>!o.toLowerCase().startsWith(norm)&&o.toLowerCase().includes(norm));matches=[...sw,...ct].slice(0,14);}
+    dd.innerHTML='';
+    if(!matches.length&&q){const empty=document.createElement('div');empty.className='sw-empty';empty.innerHTML='No match for &ldquo;'+this._esc(q)+'&rdquo;';dd.appendChild(empty);}
+    else{const icon=this.cfg.icon||'▸';matches.forEach(o=>{const el=document.createElement('div');el.className='sw-option';el.dataset.val=o;const hl=q?o.replace(new RegExp('('+this._escReg(q)+')','gi'),'<mark>$1</mark>'):this._esc(o);el.innerHTML=icon+' '+hl;el.addEventListener('mousedown',e=>{e.preventDefault();this.select(o);});el.addEventListener('touchstart',e=>{e.preventDefault();this.select(o);},{passive:false});dd.appendChild(el);});}
+    dd.classList.add('open');this.focused=-1;
+  }
+  select(val){
+    this._closeDD();
+    const inp=this._inp(),hid=this._hid(),chip=this._chip(),cl=this._clabel(),clr=this._clr();
+    if(inp){inp.value=val;inp.classList.add('sw-valid');}
+    if(hid)hid.value=val;
+    if(cl)cl.textContent=val;
+    if(chip)chip.classList.add('vis');
+    if(clr)clr.style.display='flex';
+    /* no inp.focus() — prevents scroll jump on mobile */
+    if(this.cfg.onSelect)this.cfg.onSelect(val);
+  }
+  clear(){
+    const inp=this._inp(),hid=this._hid(),chip=this._chip(),clr=this._clr();
+    if(inp){inp.value='';inp.classList.remove('sw-valid');inp.placeholder=this.cfg.placeholder||'Search...';}
+    if(hid)hid.value='';
+    if(chip)chip.classList.remove('vis');
+    if(clr)clr.style.display='none';
+    this._closeDD();
+    if(this.cfg.onSelect)this.cfg.onSelect('');
+  }
+  _closeDD(){const dd=this._dd();if(dd)dd.classList.remove('open');}
+  _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  _escReg(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+}
 </script>
 </body>
 </html>
