@@ -1357,8 +1357,8 @@ function friendlyAuthError(code) {
 /* ══════════════════════════════════════════════════════════════
    SEARCH WIDGET INSTANCES
 ══════════════════════════════════════════════════════════════ */
-const SW_SENATORS  = ['Njeru Ndwiga','Clive Imanyara','Lenny Kivuti','Njeru Githae','Cecily Mbarire'];
-const SW_WOMENREP  = ['Millicent Omanga','Wanjiru Githae','Tabitha Mutinda','Mary Njue','Grace Kamau'];
+const SW_SENATORS  = window.ECS_SENATOR_CANDIDATES   || [];
+const SW_WOMENREP  = window.ECS_WOMEN_REP_CANDIDATES || [];
 let _swMPOptions   = [];
 let _swMCAOptions  = [];
 const SW_OCCUPATIONS = [
