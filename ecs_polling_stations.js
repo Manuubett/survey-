@@ -4,11 +4,13 @@
  * Source: IEBC Embu County Register of Polling Stations
  * Total : 705 polling stations across 20 wards / 4 constituencies
  *
- * Exposes four globals used by the main survey:
- *   window.ECS_POLLING_STATIONS   — ward  → string[]  (polling station names)
- *   window.ECS_WARD_CONSTITUENCY  — ward  → string    (parent constituency)
- *   window.ECS_MP_CANDIDATES      — const → string[]  (MP candidate names)
- *   window.ECS_MCA_CANDIDATES     — ward  → string[]  (MCA candidate names)
+ * Exposes globals used by the main survey:
+ *   window.ECS_POLLING_STATIONS     — ward  → string[]  (polling station names)
+ *   window.ECS_WARD_CONSTITUENCY    — ward  → string    (parent constituency)
+ *   window.ECS_MP_CANDIDATES        — const → string[]  (MP candidate names)
+ *   window.ECS_MCA_CANDIDATES       — ward  → string[]  (MCA candidate names)
+ *   window.ECS_WOMEN_REP_CANDIDATES — string[]          (Women Rep aspirants)
+ *   window.ECS_SENATOR_CANDIDATES   — string[]          (Senatorial aspirants)
  *
  * NOTE: window.loadPollingStations is intentionally NOT defined here.
  *       The main survey HTML defines its own live-search widget version.
@@ -669,6 +671,9 @@ window.ECS_WARD_CONSTITUENCY = {
 window.ECS_MP_CANDIDATES = {
 
   "Manyatta": [
+    "Ken Java Wagakoto",
+    "Muriithi Kobole",
+    "Bosco Kiura",
     "Githinji Gakure",
     "Muriuki Njeru",
     "Wambua Kithinji",
@@ -677,17 +682,28 @@ window.ECS_MP_CANDIDATES = {
   ],
 
   "Runyenjes": [
-    "Eric Muchangi Karemba",
-    "Onyango",
     "Steve Simba",
-    "Wakili Elijah",
+    "Anthony Kariuki Onyango",
+    "Wakili Stephen Murimi",
     "Muthoni Nyaga",
+    "Eric Muchangi Karemba",
+    "Elijah Njagi Ireri",
+    "Onyango",
+    "Wakili Elijah",
     "Kauma",
     "Kathangu",
     "Enos"
   ],
 
   "Mbeere South": [
+    "Humprey Murimi",
+    "Geoffrey King'ang'i",
+    "John Kiura (Tadpole)",
+    "Muli Kennedy",
+    "Rijobart Mwangi",
+    "Nebert Muriuki",
+    "Martin Macharia",
+    "Gerald Kiura",
     "Geoffrey Ruku",
     "Muriuki Njuguna",
     "Kirimi Muriuki",
@@ -696,6 +712,10 @@ window.ECS_MP_CANDIDATES = {
   ],
 
   "Mbeere North": [
+    "Duncan Mbui",
+    "CPA Elias Mwinji",
+    "Leo Wamuthende",
+    "Newton Karish",
     "Murithi Mutegi",
     "Karithi Njagi",
     "Kibui Mwangi",
@@ -708,7 +728,6 @@ window.ECS_MP_CANDIDATES = {
 
 /* ══════════════════════════════════════════════════════════════
    4.  MCA CANDIDATES  (keyed by ward name)
-       Updated: Manyatta wards reflect confirmed 2027 aspirants
    ══════════════════════════════════════════════════════════════ */
 
 window.ECS_MCA_CANDIDATES = {
@@ -735,180 +754,273 @@ window.ECS_MCA_CANDIDATES = {
   ],
 
   "Nginda": [
+    "Sicily Warui (Nabii Wamaviriri)",
+    "Kelvin Kariuki Gachima (Overseer Wamaviriri)",
     "Morris Macharia",
-    "Sicily Warue (Wamaviriri)",
-    "Kelvin Gachima (Overseer)",
     "Richard Mugendi",
     "David Kariuki Njeru",
-    "Njue Mwanjuma"
+    "Njue Mwanjuma",
+    "Dennoh Kathambara",
+    "James Munene Njue"
   ],
 
   "Mbeti North": [
-    "Silas Kariuki Koroga",
+    "Fred Mwenda",
+    "Cyrus Kariuki (Koroga)",
     "Charles Mwaura (Marvo)",
     "Irene Njeri (Mkombozi)",
     "Muchangi Gicugu (Wakili)",
-    "Ruguru Antony",
+    "Ruguru Anthony",
     "Job Muriithi",
     "Muchangi Karenjo",
-    "David Miriiti",
+    "David Muriiti",
     "Irene Kanini",
     "David Kariuki (DNK)",
-    "Moses Njanga"
+    "Moses Nyanga",
+    "Gitonga Kamonge",
+    "Jack Sparrow Njeru (Kibaki)"
   ],
 
   "Kirimari": [
+    "Joseph Ireri",
     "Ibrahim Swaleh",
     "Morris Nyaga (Collo)",
     "Wanja Nyaga",
     "Jack Mutua (Chiloba)",
     "Roy Mutembei (Leftie)",
     "Eddah Njeri (Wamaster)",
-    "John Ireri (Wamathavu)",
+    "John Njeri (Wamathavu)",
     "Alex Ngoro",
     "Stephen Kibugi",
     "Davie wa Boda",
-    "Nancy Wanjiku (Dot com)",
+    "Nancy Wanjiku (Dot Com)",
     "Gitau Bebabeba",
     "Risper Njura"
   ],
 
   "Gaturi South": [
+    "Catherine Mwaniki",
     "Fredrick Mugendi (Kamwigunyi)",
     "William Kariuki",
     "Kamuri wa Mercy",
     "Gloria Gitari",
     "Kamuri wa Nguruwe",
-    "Catherine Mwaniki",
     "Elias Wanguku"
   ],
 
   /* ── RUNYENJES ── */
 
   "Gaturi North": [
-    "Muriuki Gitonga",
-    "Nthamburi Njeru",
-    "Karimi Kimani",
-    "Weru Gitari",
-    "Njagi Mutua"
+    "Edwin Mukundi",
+    "James Mbogo Njeru",
+    "Stephen Njeru Nyaki",
+    "Kelvin Muchoki Kuria",
+    "Paul Muchangi"
   ],
 
   "Kagaari South": [
-    "Wariru Susan",
-    "Kitu",
-    "Young Rich",
-    "Njuki Samwuel",
-    "Terry Kaari",
-    "TT (Wavunda)",
-    "Kelvin",
-    "Robert Ireri"
+    "Samuel Njuki",
+    "Peter Murithi (Kitu)",
+    "Robert Ireri",
+    "Sussan Wariru",
+    "Mugendi (Young Rich)",
+    "Kelvin (Kinjana Toto)",
+    "Peter Kariavu"
   ],
 
   "Kagaari North": [
-    "Njagi Muriuki",
-    "Mutua Karimi",
-    "Gitari Weru",
-    "Nthiga Mwangi",
-    "Karimi Njiru"
+    "Joseph Rwanjau",
+    "Johnson Muchangi Njuki (Mwariama)"
   ],
 
   "Central Ward": [
-    "Karithi Muriuki",
-    "Njue Gitonga",
-    "Wambua Nthamburi",
-    "Mutembei Njeru",
-    "Kimani Gitari"
+    "Denno Testimony",
+    "Isaiah Kawanjira",
+    "Lucy Ruguru",
+    "Mzee Roho Safi",
+    "Wamae Gititio",
+    "Edwin Njiru Kamuti",
+    "David Kinyua Njiru"
   ],
 
   "Kyeni North": [
-    "Nthiga Mwenda",
-    "Karimi Njagi",
-    "Gitonga Kimani",
-    "Njiru Karuri",
-    "Muriuki Kimathi"
+    "Terry Mbuchi",
+    "David Gitonga",
+    "Murangiri Mujeska",
+    "Cate Mugo",
+    "Wincate Wanjira",
+    "John Mburea",
+    "KenLink",
+    "David Kinyua",
+    "Paul Mugendi",
+    "Eric Kiongozi"
   ],
 
   "Kyeni South": [
-    "Mwiti Njue",
-    "Karuri Gitonga",
-    "Kimani Nthiga",
-    "Njeru Karimi",
-    "Wambugu Mutua"
+    "Justin Katheri (Rucuû ni wega)",
+    "Rose Ratara",
+    "Anthony Kinyua",
+    "Brenda Kendi",
+    "Barbanas Njama",
+    "Salesio Kimaru",
+    "Patrick Njiru"
   ],
 
   /* ── MBEERE SOUTH ── */
 
   "Mwea": [
-    "Kamande Mugo",
-    "Ngugi Njoroge",
-    "Gichuki Kamau",
-    "Njuguna Karanja",
-    "Mwangi Githinji"
+    "Mwaluko",
+    "Boniface Kawaya",
+    "Pius Ngomo (KANU)",
+    "Joseph Murimi",
+    "Isaiah Mutua Nzomo",
+    "Job Itumo",
+    "Bonface Mwenda (Mchelsea)",
+    "Isaack Mung'ala",
+    "William Mulwa",
+    "Wilson Mwangi",
+    "Zacharia Mutungi",
+    "Bansy Lole",
+    "Michael Kioko (Misojaluma)"
   ],
 
   "Makima": [
-    "Mugambi Githinji",
-    "Karanja Mwangi",
-    "Mugo Ngugi",
-    "Njoroge Gichuki",
-    "Kamau Kamande"
+    "Edwin Nziu",
+    "John Kimuyu (Nesh)",
+    "Ngumbi Salah",
+    "Alex Kimotho",
+    "Alex Mutua",
+    "Clinton Kilongosi",
+    "Njamba",
+    "Ben Kivuti",
+    "Elkana Nyaga",
+    "Phillip Nzangi",
+    "Stephen Musyoki (Mzalendo)",
+    "Isaac Musau",
+    "Mutisya Wa Japheth",
+    "Stephen Kyengo",
+    "Kennedy Ndungo"
   ],
 
   "Mbeti South": [
-    "Githinji Mugambi",
-    "Mwangi Karanja",
-    "Ngugi Mugo",
-    "Gichuki Njoroge",
-    "Kamande Kamau"
+    "James Mubothi",
+    "Nelvin Ngithi",
+    "Peter Njeru (Wawinnie)",
+    "Ken Amasha",
+    "Jane Karimi",
+    "Boniface Muthomi",
+    "PN Murimi",
+    "Kabluetooth"
   ],
 
   "Mavuria": [
-    "Karanja Githinji",
-    "Njoroge Mwangi",
-    "Kamau Ngugi",
-    "Mugo Gichuki",
-    "Mugambi Kamande"
+    "Kelvin Muturi",
+    "Patterson Kariuki",
+    "Rich Farm",
+    "Sospeter Jomo",
+    "Nichasio Kinyua",
+    "Evanson Nthiga",
+    "Judy",
+    "Tosh Surveyor",
+    "Smith",
+    "John Ngari Mbaka"
   ],
 
   "Kiambere": [
-    "Mwangi Mugambi",
-    "Githinji Karanja",
-    "Gichuki Mugo",
-    "Kamande Njoroge",
-    "Ngugi Kamau"
+    "Hon. Lenny Masters",
+    "Patrick Nthiga (Chake)",
+    "Peter Mwaniki Kiugia (Ndwano)",
+    "Dickson Muchiri Nthiga (Dickie)",
+    "Francis Ngari (Orengo)",
+    "Nicks Njiru Nguyu (Brobro)",
+    "Gatumû Junior (Mbaato)",
+    "Edward Ngemu (KB)",
+    "Marclus Mwaniki (Magogo)"
   ],
 
   /* ── MBEERE NORTH ── */
 
   "Nthawa": [
-    "Njagi Murithi",
-    "Karithi Kibui",
-    "Njogu Kanampiu",
-    "Mutegi Njagi",
-    "Mwangi Karithi"
+    "Priscilla Wanjiru",
+    "Stachys Mutwiri",
+    "Sylvia Waithira",
+    "Marry Ann Wawira",
+    "Sammy Tito",
+    "Munene Njomo"
   ],
 
   "Muminji": [
-    "Kibui Njogu",
-    "Kanampiu Mutegi",
-    "Murithi Mwangi",
-    "Njagi Karithi",
-    "Karithi Kibui"
+    "James Njeru Augustine",
+    "Boniface Kariuki Wacuvi",
+    "Peterson Njeru (Weche)",
+    "Joseph Ireri Ndwiga",
+    "John Nyaga Ngari (Waruveni)",
+    "Joseph Ngari Njiru",
+    "Charles Njuki",
+    "Zack Mbogo",
+    "Vincent Munyi",
+    "Brian Muteti",
+    "Ben Mwaniki"
   ],
 
   "Evurore": [
-    "Mutegi Kanampiu",
-    "Njogu Murithi",
-    "Mwangi Njagi",
-    "Karithi Njogu",
-    "Kibui Mutegi"
+    "Moses Njiru",
+    "Benson Mutugi Gitari",
+    "Martin Mukundi",
+    "Johnson Mukui Mate",
+    "Dennis Ireri Namu",
+    "Virginia Thaara",
+    "Jevason Njeru",
+    "Duncan Muratia"
   ]
 
 };
 
 
 /* ══════════════════════════════════════════════════════════════
-   5.  DIAGNOSTICS
+   5.  WOMEN REP CANDIDATES  (county-wide)
+   ══════════════════════════════════════════════════════════════ */
+
+window.ECS_WOMEN_REP_CANDIDATES = [
+  "Elizabeth Ngina",
+  "Esther Mukami",
+  "Dorothy Karimi",
+  "Jane Karimi",
+  "Maureen Nyaga",
+  "Rosemary Njoki Kanambiu",
+  "Pamela Njoki Njeru (Double N)",
+  "Cantwell Nyakio",
+  "Faiza Achanda",
+  "Pauline Wangui Nyaga",
+  "Eunice M Njeru"
+];
+
+
+/* ══════════════════════════════════════════════════════════════
+   6.  SENATOR CANDIDATES  (county-wide)
+   ══════════════════════════════════════════════════════════════ */
+
+window.ECS_SENATOR_CANDIDATES = [
+  "Pithon Muchoki",
+  "Dun Nyaga",
+  "Sam Nyaga Ireri",
+  "Alexender Mundingi",
+  "John Mugo Mate",
+  "James Ireri (Soja)",
+  "Jim Njamiu",
+  "Billy Mwangi",
+  "John Thoithi",
+  "Njeru Wa January",
+  "Kelvin Gitonga",
+  "Jamlick Mwiti",
+  "S.N Njoka",
+  "Albert Muriithi Ireri",
+  "Mafric Munene"
+];
+
+
+/* ══════════════════════════════════════════════════════════════
+   7.  DIAGNOSTICS
    ══════════════════════════════════════════════════════════════ */
 
 window.ECS_STATION_COUNT = (function () {
@@ -923,6 +1035,8 @@ console.info(
   Object.keys(window.ECS_POLLING_STATIONS).length + ' wards,',
   Object.keys(window.ECS_MP_CANDIDATES).length + ' constituencies (MP),',
   Object.keys(window.ECS_MCA_CANDIDATES).length + ' wards (MCA),',
+  window.ECS_WOMEN_REP_CANDIDATES.length + ' Women Rep aspirants,',
+  window.ECS_SENATOR_CANDIDATES.length + ' Senatorial aspirants,',
   Object.keys(window.ECS_WARD_CONSTITUENCY).length + ' ward→constituency mappings.'
 );
 
