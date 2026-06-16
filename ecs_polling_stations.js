@@ -778,7 +778,8 @@ window.ECS_MCA_CANDIDATES = {
     "David Kariuki (DNK)",
     "Moses Nyanga",
     "Gitonga Kamonge",
-    "Jack Sparrow Njeru (Kibaki)"
+    "Jack Sparrow Njeru (Kibaki)",
+    "Elijah Ndwiga"
   ],
 
   "Kirimari": [
