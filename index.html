@@ -1998,10 +1998,10 @@ class SearchWidget {
   _escReg(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 }
 
+  // ── DevTools Detection & Deterrent ──────────────────────────
+(function(){
+  let devOpen = false;
 
-  /* ══════════════════════════════════════════════════════════════
-   locked dev
-══════════════════════════════════════════════════════════════ */
   function lockPage(){
     if(devOpen) return;
     devOpen = true;
@@ -2050,6 +2050,7 @@ class SearchWidget {
     }
   });
 })();
+
 </script>
 </body>
 </html>
