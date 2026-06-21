@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,6 +19,15 @@
   --sh:0 2px 16px rgba(12,26,14,.09);
 }
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;font-size:16px;min-height:100vh;-webkit-text-size-adjust:100%;}
+
+/* ── BRAND LABEL ── */
+.brand-corner{position:absolute;top:14px;right:16px;z-index:5;text-align:right;font-family:'DM Sans',sans-serif;line-height:1.3;}
+.brand-corner .bc-name{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;}
+.brand-corner .bc-tag{font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+#loginScreen .brand-corner .bc-name{color:var(--forest);}
+#loginScreen .brand-corner .bc-tag{color:var(--muted);}
+.site-header .brand-corner .bc-name{color:rgba(255,255,255,.92);}
+.site-header .brand-corner .bc-tag{color:rgba(255,255,255,.6);}
 
 /* ── LOGIN SCREEN ── */
 #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--forest);position:relative;overflow:hidden;}
@@ -276,6 +284,7 @@ textarea{min-height:80px;resize:vertical;}
 ═══════════════════════════════════════════════ -->
 <div id="loginScreen">
   <div class="login-card">
+    <div class="brand-corner"><div class="bc-name">VisionTrack</div><div class="bc-tag">Economic Survey International</div></div>
     <div class="login-logo">ECS</div>
     <div class="login-title">ECS-2026 Research</div>
     <div class="login-sub">Embu County Social Study &middot; Researcher Portal</div>
@@ -371,7 +380,7 @@ textarea{min-height:80px;resize:vertical;}
       <ul class="gps-steps">
         <li id="step-acquire"><span class="step-icon">&#x1F6F0;</span><div class="step-text"><strong>Acquiring GPS Signal</strong><span id="step-acquire-detail">Waiting for location fix&hellip;</span></div></li>
         <li id="step-accuracy"><span class="step-icon">&#x1F3AF;</span><div class="step-text"><strong>Accuracy Check</strong><span id="step-accuracy-detail">Improving&hellip; (target &le; 200 m)</span></div></li>
-        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be &ge; 500 m from last survey</span></div></li>
+        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be &ge; 50 m from last survey</span></div></li>
       </ul>
       <div class="gps-prog"><div class="gps-prog-bar" id="gpsProg"></div></div>
       <div class="live-gps-card" id="liveGpsCard" style="display:none;">
@@ -419,6 +428,7 @@ textarea{min-height:80px;resize:vertical;}
   <div class="header-stripe"></div>
   <div class="header-inner">
     <div class="header-bg-text">ECS</div>
+    <div class="brand-corner"><div class="bc-name">VisionTrack</div><div class="bc-tag">Economic Survey International</div></div>
     <div class="header-eyebrow">Embu County &middot; Social Study &middot; ECS-2026</div>
     <h1 class="header-title">Embu County <em>Research</em><br>Questionnaire</h1>
     <p class="header-sub">Research Questionnaire &middot; Confidential</p>
@@ -844,6 +854,7 @@ textarea{min-height:80px;resize:vertical;}
           <div class="pill"><input type="radio" name="devOffice" id="do_mca" value="MCA"><label for="do_mca">MCA</label></div>
           <div class="pill"><input type="radio" name="devOffice" id="do_sen" value="Senator"><label for="do_sen">Senator</label></div>
           <div class="pill"><input type="radio" name="devOffice" id="do_wr" value="Women Rep"><label for="do_wr">Women Rep</label></div>
+          <div class="pill"><input type="radio" name="devOffice" id="do_none" value="None"><label for="do_none">None</label></div>
         </div>
       </div>
       <div class="field">
@@ -914,8 +925,8 @@ textarea{min-height:80px;resize:vertical;}
 
 
 <script src="ecs_polling_stations.js?v=2"></script>
-<script src="ecs_geofence.js?v=1"></script>        ← ADD
-<script src="ecs_geofence_patch.js?v=1"></script>  ← ADD
+<script src="ecs_geofence.js?v=1"></script>
+<script src="ecs_geofence_patch.js?v=1"></script>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
@@ -1024,7 +1035,7 @@ async function initInviteGate() {
 ══════════════════════════════════════════════════════════════ */
 const GPS = {
   MAX_ACC_ACCEPT:200, MAX_ACC_GOOD:60, MAX_ACC_OK:120,
-  MIN_DIST:500, POLL_INTERVAL:3000, POLL_TIMEOUT:90000,
+  MIN_DIST:50, POLL_INTERVAL:3000, POLL_TIMEOUT:90000,
   GEO_TIMEOUT:20000, MAX_AGE:30000
 };
 
@@ -1523,7 +1534,7 @@ function retryGps() {
   _gpsBest = null; _gpsDeadline = Date.now() + GPS.POLL_TIMEOUT;
   setStep('acquire','active','Waiting for location fix…');
   setStep('accuracy','','Improving… (target ≤ 200 m)');
-  setStep('distance','','Must be ≥ 500 m from last survey');
+  setStep('distance','','Must be ≥ 50 m from last survey');
   setGpsProg(5);
   document.getElementById('liveGpsCard').style.display = 'none';
   document.getElementById('gpsWaitNote').style.display = 'none';
@@ -1535,7 +1546,7 @@ async function openGpsGuard() {
     document.getElementById('gpsGuardModal').classList.remove('hidden');
     setStep('acquire','active','Waiting for location fix…');
     setStep('accuracy','','Improving… (target ≤ 200 m)');
-    setStep('distance','','Must be ≥ 500 m from last survey');
+    setStep('distance','','Must be ≥ 50 m from last survey');
     setGpsProg(5);
     document.getElementById('liveGpsCard').style.display = 'none';
     document.getElementById('gpsWaitNote').style.display = 'none';
@@ -1820,7 +1831,7 @@ document.getElementById('surveyForm').addEventListener('submit', async function(
   const gpsResult = await openGpsGuard();
   if (!gpsResult.ok) {
     btn.disabled = false; btn.textContent = '📍 Submit Research';
-    const reasons = { cancelled:'Submission cancelled.', distance:'Too close to previous survey. Move at least 500 m and retry.', gps_error:'GPS error. Ensure Location is enabled and retry.' };
+    const reasons = { cancelled:'Submission cancelled.', distance:'Too close to previous survey. Move at least 50 m and retry.', gps_error:'GPS error. Ensure Location is enabled and retry.' };
     showStatus('❌ ' + (reasons[gpsResult.reason] || 'GPS check failed.'), 'error');
     return;
   }
