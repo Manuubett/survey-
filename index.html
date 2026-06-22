@@ -484,7 +484,7 @@ textarea{min-height:80px;resize:vertical;}
       <ul class="gps-steps">
         <li id="step-acquire"><span class="step-icon">&#x1F6F0;</span><div class="step-text"><strong>Acquiring GPS Signal</strong><span id="step-acquire-detail">Waiting for location fix&hellip;</span></div></li>
         <li id="step-accuracy"><span class="step-icon">&#x1F3AF;</span><div class="step-text"><strong>Accuracy Check</strong><span id="step-accuracy-detail">Improving&hellip; (target &le; 200 m)</span></div></li>
-        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be &ge; 0m from last survey</span></div></li>
+        <li id="step-distance"><span class="step-icon">&#x1F4CF;</span><div class="step-text"><strong>Distance Check</strong><span id="step-distance-detail">Must be &ge; 50 m from last survey</span></div></li>
       </ul>
       <div class="gps-prog"><div class="gps-prog-bar" id="gpsProg"></div></div>
       <div class="live-gps-card" id="liveGpsCard" style="display:none;">
@@ -502,6 +502,7 @@ textarea{min-height:80px;resize:vertical;}
       <div class="btn-row">
         <button class="btn-dec" id="gpsCancelBtn" onclick="cancelGps()">Cancel</button>
         <button class="btn-proc" id="gpsRetryBtn" style="display:none;" onclick="retryGps()">&#x1F504; Retry</button>
+        <!-- gpsContinueBtn is injected dynamically by _showContinueBtn() -->
       </div>
     </div>
   </div>
@@ -1175,7 +1176,9 @@ async function initInviteGate() {
 ══════════════════════════════════════════════════════════════ */
 const GPS = {
   MAX_ACC_ACCEPT:200, MAX_ACC_GOOD:60, MAX_ACC_OK:120,
-  MIN_DIST:50, POLL_INTERVAL:3000, POLL_TIMEOUT:90000,
+  MIN_DIST:50,
+  POLL_INTERVAL:3000,
+  POLL_TIMEOUT:40000,   /* FIX 3: reduced from 90000 → 40000 ms */
   GEO_TIMEOUT:20000, MAX_AGE:30000
 };
 
@@ -1684,9 +1687,10 @@ function startGpsWatch() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   GPS GUARD MODAL
+   GPS GUARD MODAL  — v2 (all 4 bugs fixed)
 ══════════════════════════════════════════════════════════════ */
 let gpsResolve = null, _gpsPollTmr = null, _gpsDeadline = null, _gpsBest = null;
+let _gpsDeadlineTmr = null;   /* FIX 3: hard safety-net timer handle */
 
 function setStep(id, state, detail) {
   const li = document.getElementById('step-' + id); if (!li) return;
@@ -1695,38 +1699,167 @@ function setStep(id, state, detail) {
   if (d && detail !== undefined) d.textContent = detail;
 }
 function setGpsProg(p) { document.getElementById('gpsProg').style.width = p + '%'; }
-function cancelGps() { _stopPoll(); document.getElementById('gpsGuardModal').classList.add('hidden'); if (gpsResolve) gpsResolve({ ok:false, reason:'cancelled' }); }
+
+function cancelGps() {
+  _stopPoll();
+  document.getElementById('gpsGuardModal').classList.add('hidden');
+  if (gpsResolve) { gpsResolve({ ok:false, reason:'cancelled' }); gpsResolve = null; }
+}
+
+/* FIX 4: "Continue anyway" button — injected once into the modal footer */
+function _showContinueBtn() {
+  let btn = document.getElementById('gpsContinueBtn');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id        = 'gpsContinueBtn';
+    btn.className = 'btn-proc';
+    btn.style.background = 'linear-gradient(135deg,#c8963e,#f0a840)';
+    btn.textContent = '⚠️ Continue anyway';
+    btn.onclick = function () {
+      _stopPoll();
+      document.getElementById('gpsGuardModal').classList.add('hidden');
+      const fix = _gpsBest || { lat: null, lng: null, accuracy: null, ts: Date.now() };
+      if (fix.lat) {
+        capturedGps = fix;
+        saveLastGps(fix.lat, fix.lng, fix.ts);
+      }
+      if (gpsResolve) {
+        gpsResolve({ ok: true, lat: fix.lat, lng: fix.lng,
+                     accuracy: fix.accuracy, ts: fix.ts, _warned: true });
+        gpsResolve = null;
+      }
+    };
+    const btnRow = document.querySelector('#gpsGuardModal .btn-row');
+    if (btnRow) btnRow.appendChild(btn);
+  }
+  btn.style.display = 'inline-block';
+}
+
+function _hideContinueBtn() {
+  const btn = document.getElementById('gpsContinueBtn');
+  if (btn) btn.style.display = 'none';
+}
+
 function retryGps() {
   document.getElementById('gpsRetryBtn').style.display = 'none';
-  _gpsBest = null; _gpsDeadline = Date.now() + GPS.POLL_TIMEOUT;
+  _hideContinueBtn();   /* FIX 4: hide continue btn on retry */
+  _gpsBest = null;
+  _gpsDeadline = Date.now() + GPS.POLL_TIMEOUT;
   setStep('acquire','active','Waiting for location fix…');
   setStep('accuracy','','Improving… (target ≤ 200 m)');
-  setStep('distance','','Must be ≥ 0m from last survey');
+  setStep('distance','','Must be ≥ 50 m from last survey');
   setGpsProg(5);
   document.getElementById('liveGpsCard').style.display = 'none';
   document.getElementById('gpsWaitNote').style.display = 'none';
   _startPoll();
 }
+
 async function openGpsGuard() {
   return new Promise(res => {
     gpsResolve = res; _gpsBest = null; _gpsDeadline = Date.now() + GPS.POLL_TIMEOUT;
     document.getElementById('gpsGuardModal').classList.remove('hidden');
     setStep('acquire','active','Waiting for location fix…');
     setStep('accuracy','','Improving… (target ≤ 200 m)');
-    setStep('distance','','Must be ≥ 0m from last survey');
+    setStep('distance','','Must be ≥ 50 m from last survey');
     setGpsProg(5);
     document.getElementById('liveGpsCard').style.display = 'none';
     document.getElementById('gpsWaitNote').style.display = 'none';
     document.getElementById('gpsRetryBtn').style.display = 'none';
+    _hideContinueBtn();
     document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
     document.getElementById('gpsGuardSub').textContent   = 'Acquiring GPS fix — please hold the device still';
-    if (!navigator.geolocation) { setStep('acquire','fail','GPS not available on this device'); return; }
+
+    /* FIX 1: no geolocation API → warn + allow continue, never hang */
+    if (!navigator.geolocation) {
+      setStep('acquire',   'fail',    'GPS not available on this device');
+      setStep('accuracy',  'skipped', 'Skipped — no GPS');
+      setStep('distance',  'skipped', 'Skipped — no GPS');
+      setGpsProg(100);
+      document.getElementById('gpsGuardSub').textContent = '⚠️ GPS unavailable — you can still submit';
+      _showContinueBtn();
+      return;  /* gpsResolve will fire when user taps Continue */
+    }
     _startPoll();
   });
 }
-function _stopPoll()  { if (_gpsPollTmr) { clearInterval(_gpsPollTmr); _gpsPollTmr = null; } }
-function _startPoll() { _stopPoll(); _pollOnce(); _gpsPollTmr = setInterval(_pollOnce, GPS.POLL_INTERVAL); }
-function _pollOnce()  { navigator.geolocation.getCurrentPosition(_onGpsFix, _onGpsErr, { enableHighAccuracy:true, timeout:GPS.GEO_TIMEOUT, maximumAge:GPS.MAX_AGE }); }
+
+function _stopPoll() {
+  if (_gpsPollTmr)    { clearInterval(_gpsPollTmr);  _gpsPollTmr    = null; }
+  if (_gpsDeadlineTmr){ clearTimeout(_gpsDeadlineTmr); _gpsDeadlineTmr = null; }
+}
+
+/* FIX 3: hard-deadline safety net inside _startPoll */
+function _startPoll() {
+  _stopPoll();
+  _pollOnce();
+  _gpsPollTmr = setInterval(_pollOnce, GPS.POLL_INTERVAL);
+
+  /* Hard deadline: always fires after POLL_TIMEOUT ms */
+  _gpsDeadlineTmr = setTimeout(() => {
+    if (!_gpsPollTmr) return;  // already resolved
+    _stopPoll();
+    if (_gpsBest) {
+      _finalize(_gpsBest);
+    } else {
+      /* Nothing at all — warn and let researcher choose */
+      setStep('acquire', 'fail', 'GPS timed out — no fix obtained');
+      setGpsProg(80);
+      document.getElementById('gpsGuardSub').textContent = '⚠️ GPS timed out — you can still submit';
+      document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+      _showContinueBtn();
+    }
+  }, GPS.POLL_TIMEOUT);
+}
+
+function _pollOnce() {
+  navigator.geolocation.getCurrentPosition(_onGpsFix, _onGpsErr,
+    { enableHighAccuracy:true, timeout:GPS.GEO_TIMEOUT, maximumAge:GPS.MAX_AGE });
+}
+
+function _finalize(fix) {
+  /* Shared pass-logic: distance check then resolve */
+  if (fix.accuracy > GPS.MAX_ACC_ACCEPT) {
+    setStep('accuracy', 'active', '±' + fix.accuracy + 'm — best available');
+    document.getElementById('gpsWaitNote').style.display = 'none';
+  } else {
+    setStep('accuracy', 'done', '±' + fix.accuracy + 'm ✓');
+    document.getElementById('gpsWaitNote').style.display = 'none';
+  }
+  setStep('distance', 'active');
+  const last = getLastGps();
+  if (last) {
+    const dist = haversine(last.lat, last.lng, fix.lat, fix.lng);
+    if (dist < GPS.MIN_DIST) {
+      /* FIX 2: distance warning — never hard-block */
+      const still = Math.round(GPS.MIN_DIST - dist);
+      setGpsProg(85);
+      setStep('distance', 'fail',
+        'Only ' + Math.round(dist) + 'm — ideally move ' + still + 'm further');
+      document.getElementById('gpsGuardSub').textContent =
+        '⚠️ Close to last location — you can still submit';
+      document.getElementById('gpsRetryBtn').style.display = 'inline-block';
+      capturedGps = fix;   // pre-capture so Continue button has coords
+      _showContinueBtn();
+      return;              // wait for user choice, do NOT resolve yet
+    }
+    setStep('distance', 'done', Math.round(dist) + 'm from last ✓');
+  } else {
+    setStep('distance', 'skipped', 'First survey today — skipped');
+  }
+  setGpsProg(100);
+  capturedGps = fix;
+  saveLastGps(fix.lat, fix.lng, fix.ts);
+  document.getElementById('gpsCancelBtn').textContent = 'Close';
+  document.getElementById('gpsGuardSub').textContent  = '✅ Location verified';
+  setTimeout(() => {
+    document.getElementById('gpsGuardModal').classList.add('hidden');
+    if (gpsResolve) {
+      gpsResolve({ ok:true, lat:fix.lat, lng:fix.lng, accuracy:fix.accuracy, ts:fix.ts });
+      gpsResolve = null;
+    }
+  }, 900);
+}
+
 function _onGpsFix(pos) {
   const { latitude:lat, longitude:lng, accuracy } = pos.coords;
   const acc = Math.round(accuracy), ts = Date.now(), tier = accTier(acc);
@@ -1736,45 +1869,37 @@ function _onGpsFix(pos) {
   document.getElementById('liveCoords').textContent = 'Lat: ' + lat.toFixed(6) + ' | Lng: ' + lng.toFixed(6);
   document.getElementById('liveAcc').textContent    = 'Accuracy: ±' + acc + ' m — best so far: ±' + _gpsBest.accuracy + ' m';
   const badge = document.getElementById('accTierBadge');
-  badge.innerHTML = '<span class="acc-tier tier-' + tier + '">' + (tier==='good'?'✅ Excellent':tier==='ok'?'⚠️ Acceptable':'❌ Poor — improving…') + ' (' + acc + ' m)</span>';
+  badge.innerHTML = '<span class="acc-tier tier-' + tier + '">' +
+    (tier==='good'?'✅ Excellent':tier==='ok'?'⚠️ Acceptable':'❌ Poor — improving…') +
+    ' (' + acc + ' m)</span>';
   const elapsed = ts - (_gpsDeadline - GPS.POLL_TIMEOUT);
   setGpsProg(Math.round(5 + Math.min(elapsed / GPS.POLL_TIMEOUT, 1) * 60 + (acc <= GPS.MAX_ACC_ACCEPT ? 20 : 0)));
-  if (acc <= GPS.MAX_ACC_GOOD)      { setStep('accuracy','done',   '±' + acc + 'm — excellent ✓'); document.getElementById('gpsWaitNote').style.display = 'none'; }
-  else if (acc <= GPS.MAX_ACC_OK)   { setStep('accuracy','active', '±' + acc + 'm — acceptable, improving…'); document.getElementById('gpsWaitNote').style.display = 'block'; }
-  else                              { setStep('accuracy','active', '±' + acc + 'm — improving…'); document.getElementById('gpsWaitNote').style.display = 'block'; }
-  if (acc > GPS.MAX_ACC_ACCEPT && Date.now() < _gpsDeadline) return;
-  _stopPoll();
-  const fix = _gpsBest;
-  if (fix.accuracy > GPS.MAX_ACC_ACCEPT) { setStep('accuracy','active', '±' + fix.accuracy + 'm — best available'); document.getElementById('gpsWaitNote').style.display = 'none'; }
-  else { setStep('accuracy','done', '±' + fix.accuracy + 'm ✓'); document.getElementById('gpsWaitNote').style.display = 'none'; }
-  setStep('distance','active');
-  const last = getLastGps();
-  if (last) {
-    const dist = haversine(last.lat, last.lng, fix.lat, fix.lng);
-    if (dist < GPS.MIN_DIST) {
-      setGpsProg(90);
-      setStep('distance','fail', 'Only ' + Math.round(dist) + 'm — move at least ' + Math.round(GPS.MIN_DIST - dist) + 'm further');
-      document.getElementById('gpsRetryBtn').style.display = 'inline-block';
-      document.getElementById('gpsCancelBtn').textContent  = 'Cancel';
-      if (gpsResolve) gpsResolve({ ok:false, reason:'distance', dist });
-      return;
-    }
-    setStep('distance','done', Math.round(dist) + 'm from last ✓');
-  } else { setStep('distance','skipped','First survey today — skipped'); }
-  setGpsProg(100);
-  capturedGps = fix;
-  saveLastGps(fix.lat, fix.lng, fix.ts);
-  document.getElementById('gpsCancelBtn').textContent = 'Close';
-  document.getElementById('gpsGuardSub').textContent  = '✅ Location verified';
-  setTimeout(() => { document.getElementById('gpsGuardModal').classList.add('hidden'); if (gpsResolve) gpsResolve({ ok:true, lat:fix.lat, lng:fix.lng, accuracy:fix.accuracy, ts:fix.ts }); }, 900);
+  if (acc <= GPS.MAX_ACC_GOOD) {
+    setStep('accuracy','done', '±' + acc + 'm — excellent ✓');
+    document.getElementById('gpsWaitNote').style.display = 'none';
+  } else if (acc <= GPS.MAX_ACC_OK) {
+    setStep('accuracy','active', '±' + acc + 'm — acceptable, improving…');
+    document.getElementById('gpsWaitNote').style.display = 'block';
+  } else {
+    setStep('accuracy','active', '±' + acc + 'm — improving…');
+    document.getElementById('gpsWaitNote').style.display = 'block';
+  }
+  /* Only proceed automatically once accuracy is good enough */
+  if (acc <= GPS.MAX_ACC_ACCEPT) {
+    _stopPoll();
+    _finalize(_gpsBest);
+  }
+  /* Otherwise keep polling until the hard deadline fires */
 }
+
 function _onGpsErr(err) {
-  if (Date.now() < _gpsDeadline) return;
-  _stopPoll();
-  const msgs = { 1:'Permission denied — enable Location in browser settings', 2:'Position unavailable — move to open sky', 3:'GPS timed out — try outdoors' };
-  setStep('acquire','fail', msgs[err.code] || 'GPS error');
-  document.getElementById('gpsRetryBtn').style.display = 'inline-block';
-  if (gpsResolve) gpsResolve({ ok:false, reason:'gps_error', code:err.code });
+  /* FIX 3+4: on repeated GPS errors just wait for hard deadline;
+     if deadline already fired, _gpsPollTmr will be null and this is a no-op */
+  if (!_gpsPollTmr) return;
+  const msgs = { 1:'Permission denied — enable Location in browser settings',
+                 2:'Position unavailable — move to open sky',
+                 3:'GPS timed out — try outdoors' };
+  setStep('acquire', 'active', msgs[err.code] || 'GPS error — retrying…');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1935,7 +2060,8 @@ function collectData() {
     _gpsLat:      capturedGps ? capturedGps.lat      : null,
     _gpsLng:      capturedGps ? capturedGps.lng      : null,
     _gpsAccuracy: capturedGps ? capturedGps.accuracy : null,
-    _gpsSkipped:  !capturedGps
+    _gpsSkipped:  !capturedGps,
+    _gpsWarned:   false   /* will be overwritten if _warned:true from guard */
   };
 }
 
@@ -1999,12 +2125,19 @@ document.getElementById('surveyForm').addEventListener('submit', async function(
   const gpsResult = await openGpsGuard();
   if (!gpsResult.ok) {
     btn.disabled = false; btn.textContent = '📍 Submit Research';
-    const reasons = { cancelled:'Submission cancelled.', distance:'Too close to previous survey. Move at least 0m and retry.', gps_error:'GPS error. Ensure Location is enabled and retry.' };
+    const reasons = {
+      cancelled:'Submission cancelled.',
+      distance:'Too close to previous survey. Move further and retry.',
+      gps_error:'GPS error. Ensure Location is enabled and retry.'
+    };
     showStatus('❌ ' + (reasons[gpsResult.reason] || 'GPS check failed.'), 'error');
     return;
   }
   btn.textContent = '📤 Submitting…';
   const data = collectData();
+  /* Flag warned submissions for dashboard filtering */
+  if (gpsResult._warned) data._gpsWarned = true;
+
   if (!navigator.onLine) {
     enqueue(data);
     incrementSubCount();
