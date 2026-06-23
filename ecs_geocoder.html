@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECS-2026 · Polling Station Geocoder</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --forest:#1a4a2a;--leaf:#2d7a45;--mint:#4caf78;--sage:#a8d5b5;
+  --cream:#f7f4ee;--warm:#ede8df;--gold:#c8963e;--gold-lt:#f0d9a8;
+  --red:#b83232;--sky:#2563a8;--border:#d6cfc2;--muted:#7a6f62;--ink:#0c1a0e;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.5;font-size:15px}
+header{background:var(--forest);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+header h1{font-size:20px;font-weight:700}
+header p{font-size:13px;opacity:.75;margin-top:2px}
+.badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700}
+.container{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+.panel{background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:0 2px 16px rgba(12,26,14,.08);margin-bottom:20px;overflow:hidden}
+.panel-head{padding:14px 20px;background:var(--forest);color:#fff;display:flex;align-items:center;gap:12px}
+.panel-head h2{font-size:16px;font-weight:700}
+.panel-body{padding:20px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+button{padding:11px 22px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s,transform .1s;min-height:44px}
+button:hover:not(:disabled){opacity:.87;transform:translateY(-1px)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-go{background:linear-gradient(135deg,var(--forest),var(--leaf));color:#fff}
+.btn-dl{background:var(--sky);color:#fff}
+.btn-dl-js{background:var(--gold);color:#fff}
+.btn-pause{background:var(--gold);color:#fff}
+.btn-reset{background:#fff;color:var(--red);border:1.5px solid var(--red)}
+.progress-wrap{margin-bottom:16px;display:none}
+.progress-bar-outer{height:10px;background:var(--border);border-radius:6px;overflow:hidden}
+.progress-bar-inner{height:100%;background:linear-gradient(90deg,var(--leaf),var(--mint));border-radius:6px;transition:width .4s;width:0}
+.progress-label{font-size:13px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.stat{background:var(--warm);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center;min-width:90px}
+.stat-num{font-size:22px;font-weight:700;font-family:Georgia,serif;color:var(--forest)}
+.stat-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.stat.good .stat-num{color:var(--leaf)}
+.stat.warn .stat-num{color:var(--gold)}
+.stat.err  .stat-num{color:var(--red)}
+.log{max-height:260px;overflow-y:auto;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;font-family:monospace;line-height:1.7}
+.log-entry{padding:1px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.log-entry.ok{color:#166534}
+.log-entry.fb{color:#92400e}
+.log-entry.err{color:#991b1b}
+.log-entry.info{color:var(--muted)}
+#map{height:440px;width:100%;border-radius:8px;border:1.5px solid var(--border)}
+.leaflet-fullscreen-on #map{border-radius:0!important}
+.ward-filter{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.ward-filter label{font-size:13px;font-weight:700;color:var(--forest)}
+.ward-filter select{padding:8px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;background:var(--cream);font-family:inherit}
+.legend{display:flex;gap:16px;font-size:12px;flex-wrap:wrap;margin-top:8px}
+.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+.info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;font-size:13px;color:#1e40af;margin-bottom:16px;line-height:1.6}
+.info-box strong{display:block;margin-bottom:4px}
+textarea{width:100%;min-height:200px;font-family:monospace;font-size:12px;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:var(--cream);resize:vertical}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📡 ECS-2026 Polling Station Geocoder</h1>
+    <p>Embu County Social Study · OpenStreetMap / Nominatim</p>
+  </div>
+  <div class="badge" id="statusBadge">Ready</div>
+</header>
+
+<div class="container">
+
+  <div class="info-box">
+    <strong>ℹ️ How this works</strong>
+    This tool geocodes every ECS-2026 polling station using the free OpenStreetMap Nominatim API (1 request/second to respect rate limits).
+    Stations successfully found get real GPS coordinates. Stations not found fall back to a small deterministic offset around their ward centre — always inside Embu County bounds, never in the dam.
+    When done, download <code>ecs_ps_coords.json</code> and <code>ecs_polling_stations_geo.js</code> and drop them into your survey folder.
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>🚀 Geocoding Controls</h2></div>
+    <div class="panel-body">
+      <div class="controls">
+        <button class="btn-go" id="btnStart" onclick="startGeocoding()">▶ Start Geocoding All Stations</button>
+        <button class="btn-pause" id="btnPause" onclick="togglePause()" disabled>⏸ Pause</button>
+        <button class="btn-reset" id="btnReset" onclick="resetAll()" disabled>↺ Reset</button>
+        <button class="btn-dl" id="btnDl" onclick="downloadJSON()" disabled>⬇ Download JSON</button>
+        <button class="btn-dl-js" id="btnDlJs" onclick="downloadJS()" disabled>⬇ Download .js File</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="sTotal">0</div><div class="stat-lbl">Total</div></div>
+        <div class="stat good"><div class="stat-num" id="sDone">0</div><div class="stat-lbl">Done</div></div>
+        <div class="stat good"><div class="stat-num" id="sFound">0</div><div class="stat-lbl">GPS Found</div></div>
+        <div class="stat warn"><div class="stat-num" id="sFallback">0</div><div class="stat-lbl">Fallback</div></div>
+        <div class="stat"><div class="stat-num" id="sRemain">0</div><div class="stat-lbl">Remaining</div></div>
+        <div class="stat"><div class="stat-num" id="sETA">—</div><div class="stat-lbl">ETA (min)</div></div>
+      </div>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+        <div class="progress-label"><span id="progressLabel">0 / 0</span><span id="currentStation">—</span></div>
+      </div>
+      <div class="log" id="log"><div class="log-entry info">Press "Start Geocoding" to begin…</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>🗺️ Live Map Preview</h2></div>
+    <div class="panel-body">
+      <div class="ward-filter">
+        <label>Filter ward:</label>
+        <select id="wardFilter" onchange="filterMapWard(this.value)">
+          <option value="">All wards</option>
+        </select>
+        <span style="font-size:13px;color:var(--muted)" id="mapCount"></span>
+      </div>
+      <div id="map"></div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#2196F3"></span>Nominatim (real GPS)</span>
+        <span><span class="legend-dot" style="background:#FF9800"></span>Ward-offset fallback</span>
+        <span><span class="legend-dot" style="background:#4CAF50"></span>Your location</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>📋 Generated JS Code Preview</h2></div>
+    <div class="panel-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">This replaces the spiral-placement code in your map widget. Paste into <code>ecs_polling_stations.js</code> or a separate <code>ecs_ps_coords.js</code> file and include it before your map script.</p>
+      <textarea id="jsPreview" readonly placeholder="JS output will appear here after geocoding…"></textarea>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  POLLING STATION DATA  (from your ECS form)
+// ══════════════════════════════════════════════════════
+const POLLING_STATIONS = {
+  "Ruguru/Ngandori": ["Ngandori Primary School","Ruguru Primary School","Kairuri Primary School","Kiangoci Primary School","Kagumo Primary School","Nthigari Primary School","Nguviu Primary School","Mutuobare Primary School"],
+  "Kithimu":         ["Kithimu Primary School","Kianjiru Primary School","Kamuthe Primary School","Nkubu Primary School","Kithimu Girls Secondary School","Kagongo Primary School","Kathangariri Primary School"],
+  "Nginda":          ["Nginda Primary School","Gachoka Primary School","Kiamuringa Primary School","Nthimbiri Primary School","Riandu Primary School","Karaba Primary School","Kamwimbi Primary School"],
+  "Mbeti North":     ["Mbeti Primary School","Kibugu Primary School","Kiembeni Primary School","Kanjuri Primary School","Kigaa Primary School","Kiambu Primary School","Nguruki Primary School"],
+  "Kirimari":        ["Kirimari Primary School","Mwea Primary School Kirimari","Karurumo Primary School","Gitombani Primary School","Kiandegwa Primary School","Ndagani Primary School"],
+  "Gaturi South":    ["Gaturi Primary School","Nthingine Primary School","Ndururi Primary School","Kavutiri Primary School","Kirigi Primary School","Mukangu Primary School"],
+  "Gaturi North":    ["Gaturi North Primary School","Muceene Primary School","Kanyange Primary School","Kagaari Primary School Gaturi","Murugi Primary School"],
+  "Kagaari South":   ["Kagaari South Primary School","Kiamachiri Primary School","Kagaari Secondary School","Nguuku Primary School","Kianjiru South Primary School"],
+  "Kagaari North":   ["Kagaari North Primary School","Kanyange North Primary School","Mbatia Primary School","Runyenjes Primary School","Ndandani Primary School"],
+  "Central Ward":    ["Runyenjes Township Primary School","Kiamutugu Primary School","Kagaari Central Primary School","Muvandori Primary School","Runyenjes Secondary School"],
+  "Kyeni North":     ["Kyeni Primary School","Gikuu Primary School","Nthingini Primary School","Kiamururi Primary School","Kathigiri Primary School"],
+  "Kyeni South":     ["Kibuuka Primary School","Kamuiru Primary School","Nthingine South Primary School","Kinoro Primary School","Kyeni South Primary School"],
+  "Mwea":            ["Mwea Primary School","Tebere Primary School","Thiba Primary School","Mutithi Primary School","Wamumu Primary School","Nguka Primary School","Gathigiriri Primary School"],
+  "Makima":          ["Makima Primary School","Kamweli Primary School","Nthia Primary School","Gikuuri Primary School","Ngiini Primary School","Makima Secondary School"],
+  "Mbeti South":     ["Mbeti South Primary School","Kambiti Primary School","Kairuri South Primary School","Kiamuringa South Primary School","Mutuobare South Primary School"],
+  "Mavuria":         ["Mavuria Primary School","Kiritiri Primary School","Rwika Primary School","Kiritiri Secondary School","Mavuria Secondary School"],
+  "Kiambere":        ["Kiambere Secondary School","Kindaruma Primary School","Kithuki Primary School","Katanthia Primary School","Kamweli Kiambere Primary School","Nguuku Kiambere Primary School"],
+  "Nthawa":          ["Nthawa Primary School","Gachoka Secondary School","Nguuku Nthawa Primary School","Kiamuringa Nthawa Primary School","Nthawa Secondary School"],
+  "Muminji":         ["Muminji Primary School","Kiamuringa Muminji Primary School","Nguruki Muminji Primary School","Muminji Secondary School"],
+  "Evurore":         ["Evurore Primary School","Kagaari Evurore Primary School","Kiamuringa Evurore Primary School","Evurore Secondary School","Nthawa Evurore Primary School"]
+};
+
+const WARD_CENTRES = {
+  "Ruguru/Ngandori": [-0.5230, 37.4560],
+  "Kithimu":         [-0.5680, 37.5210],
+  "Nginda":          [-0.5050, 37.5460],
+  "Mbeti North":     [-0.5900, 37.5800],
+  "Kirimari":        [-0.4980, 37.4900],
+  "Gaturi South":    [-0.5380, 37.4200],
+  "Gaturi North":    [-0.4850, 37.4180],
+  "Kagaari South":   [-0.4600, 37.5300],
+  "Kagaari North":   [-0.4100, 37.5200],
+  "Central Ward":    [-0.5300, 37.4580],
+  "Kyeni North":     [-0.4200, 37.5800],
+  "Kyeni South":     [-0.4700, 37.5700],
+  "Mwea":            [-0.7200, 37.3500],
+  "Makima":          [-0.7800, 37.5200],
+  "Mbeti South":     [-0.6900, 37.6100],
+  "Mavuria":         [-0.7100, 37.7200],
+  "Kiambere":        [-0.6100, 37.7200],   // ← moved away from dam
+  "Nthawa":          [-0.5600, 37.6800],
+  "Muminji":         [-0.5200, 37.7400],
+  "Evurore":         [-0.4300, 37.7800],
+};
+
+// Embu County bounding box
+const EMBU_BBOX = { minLat: -1.30, maxLat: -0.05, minLng: 37.00, maxLng: 38.20 };
+
+// ══════════════════════════════════════════════════════
+//  MAP INIT
+// ══════════════════════════════════════════════════════
+const map = L.map('map', { center: [-0.57, 37.57], zoom: 10 });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 18, attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Fullscreen control
+const FullscreenControl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd() {
+    const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control');
+    btn.title = 'Toggle fullscreen';
+    btn.innerHTML = '⛶';
+    btn.style.cssText = 'width:34px;height:34px;font-size:18px;line-height:34px;text-align:center;cursor:pointer;background:#fff;border:none;color:#333;';
+    L.DomEvent.on(btn, 'click', L.DomEvent.stopPropagation);
+    L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
+    L.DomEvent.on(btn, 'click', () => {
+      const mapEl = document.getElementById('map');
+      if (!document.fullscreenElement) {
+        mapEl.requestFullscreen().then(() => { map.invalidateSize(); btn.innerHTML = '✕'; }).catch(()=>{});
+      } else {
+        document.exitFullscreen().then(() => { map.invalidateSize(); btn.innerHTML = '⛶'; }).catch(()=>{});
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) { map.invalidateSize(); btn.innerHTML = '⛶'; }
+    });
+    return btn;
+  }
+});
+new FullscreenControl().addTo(map);
+
+// Ward centres as reference markers
+Object.entries(WARD_CENTRES).forEach(([ward, [lat, lng]]) => {
+  L.circle([lat, lng], { radius: 800, color: '#1a4a2a', fillColor: '#2d7a45', fillOpacity: 0.08, weight: 1.5, dashArray: '4,4' })
+    .addTo(map).bindPopup(`<strong>${ward}</strong><br><small>Ward centre (reference)</small>`);
+});
+
+// Populate ward filter dropdown
+const wardSel = document.getElementById('wardFilter');
+Object.keys(POLLING_STATIONS).sort().forEach(w => {
+  const opt = document.createElement('option'); opt.value = w; opt.textContent = w;
+  wardSel.appendChild(opt);
+});
+
+const nomIcon = L.divIcon({ className: '', html: '<div style="width:10px;height:10px;border-radius:50%;background:#2196F3;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.35)"></div>', iconSize: [10,10], iconAnchor: [5,5] });
+const fbIcon  = L.divIcon({ className: '', html: '<div style="width:10px;height:10px;border-radius:50%;background:#FF9800;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.35)"></div>', iconSize: [10,10], iconAnchor: [5,5] });
+
+let allMarkers = [];
+
+function addMarker(lat, lng, name, ward, source) {
+  const icon = source === 'nominatim' ? nomIcon : fbIcon;
+  const m = L.marker([lat, lng], { icon })
+    .addTo(map)
+    .bindPopup(`<div style="font-weight:700;font-size:13px">${name}</div><div style="color:#666;font-size:12px">${ward}</div><div style="margin-top:4px;font-size:11px;color:${source==='nominatim'?'#166534':'#92400e'}">${source==='nominatim'?'✅ GPS found':'⚠️ Ward-offset fallback'}</div>`);
+  m._psWard = ward;
+  allMarkers.push(m);
+}
+
+function filterMapWard(ward) {
+  let count = 0;
+  allMarkers.forEach(m => {
+    const show = !ward || m._psWard === ward;
+    if (show) { if (!map.hasLayer(m)) map.addLayer(m); count++; }
+    else { map.removeLayer(m); }
+  });
+  document.getElementById('mapCount').textContent = count + ' station' + (count !== 1 ? 's' : '') + ' shown';
+}
+
+// ══════════════════════════════════════════════════════
+//  GEOCODING ENGINE
+// ══════════════════════════════════════════════════════
+let results = {};
+let queue   = [];
+let paused  = false;
+let running = false;
+let startTime = null;
+let doneCount = 0, foundCount = 0, fallbackCount = 0;
+
+function buildQueue() {
+  queue = [];
+  Object.entries(POLLING_STATIONS).forEach(([ward, stations]) => {
+    stations.forEach((name, idx) => queue.push({ ward, name, idx }));
+  });
+}
+
+function totalStations() {
+  return Object.values(POLLING_STATIONS).reduce((s, arr) => s + arr.length, 0);
+}
+
+function wardOffset(ward, idx) {
+  const [wlat, wlng] = WARD_CENTRES[ward] || [-0.57, 37.57];
+  const angle  = (idx * 137.508) * Math.PI / 180;
+  const radius = 0.007 + (idx % 6) * 0.003;
+  return { lat: wlat + radius * Math.cos(angle), lng: wlng + radius * Math.sin(angle) * 1.05 };
+}
+
+function inBbox(lat, lng) {
+  return lat > EMBU_BBOX.minLat && lat < EMBU_BBOX.maxLat &&
+         lng > EMBU_BBOX.minLng && lng < EMBU_BBOX.maxLng;
+}
+
+async function nominatim(name, ward) {
+  const queries = [
+    `${name}, ${ward}, Embu County, Kenya`,
+    `${name}, Embu, Kenya`,
+  ];
+  for (const q of queries) {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=ke`;
+      const res = await fetch(url, { headers: { 'User-Agent': 'ECS2026-Geocoder/1.0' } });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
+        if (inBbox(lat, lng)) return { lat, lng, source: 'nominatim' };
+      }
+    } catch (e) { /* network error, try next query */ }
+    await sleep(600);
+  }
+  return null;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function log(msg, cls = 'info') {
+  const el = document.getElementById('log');
+  const div = document.createElement('div');
+  div.className = 'log-entry ' + cls;
+  div.textContent = msg;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateStats() {
+  const total = totalStations();
+  document.getElementById('sTotal').textContent   = total;
+  document.getElementById('sDone').textContent    = doneCount;
+  document.getElementById('sFound').textContent   = foundCount;
+  document.getElementById('sFallback').textContent= fallbackCount;
+  document.getElementById('sRemain').textContent  = total - doneCount;
+  // ETA
+  if (startTime && doneCount > 0) {
+    const elapsed  = (Date.now() - startTime) / 1000;
+    const rate     = doneCount / elapsed;
+    const remaining= total - doneCount;
+    const etaSec   = remaining / rate;
+    document.getElementById('sETA').textContent = etaSec < 60 ? '<1' : Math.ceil(etaSec / 60);
+  }
+  document.getElementById('progressBar').style.width = (doneCount / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `${doneCount} / ${total}`;
+}
+
+function updateJsPreview() {
+  document.getElementById('jsPreview').value = buildJsOutput();
+}
+
+function buildJsOutput() {
+  let out = `// ECS-2026 Polling Station Coordinates\n// Auto-generated by ECS Geocoder · ${new Date().toISOString().slice(0,10)}\n// Sources: OpenStreetMap Nominatim + Ward-centre offsets\n\nwindow.ECS_PS_COORDS = {\n`;
+  Object.entries(results).forEach(([ward, stations]) => {
+    out += `  "${ward}": [\n`;
+    stations.forEach(s => {
+      out += `    { name: "${s.name.replace(/"/g,'\\"')}", lat: ${s.lat}, lng: ${s.lng}, src: "${s.source}" },\n`;
+    });
+    out += `  ],\n`;
+  });
+  out += `};\n\n// Usage in map:\n// Replace the spiral placement loop with:\n// const coords = window.ECS_PS_COORDS[ward] || [];\n// coords.forEach(s => L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name));\n`;
+  return out;
+}
+
+async function startGeocoding() {
+  if (running) return;
+  running = true; paused = false; startTime = Date.now();
+  doneCount = 0; foundCount = 0; fallbackCount = 0; results = {}; allMarkers = [];
+  map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); });
+
+  buildQueue();
+  const total = queue.length;
+  document.getElementById('sTotal').textContent = total;
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('btnStart').disabled  = true;
+  document.getElementById('btnPause').disabled  = false;
+  document.getElementById('btnReset').disabled  = false;
+  document.getElementById('statusBadge').textContent = '🔄 Running';
+  document.getElementById('log').innerHTML = '';
+  log(`Starting geocoding of ${total} stations across ${Object.keys(POLLING_STATIONS).length} wards…`, 'info');
+
+  for (const item of queue) {
+    if (!running) break;
+    while (paused) await sleep(300);
+
+    document.getElementById('currentStation').textContent = item.name;
+    let geo = await nominatim(item.name, item.ward);
+
+    if (!geo) {
+      const fb = wardOffset(item.ward, item.idx);
+      geo = { lat: fb.lat, lng: fb.lng, source: 'fallback' };
+      fallbackCount++;
+      log(`⚠ ${item.ward} · ${item.name} → fallback (${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)})`, 'fb');
+    } else {
+      foundCount++;
+      log(`✓ ${item.ward} · ${item.name} → (${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)})`, 'ok');
+    }
+
+    if (!results[item.ward]) results[item.ward] = [];
+    results[item.ward].push({ name: item.name, lat: parseFloat(geo.lat.toFixed(6)), lng: parseFloat(geo.lng.toFixed(6)), source: geo.source });
+    addMarker(geo.lat, geo.lng, item.name, item.ward, geo.source);
+
+    doneCount++;
+    updateStats();
+
+    // Update ward filter preview
+    const currentWard = document.getElementById('wardFilter').value;
+    filterMapWard(currentWard);
+
+    // Nominatim rate limit: 1.2 sec
+    await sleep(1200);
+  }
+
+  running = false;
+  document.getElementById('statusBadge').textContent = '✅ Complete';
+  document.getElementById('btnPause').disabled = true;
+  document.getElementById('btnDl').disabled   = false;
+  document.getElementById('btnDlJs').disabled = false;
+  document.getElementById('currentStation').textContent = '— done —';
+  log(`\n✅ Geocoding complete! Found: ${foundCount}, Fallback: ${fallbackCount}`, 'ok');
+  updateJsPreview();
+}
+
+function togglePause() {
+  paused = !paused;
+  document.getElementById('btnPause').textContent  = paused ? '▶ Resume' : '⏸ Pause';
+  document.getElementById('statusBadge').textContent = paused ? '⏸ Paused' : '🔄 Running';
+}
+
+function resetAll() {
+  running = false; paused = false;
+  doneCount = 0; foundCount = 0; fallbackCount = 0; results = {};
+  allMarkers.forEach(m => map.removeLayer(m)); allMarkers = [];
+  document.getElementById('log').innerHTML = '<div class="log-entry info">Reset. Press Start to begin again.</div>';
+  document.getElementById('progressBar').style.width = '0';
+  document.getElementById('progressLabel').textContent = '0 / 0';
+  document.getElementById('btnStart').disabled  = false;
+  document.getElementById('btnPause').disabled  = true;
+  document.getElementById('btnDl').disabled     = true;
+  document.getElementById('btnDlJs').disabled   = true;
+  document.getElementById('statusBadge').textContent = 'Ready';
+  document.getElementById('jsPreview').value    = '';
+  updateStats();
+}
+
+function downloadJSON() {
+  const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'ecs_ps_coords.json'; a.click();
+}
+
+function downloadJS() {
+  const blob = new Blob([buildJsOutput()], { type: 'text/javascript' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'ecs_ps_coords.js'; a.click();
+}
+
+updateStats();
+filterMapWard('');
+</script>
+</body>
+</html>
