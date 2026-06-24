@@ -1059,139 +1059,6 @@ const db   = firebase.firestore();
 const auth = firebase.auth();
 
 /* ══════════════════════════════════════════════════════════════
-   SILENT AUDIO RECORDING
-   Triggered on first gender selection.
-   Blocks submission if recording or Cloudinary upload fails.
-   ─────────────────────────────────────────────────────────────
-   SETUP REQUIRED:
-     1. Create a free Cloudinary account at cloudinary.com
-     2. Go to Settings → Upload → Upload presets → Add unsigned preset
-     3. Note your Cloud Name (Dashboard top-left)
-     4. Replace the two constants below
-══════════════════════════════════════════════════════════════ */
-const CLOUDINARY_CLOUD  = 'YOUR_CLOUD_NAME';    // ← replace with your cloud name
-const CLOUDINARY_PRESET = 'YOUR_UPLOAD_PRESET'; // ← replace with your unsigned preset
-
-let _recorder         = null;
-let _audioChunks      = [];
-let _audioBlob        = null;
-let _audioUrl         = null;
-let _recordingStarted = false;
-let _audioError       = null;
-let _recordingReady   = false; // true once ≥ 30s recorded
-
-async function startSilentRecording() {
-  if (_recordingStarted) return;
-  _recordingStarted = true;
-  _audioError = null;
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    const mime   = getSupportedMime();
-    _recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
-    _recorder.ondataavailable = e => {
-      if (e.data && e.data.size > 0) _audioChunks.push(e.data);
-    };
-    _recorder.start(1000); // collect every 1 second
-    // Mark ready after 30 seconds
-    setTimeout(() => { _recordingReady = true; }, 30000);
-  } catch (err) {
-    _audioError = 'Microphone access denied or unavailable. Please allow microphone permission and reload the page. (' + err.message + ')';
-    console.warn('[ECS Audio]', _audioError);
-  }
-}
-
-function getSupportedMime() {
-  const types = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/ogg;codecs=opus',
-    'audio/mp4'
-  ];
-  for (const t of types) {
-    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(t)) return t;
-  }
-  return '';
-}
-
-function stopRecording() {
-  return new Promise(resolve => {
-    if (!_recorder || _recorder.state === 'inactive') { resolve(); return; }
-    _recorder.addEventListener('stop', () => {
-      _audioBlob = new Blob(_audioChunks, { type: _recorder.mimeType || 'audio/webm' });
-      try { _recorder.stream && _recorder.stream.getTracks().forEach(t => t.stop()); } catch(e){}
-      resolve();
-    }, { once: true });
-    try { _recorder.stop(); } catch(e){ resolve(); }
-  });
-}
-
-async function uploadAudioToCloudinary() {
-  if (_audioError) return false;
-  if (!_audioBlob || _audioBlob.size < 500) {
-    _audioError = 'No audio was captured. Please ensure microphone access is allowed, then retry.';
-    return false;
-  }
-  // Determine file extension from mime type
-  const mime = (_recorder && _recorder.mimeType) || '';
-  const ext  = mime.includes('mp4') ? 'm4a' : mime.includes('ogg') ? 'ogg' : 'webm';
-  const filename = 'ecs_interview_' + Date.now() + '.' + ext;
-
-  const fd = new FormData();
-  fd.append('file',           _audioBlob, filename);
-  fd.append('upload_preset',  CLOUDINARY_PRESET);
-  fd.append('resource_type',  'video');  // Cloudinary routes audio through the video pipeline
-  fd.append('folder',         'ecs2026_audio');
-  fd.append('public_id',      'ecs_' + Date.now());
-
-  try {
-    const res = await fetch(
-      'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/video/upload',
-      { method: 'POST', body: fd }
-    );
-    if (!res.ok) {
-      const errBody = await res.text().catch(() => '');
-      _audioError = 'Audio upload failed (HTTP ' + res.status + '). ' + errBody.slice(0, 120);
-      return false;
-    }
-    const data = await res.json();
-    _audioUrl = data.secure_url;
-    return true;
-  } catch (err) {
-    _audioError = 'Audio upload error: ' + err.message + '. Check your internet connection.';
-    return false;
-  }
-}
-
-function resetAudioState() {
-  if (_recorder && _recorder.state !== 'inactive') {
-    try { _recorder.stop(); } catch(e) {}
-  }
-  if (_recorder && _recorder.stream) {
-    try { _recorder.stream.getTracks().forEach(t => t.stop()); } catch(e) {}
-  }
-  _recorder         = null;
-  _audioChunks      = [];
-  _audioBlob        = null;
-  _audioUrl         = null;
-  _recordingStarted = false;
-  _recordingReady   = false;
-  _audioError       = null;
-}
-
-// Attach listener to all gender pills — starts recording on first selection
-function attachAudioTrigger() {
-  document.querySelectorAll('input[name="gender"]').forEach(r => {
-    r.addEventListener('change', function handler() {
-      startSilentRecording();
-      // Remove listener after first trigger so it only fires once
-      document.querySelectorAll('input[name="gender"]').forEach(x =>
-        x.removeEventListener('change', handler)
-      );
-    });
-  });
-}
-
-/* ══════════════════════════════════════════════════════════════
    GPS CONFIG
 ══════════════════════════════════════════════════════════════ */
 const GPS = {
@@ -1441,7 +1308,7 @@ function showSurvey() {
   const av=document.getElementById('bannerAvatar');if(currentResearcher.photoURL)av.src=currentResearcher.photoURL;else av.style.display='none';
   checkDraft();refreshPendUI();loadSubCount();startGpsWatch();attachAutosave();initSearchWidgets();
   showToggleBtn();
-  attachAudioTrigger(); // hook audio to gender pills
+  attachActivityTracking();  // hook section-level timestamp tracking
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1859,8 +1726,7 @@ function collectData(){
     _researcherEmail:currentResearcher?currentResearcher.email:'',
     _researcherGoogleUid:currentResearcher?currentResearcher.googleUid:'',
     _gpsLat:capturedGps?capturedGps.lat:null,_gpsLng:capturedGps?capturedGps.lng:null,
-    _gpsAccuracy:capturedGps?capturedGps.accuracy:null,_gpsSkipped:!capturedGps,
-    _audioUrl:_audioUrl||null
+    _gpsAccuracy:capturedGps?capturedGps.accuracy:null,_gpsSkipped:!capturedGps
   };
 }
 
@@ -1908,7 +1774,7 @@ function resetForm(){
   if(window._swMP)window._swMP.clear();if(window._swMCA)window._swMCA.clear();if(window._swOcc)window._swOcc.clear();
   capturedGps=null;document.getElementById('locationBox').style.display='none';
   clearDraft();document.getElementById('draftBar').style.display='none';
-  resetAudioState(); // reset audio for next respondent
+  resetActivityTracker();  // reset section timestamps for next respondent
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1918,13 +1784,252 @@ function attachLiveValidation(){
 }
 
 /* ══════════════════════════════════════════════════════════════
+   ENUMERATOR ACTIVITY TRACKER
+   ─────────────────────────────────────────────────────────────
+   Tracks section-level timestamps silently in the background.
+   Nothing is shown to the enumerator.
+
+   SECTIONS MONITORED:
+     A  – Demographics       (gender, constituency, ward, age, education, employment, occupation)
+     B  – Political Part.    (voter, notDelivered)
+     C  – Information        (infoSources)
+     D  – Project Delivery   (performance, projectsAware, missedPromises, needs)
+     E  – Business / SMEs    (smeChallenges)
+     G  – Political Sentiment(reelectRuto, governor, party, voteReasons, G5-G9)
+     H  – Civic              (devOffice, worship)
+     I  – Optional Contact   (contactName, contactPhone)
+     DEC– Declaration        (enumDecl)
+
+   WHAT IS RECORDED PER SECTION:
+     startedAt   – ISO timestamp of first interaction in section
+     completedAt – ISO timestamp when all required section fields are answered
+     durationSec – seconds between start and complete (null if incomplete)
+
+   AUDIT DOCUMENT (Firestore: audit_logs):
+     respondentId, researcherId, researcherName, researcherEmail
+     surveyStartedAt    – when section A was first touched
+     surveySubmittedAt  – when submit succeeded
+     totalDurationSec
+     sections           – array of section logs
+     gpsSnapshot        – lat/lng/accuracy at submit time
+     deviceInfo         – userAgent, platform, language
+     _flagged           – true if totalDurationSec < MIN_SURVEY_SECONDS
+     _flagReason        – human-readable reason string
+     _serverTimestamp
+══════════════════════════════════════════════════════════════ */
+const MIN_SURVEY_SECONDS = 180; // flag if entire form < 3 minutes
+
+// Section definitions: id, label, required field names/ids to watch
+const SECTION_DEFS = [
+  {
+    id: 'A', label: 'Demographics',
+    watchRadio: ['gender','constituency_pill','ward_pill','age','education','employment'],
+    watchFilled: ['occupation'],
+    requiredRadio: ['gender','age','education','employment'],
+    requiredFilled: []
+  },
+  {
+    id: 'B', label: 'Political Participation',
+    watchRadio: ['voter'],
+    watchFilled: [],
+    requiredRadio: ['voter'],
+    requiredFilled: []
+  },
+  {
+    id: 'C', label: 'Political Information',
+    watchCheckbox: ['c1a','c1b','c1c','c1d','c1e','c1f','c1g'],
+    requiredRadio: [], requiredFilled: []
+  },
+  {
+    id: 'D', label: 'Project Delivery',
+    watchRadio: ['performance','projectsAware','missedPromises'],
+    watchFilled: ['needsP1','needsP2'],
+    requiredRadio: ['performance'],
+    requiredFilled: ['needsP1','needsP2']
+  },
+  {
+    id: 'E', label: 'Business / SMEs',
+    watchCheckbox: ['e1a','e1b','e1c','e1d','e1e','e1f','e1g'],
+    requiredRadio: [], requiredFilled: []
+  },
+  {
+    id: 'G', label: 'Political Sentiment',
+    watchRadio: ['reelectRuto','governor','party'],
+    watchCheckbox: ['g4a','g4b','g4c','g4d','g4e','g4f','g4g','g4h','g4i','g4j','g4k'],
+    requiredRadio: ['reelectRuto'],
+    requiredFilled: []
+  },
+  {
+    id: 'H', label: 'Civic & Community',
+    watchRadio: ['devOffice','worship'],
+    requiredRadio: ['devOffice','worship'],
+    requiredFilled: []
+  },
+  {
+    id: 'I', label: 'Optional Contact',
+    watchFilled: ['contactName','contactPhone'],
+    requiredRadio: [], requiredFilled: []
+  },
+  {
+    id: 'DEC', label: 'Declaration',
+    watchRadio: ['enumDecl'],
+    requiredRadio: ['enumDecl'],
+    requiredFilled: []
+  }
+];
+
+// Runtime state — one entry per section
+const _sectionLog = {};
+SECTION_DEFS.forEach(s => {
+  _sectionLog[s.id] = { startedAt: null, completedAt: null };
+});
+
+let _surveyStartedAt = null; // ISO — when first section A field touched
+
+function _nowISO() { return new Date().toISOString(); }
+function _nowMs()  { return Date.now(); }
+
+function _markSectionStart(sectionId) {
+  if (_sectionLog[sectionId].startedAt) return; // already started
+  const ts = _nowISO();
+  _sectionLog[sectionId].startedAt = ts;
+  if (sectionId === 'A' && !_surveyStartedAt) _surveyStartedAt = ts;
+}
+
+function _checkSectionComplete(def) {
+  if (_sectionLog[def.id].completedAt) return; // already marked done
+
+  // Check required radios
+  for (const name of (def.requiredRadio || [])) {
+    if (!document.querySelector('input[name="'+name+'"]:checked')) return;
+  }
+  // Check required filled fields
+  for (const id of (def.requiredFilled || [])) {
+    const el = document.getElementById(id);
+    if (!el || !el.value.trim()) return;
+  }
+  // All required fields satisfied
+  if (_sectionLog[def.id].startedAt) {
+    _sectionLog[def.id].completedAt = _nowISO();
+  }
+}
+
+function _buildAuditPayload(respondentId, submittedAt) {
+  const startMs   = _surveyStartedAt ? new Date(_surveyStartedAt).getTime() : null;
+  const submitMs  = new Date(submittedAt).getTime();
+  const totalSec  = startMs ? Math.round((submitMs - startMs) / 1000) : null;
+  const flagged   = totalSec !== null && totalSec < MIN_SURVEY_SECONDS;
+  const flagReason = flagged
+    ? 'Form completed in ' + totalSec + 's — below minimum ' + MIN_SURVEY_SECONDS + 's threshold'
+    : null;
+
+  const sections = SECTION_DEFS.map(def => {
+    const log = _sectionLog[def.id];
+    const startMs2  = log.startedAt   ? new Date(log.startedAt).getTime()   : null;
+    const doneMs    = log.completedAt  ? new Date(log.completedAt).getTime() : null;
+    return {
+      section:      def.id,
+      label:        def.label,
+      startedAt:    log.startedAt   || null,
+      completedAt:  log.completedAt || null,
+      durationSec:  (startMs2 && doneMs) ? Math.round((doneMs - startMs2) / 1000) : null,
+      completed:    !!log.completedAt
+    };
+  });
+
+  return {
+    respondentId,
+    researcherId:    currentResearcher ? currentResearcher.login       : 'Unknown',
+    researcherName:  currentResearcher ? currentResearcher.name        : 'Unknown',
+    researcherEmail: currentResearcher ? currentResearcher.email       : '',
+    researcherUid:   currentResearcher ? currentResearcher.googleUid   : '',
+    surveyStartedAt:   _surveyStartedAt || null,
+    surveySubmittedAt: submittedAt,
+    totalDurationSec:  totalSec,
+    sections,
+    gpsSnapshot: capturedGps ? {
+      lat:      capturedGps.lat,
+      lng:      capturedGps.lng,
+      accuracy: capturedGps.accuracy
+    } : null,
+    deviceInfo: {
+      userAgent: navigator.userAgent,
+      platform:  navigator.platform  || 'unknown',
+      language:  navigator.language  || 'unknown',
+      online:    navigator.onLine
+    },
+    _flagged:    flagged,
+    _flagReason: flagReason,
+    _serverTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+
+async function saveAuditLog(respondentId, submittedAt) {
+  try {
+    const payload = _buildAuditPayload(respondentId, submittedAt);
+    await db.collection('audit_logs').add(payload);
+  } catch (e) {
+    console.warn('[ECS Audit] Failed to save audit log:', e.message);
+    // Non-blocking — survey submission must not fail because of audit log failure
+  }
+}
+
+function resetActivityTracker() {
+  SECTION_DEFS.forEach(s => {
+    _sectionLog[s.id] = { startedAt: null, completedAt: null };
+  });
+  _surveyStartedAt = null;
+}
+
+function attachActivityTracking() {
+  SECTION_DEFS.forEach(def => {
+    const sectionId = def.id;
+
+    const markStart = () => _markSectionStart(sectionId);
+    const checkDone = () => _checkSectionComplete(def);
+    const both = () => { markStart(); checkDone(); };
+
+    // Radio buttons
+    (def.watchRadio || []).forEach(name => {
+      document.querySelectorAll('input[name="'+name+'"]').forEach(el => {
+        el.addEventListener('change', both);
+      });
+    });
+
+    // Checkboxes
+    (def.watchCheckbox || []).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', both);
+    });
+
+    // Text / textarea fields — fire on first input only, recheck on change
+    (def.watchFilled || []).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('focus',  markStart);
+      el.addEventListener('input',  both);
+      el.addEventListener('change', both);
+    });
+  });
+
+  // Ward pills are dynamically generated — use event delegation on their container
+  const wardContainer = document.getElementById('wardPills');
+  if (wardContainer) {
+    wardContainer.addEventListener('change', () => {
+      _markSectionStart('A');
+      _checkSectionComplete(SECTION_DEFS.find(d => d.id === 'A'));
+    });
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
    FORM SUBMIT HANDLER
    Order:
    1. Validate fields
-   2. Stop audio recording
-   3. Upload audio to Cloudinary (BLOCK if fails)
-   4. GPS guard
-   5. Save to Firestore / offline queue
+   Submit handler:
+     1. Validate fields
+     2. GPS guard
+     3. Save to Firestore / offline queue + audit log
 ══════════════════════════════════════════════════════════════ */
 document.getElementById('surveyForm').addEventListener('submit',async function(e){
   e.preventDefault();
@@ -1936,26 +2041,7 @@ document.getElementById('surveyForm').addEventListener('submit',async function(e
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;
 
-  // ── Step 2: Stop audio recording ─────────────────────────
-  btn.innerHTML='<span style="display:inline-flex;align-items:center;justify-content:center;gap:8px;"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite"></span> Finalising recording…</span>';
-  showStatus('🎙 Finalising audio recording…','warning');
-  await stopRecording();
-
-  // ── Step 3: Upload audio (HARD BLOCK) ────────────────────
-  btn.innerHTML='<span style="display:inline-flex;align-items:center;justify-content:center;gap:8px;"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite"></span> Uploading audio…</span>';
-  showStatus('☁️ Uploading audio verification…','warning');
-  const audioOk = await uploadAudioToCloudinary();
-  if(!audioOk){
-    btn.disabled=false;
-    btn.textContent='📍 Submit Research';
-    showStatus('❌ Audio upload failed: '+(_audioError||'Unknown error')+' — Please ensure microphone access is allowed and you are online, then retry.','error');
-    // Re-attach audio trigger so a fresh recording can start if they re-select gender
-    _recordingStarted=false;_audioChunks=[];_audioBlob=null;_audioError=null;
-    attachAudioTrigger();
-    return;
-  }
-
-  // ── Step 4: GPS guard ─────────────────────────────────────
+  // ── Step 2: GPS guard ─────────────────────────────────────
   btn.innerHTML='<span style="display:inline-flex;align-items:center;justify-content:center;gap:8px;"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite"></span> Verifying location…</span>';
   showStatus('Verifying GPS location…','warning');
   const gpsResult=await openGpsGuard();
@@ -1972,11 +2058,13 @@ document.getElementById('surveyForm').addEventListener('submit',async function(e
     return;
   }
 
-  // ── Step 5: Save to Firestore / queue ─────────────────────
+  // ── Step 3: Save to Firestore / queue ─────────────────────
   btn.innerHTML='<span style="display:inline-flex;align-items:center;justify-content:center;gap:8px;"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite"></span> Submitting…</span>';
   const data=collectData();
   if(!navigator.onLine){
     enqueue(data);incrementSubCount();
+    // Save audit log even offline — will fail silently, that's acceptable
+    saveAuditLog(data._respondentId, data._submittedAt);
     showStatus('📵 Offline. Survey saved locally and will sync when reconnected.','offline',6000);
     btn.disabled=false;btn.textContent='📍 Submit Research';resetForm();return;
   }
@@ -1984,6 +2072,8 @@ document.getElementById('surveyForm').addEventListener('submit',async function(e
     const{contactName,contactPhone,followUp,...surveyData}=data;
     await db.collection('responses').add({...surveyData,_serverTimestamp:firebase.firestore.FieldValue.serverTimestamp()});
     if(contactName||contactPhone){await db.collection('contacts').add({contactName,contactPhone,followUp,_respondentId:surveyData._respondentId,_submittedAt:surveyData._submittedAt,_researcher:surveyData._researcher,_serverTimestamp:firebase.firestore.FieldValue.serverTimestamp()});}
+    // Save audit log to separate collection (non-blocking — runs in parallel)
+    saveAuditLog(data._respondentId, data._submittedAt);
     incrementSubCount();showStatus('✅ Survey submitted successfully! Thank you.','success',8000);resetForm();
   }catch(err2){console.error(err2);enqueue(data);showStatus('⚠️ Submission failed. Survey saved locally and will retry.','warning',7000);}
   btn.disabled=false;btn.textContent='📍 Submit Research';
