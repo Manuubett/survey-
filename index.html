@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -371,7 +372,100 @@ textarea{min-height:80px;resize:vertical;}
     </div>
   </div>
 </div>
+ <!-- ══════════════════════════════════════════════════════
+     SURVEY CLOSED OVERLAY
+     Covers entire screen when admin closes the survey.
+     Lifts automatically via Firestore real-time listener.
+══════════════════════════════════════════════════════ -->
+<div id="surveyClosedOverlay" style="
+  display:none;
+  position:fixed;inset:0;z-index:99999;
+  background:linear-gradient(160deg,#0c1a0e 0%,#1a4a2a 60%,#0c1a0e 100%);
+  align-items:center;justify-content:center;
+  padding:24px;
+  font-family:'DM Sans',sans-serif;
+">
+  <div style="
+    position:absolute;right:-30px;bottom:-40px;
+    font-family:'Fraunces',serif;font-size:260px;font-weight:700;
+    color:rgba(255,255,255,.035);line-height:1;user-select:none;pointer-events:none;
+  ">ECS</div>
 
+  <div style="
+    position:relative;z-index:2;
+    background:rgba(255,255,255,.06);
+    border:1.5px solid rgba(255,255,255,.12);
+    border-radius:20px;
+    padding:48px 40px;
+    max-width:520px;width:100%;
+    text-align:center;
+    box-shadow:0 32px 80px rgba(0,0,0,.5);
+    backdrop-filter:blur(8px);
+  ">
+    <div style="
+      width:72px;height:72px;border-radius:50%;
+      background:rgba(200,150,62,.15);
+      border:2px solid rgba(200,150,62,.4);
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 24px;font-size:32px;
+    ">🔒</div>
+
+    <div style="
+      font-size:11px;letter-spacing:3px;text-transform:uppercase;
+      color:rgba(200,150,62,.9);font-weight:600;margin-bottom:10px;
+    ">ECS-2026 · Embu County Social Study</div>
+
+    <h1 style="
+      font-family:'Fraunces',serif;
+      font-size:clamp(24px,5vw,34px);
+      font-weight:700;color:#fff;
+      line-height:1.2;margin-bottom:16px;
+    ">Survey Temporarily<br><em style="color:#f0d9a8;font-style:italic;">Closed</em></h1>
+
+    <p style="
+      font-size:15px;color:rgba(255,255,255,.7);
+      line-height:1.7;margin-bottom:28px;
+      max-width:380px;margin-left:auto;margin-right:auto;
+    ">Data collection has been paused by the field supervisor. Please stand by — this page will unlock automatically when the survey resumes.</p>
+
+    <div style="
+      display:inline-flex;align-items:center;gap:10px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:30px;padding:10px 20px;
+      font-size:13px;color:rgba(255,255,255,.6);
+      margin-bottom:28px;
+    ">
+      <span style="
+        width:8px;height:8px;border-radius:50%;
+        background:#f87171;
+        box-shadow:0 0 0 3px rgba(248,113,113,.25);
+        animation:scPulse 2s ease-in-out infinite;
+        display:inline-block;flex-shrink:0;
+      "></span>
+      <span id="scOverlayStatus">Waiting for supervisor to re-open…</span>
+    </div>
+
+    <div id="scClosedByInfo" style="
+      background:rgba(0,0,0,.2);border-radius:10px;
+      padding:12px 16px;font-size:12px;
+      color:rgba(255,255,255,.45);line-height:1.6;
+      display:none;
+    "></div>
+
+    <p style="
+      font-size:12px;color:rgba(255,255,255,.3);
+      margin-top:24px;line-height:1.6;
+    ">If you believe this is an error, contact your field supervisor.<br>Do not close this tab — your session will resume automatically.</p>
+  </div>
+</div>
+
+<style>
+@keyframes scPulse {
+  0%,100% { box-shadow:0 0 0 3px rgba(248,113,113,.25); }
+  50%      { box-shadow:0 0 0 6px rgba(248,113,113,.05); }
+}
+</style>
 <!-- RESEARCHER WELCOME MODAL -->
 <div class="overlay hidden" id="researcherModal">
   <div class="mbox mbox-sm">
@@ -1057,6 +1151,66 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db   = firebase.firestore();
 const auth = firebase.auth();
+/* ══════════════════════════════════════════════════════════════
+   SURVEY CLOSED GATE — real-time Firestore listener
+   Checks _meta/surveyClosed on load.
+   If closed → full-screen overlay blocks everything.
+   If open   → overlay hidden, nothing changes.
+   onSnapshot means overlay lifts the INSTANT admin re-opens.
+══════════════════════════════════════════════════════════════ */
+(function initSurveyClosedGate() {
+  function attachGate() {
+    if (typeof db === 'undefined') { setTimeout(attachGate, 80); return; }
+
+    const overlay  = document.getElementById('surveyClosedOverlay');
+    const statusEl = document.getElementById('scOverlayStatus');
+    const closedBy = document.getElementById('scClosedByInfo');
+
+    if (!overlay) return;
+
+    db.collection('_meta').doc('surveyClosed')
+      .onSnapshot(snap => {
+        const data   = snap.exists ? snap.data() : null;
+        const closed = data && data.closed === true;
+
+        if (closed) {
+          overlay.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+
+          if (statusEl) statusEl.textContent = 'Waiting for supervisor to re-open…';
+
+          if (closedBy && data.closedAt) {
+            const ts = data.closedAt.toDate
+              ? data.closedAt.toDate().toLocaleString()
+              : new Date(data.closedAt).toLocaleString();
+            closedBy.style.display = 'block';
+            closedBy.innerHTML =
+              '🔒 Closed by <strong style="color:rgba(255,255,255,.6)">'
+              + (data.closedBy || 'supervisor')
+              + '</strong> on ' + ts;
+          }
+
+        } else {
+          overlay.style.display = 'none';
+          document.body.style.overflow = '';
+          if (statusEl) statusEl.textContent = 'Survey is open';
+          if (closedBy) closedBy.style.display = 'none';
+        }
+
+      }, err => {
+        // Fail open on network error — don't permanently lock out enumerators
+        console.warn('[ECS Gate] Could not read survey status:', err.message);
+        if (overlay) overlay.style.display = 'none';
+        document.body.style.overflow = '';
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachGate);
+  } else {
+    attachGate();
+  }
+})();
 
 /* ══════════════════════════════════════════════════════════════
    GPS CONFIG
@@ -2035,8 +2189,34 @@ document.getElementById('surveyForm').addEventListener('submit',async function(e
   e.preventDefault();
 
   // ── Step 1: Field validation ──────────────────────────────
-  const err=validate();
-  if(err){showStatus('⚠️ '+err,'warning');return;}
+ // ── Step 0: Survey closed + invite revoked checks ─────────
+try {
+  const metaSnap = await db.collection('_meta').doc('surveyClosed').get();
+  if (metaSnap.exists && metaSnap.data().closed === true) {
+    showStatus('❌ This survey is currently closed. Contact your supervisor.', 'error');
+    btn.disabled = false;
+    btn.textContent = '📍 Submit Research';
+    return;
+  }
+} catch(e) { console.warn('Survey status check failed:', e.message); }
+
+const inviteToken = sessionStorage.getItem('ecs26_invite') ||
+                    new URLSearchParams(window.location.search).get('invite');
+if (inviteToken) {
+  try {
+    const invSnap = await db.collection('invites').doc(inviteToken).get();
+    if (!invSnap.exists || invSnap.data().used === true) {
+      showStatus('❌ Your invite link has been revoked. Contact your supervisor.', 'error');
+      btn.disabled = false;
+      btn.textContent = '📍 Submit Research';
+      return;
+    }
+  } catch(e) { console.warn('Invite check failed:', e.message); }
+}
+
+// ── Step 1: Field validation ──────────────────────────────
+const err=validate();
+if(err){showStatus('⚠️ '+err,'warning');return;}
 
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;
